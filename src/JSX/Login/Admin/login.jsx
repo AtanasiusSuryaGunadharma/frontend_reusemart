@@ -117,9 +117,10 @@ const Login = () => {
           <button className="login-btn" onClick={handleSubmit}>
             Masuk
           </button>
-          <p className="register-link">
-            Tidak Punya Akun? <Link to="/register">Create one</Link>
-          </p>
+            {/* Opsional: Link kembali ke halaman pilihan role */}
+            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+              <Link to="/generalLogin">Kembali ke Pilihan Role</Link>
+           </div>
         </div>
       </div>
     </div>
