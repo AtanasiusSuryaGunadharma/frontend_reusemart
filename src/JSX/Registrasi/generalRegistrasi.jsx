@@ -12,8 +12,8 @@ const GeneralRegistrasi = () => { // <-- Ganti nama komponen menjadi GeneralRegi
   // Data untuk pilihan role saat registrasi
   const registrationOptions = [ // <-- Ganti nama variabel
     // Hanya sertakan role yang bisa mendaftar lewat umum
-    { name: "Pembeli", description: "Daftar sebagai pembeli individu", link: "/register/pembeli", IconComponent: FaShoppingCart }, // Link ke halaman registrasi Pembeli
-    { name: "Organisasi", description: "Daftar sebagai perwakilan organisasi", link: "/register/organisasi", IconComponent: FaBuilding }, // Link ke halaman registrasi Organisasi
+    { name: "Pembeli", description: "Daftar sebagai pembeli individu", link: "/pembeli/registrasi", IconComponent: FaShoppingCart }, // Link ke halaman registrasi Pembeli
+    { name: "Organisasi", description: "Daftar sebagai perwakilan organisasi", link: "/organsisasi/registrasi", IconComponent: FaBuilding }, // Link ke halaman registrasi Organisasi
     // Role lain seperti Pegawai, Penitip biasanya tidak mendaftar lewat umum
   ];
 
