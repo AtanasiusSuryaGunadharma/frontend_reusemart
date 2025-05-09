@@ -12,8 +12,10 @@ import LoginPembeli from './JSX/Login/pembeli/loginPembeli.jsx';
 import LoginPenitip from './JSX/Login/Penitip/loginPenitip.jsx';
 import GeneralRegistrasi from './JSX/Registrasi/generalRegistrasi.jsx';
 import RegistrasiPembeli from './JSX/Registrasi/Pembeli/registrasiPembeli.jsx';
+import RegistrasiOrganisasi from './JSX/Registrasi/Organisasi/registrasiOrganisasi.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'; // <-- Import CSS Toastify
+
 
 
 function App() {
@@ -32,6 +34,7 @@ function App() {
           <Route path="pembeli/login" element={<LoginPembeli />} /> 
           <Route path="penitip/login" element={<LoginPenitip />} />
           <Route path="pembeli/registrasi" element={<RegistrasiPembeli />} />
+          <Route path="organisasi/registrasi" element={<RegistrasiOrganisasi />} />
         </Routes>
       </Router>
       <ToastContainer /> {/* Ini akan menampilkan toast di seluruh aplikasi */}
