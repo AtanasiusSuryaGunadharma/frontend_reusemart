@@ -122,10 +122,6 @@ const LoginPenitip = () => { // <-- Ganti nama komponen menjadi LoginPenitip
           <button className="login-btn" onClick={handleSubmit}>
             Masuk
           </button>
-          {/* Link register mungkin perlu mengarah ke halaman registrasi Penitip jika berbeda */}
-          <p className="register-link">
-            Tidak Punya Akun Penitip? <Link to="/register/penitip">Create one</Link> {/* <-- Contoh link register spesifik */}
-          </p>
         </div>
         {/* Opsional: Link kembali ke halaman pilihan role */}
         <div style={{ marginTop: '1rem', textAlign: 'center' }}>

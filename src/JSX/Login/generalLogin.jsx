@@ -27,7 +27,10 @@ const GeneralLogin = () => {
                 </div>
                 <ul className="nav-links">
                     <li><Link to="/">Home</Link></li>
+                    <li><Link to="/shop">Shop</Link></li>
+                    <li><Link to="/generalRegister">Register</Link></li>
                 </ul>
+                
                 <div className="nav-icons">
                      <i className="fas fa-search"></i> {/* Jika ikon search juga tidak muncul, Anda mungkin perlu mencari alternatif Font Awesome ini juga */}
                  </div>

@@ -109,8 +109,12 @@ const LoginOrganisasi = () => {
             Masuk
           </button>
           <p className="register-link">
-            Tidak Punya Akun Organisasi? <Link to="/register/organisasi">Create one</Link>
+            Tidak Punya Akun Organisasi? <Link to="/generalRegister">Create one</Link>
           </p>
+        </div>
+        {/* Opsional: Link kembali ke halaman pilihan role */}
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <Link to="/generalLogin">Kembali ke Pilihan Role</Link>
         </div>
       </div>
     </div>

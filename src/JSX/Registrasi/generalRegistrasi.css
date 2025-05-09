@@ -1,0 +1,229 @@
+/* Reset & Base */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f9f9f9; /* Sesuaikan background */
+  min-height: 100vh;
+  width: 100vw;
+  overflow-x: hidden; /* Mencegah scroll horizontal */
+}
+
+/* Login Page - Kontainer utama yang mencakup navbar dan konten */
+.login-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Navbar */
+/* Biarkan navbar seperti yang ada, atau sesuaikan */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #0056a3;
+  width: 100%;
+  box-sizing: border-box;
+  color: #fff; /* Warna teks di navbar */
+}
+
+.navbar .logo span {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+  margin: 0; /* Hapus margin default ul */
+  padding: 0; /* Hapus padding default ul */
+}
+
+.nav-links li {
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  color: #fff;
+  transition: color 0.3s ease;
+}
+
+.nav-links li a:hover {
+  color: #e0e0e0;
+}
+
+.nav-icons i {
+  margin-left: 1rem;
+  font-size: 18px;
+  cursor: pointer;
+  color: #fff;
+}
+
+
+/* Role Selection Container - Menggantikan login-container sebelumnya */
+.role-selection-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start; /* Align items ke atas, biarkan konten mengembang ke bawah */
+  flex-grow: 1; /* Mengisi ruang yang tersisa */
+  padding: 2rem;
+  background-color: #f9f9f9; /* Warna background kontainer utama */
+  text-align: center;
+}
+
+.role-selection-container h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem; /* Sedikit jarak dari logo */
+}
+
+.role-selection-container p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 2rem; /* Jarak sebelum grid kartu */
+}
+
+.login-logo { /* Biarkan style logo sama */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.5rem; /* Kurangi jarak jika ada h2 di bawahnya */
+}
+
+.login-logo img {
+  width: 60px;
+  height: 60px;
+  margin-bottom: 0.5rem;
+}
+
+.login-logo span {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Role Cards Grid */
+.role-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Grid responsif */
+  gap: 1.5rem; /* Jarak antar kartu */
+  width: 100%;
+  max-width: 900px; /* Lebar maksimum grid */
+  margin: 0 auto; /* Pusatkan grid container itu sendiri */
+  /* Tambahkan baris ini: */
+  justify-content: center; /* Pusatkan grid tracks di dalam kontainer */
+}
+
+/* Individual Role Card */
+.role-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-decoration: none; /* Hapus underline dari Link */
+  color: #333; /* Warna teks default */
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.role-card:hover {
+  transform: translateY(-5px); /* Efek naik sedikit saat hover */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Bayangan saat hover */
+  background-color: #eef7ff; /* Warna latar belakang saat hover */
+}
+
+.role-icon {
+  font-size: 3rem; /* Ukuran ikon */
+  color: #0056a3; /* Warna ikon */
+  margin-bottom: 1rem;
+  /* Tambahkan ini: */
+  display: block; /* Atau inline-block, tergantung layout yang diinginkan */
+}
+
+.role-card h3 {
+  font-size: 1.3rem;
+  margin: 0 0 0.5rem 0;
+  color: #0056a3; /* Warna judul */
+}
+
+.role-card p {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0;
+}
+
+/* Hapus style form login yang lama */
+/* .login-form, .login-form input, .password-wrapper, dll. dihapus atau tidak terpakai */
+
+/* Optional: style for register link if kept */
+.register-link {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 2rem; /* Add some space above the link */
+}
+
+.register-link a {
+  color: #0056a3;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.register-link a:hover {
+  color: #004087;
+}
+
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .navbar {
+      padding: 1rem;
+  }
+  
+  .nav-links {
+      gap: 1rem;
+  }
+
+  .role-selection-container {
+      padding: 1rem;
+  }
+
+  .role-cards-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Kolom lebih kecil di layar kecil */
+      gap: 1rem;
+  }
+
+  .role-card {
+      padding: 1.5rem;
+  }
+
+  .role-icon {
+      font-size: 2.5rem;
+  }
+
+  .role-card h3 {
+      font-size: 1.1rem;
+  }
+
+  .role-card p {
+      font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+   .role-cards-grid {
+      grid-template-columns: 1fr; /* Satu kolom di layar sangat kecil */
+      max-width: 300px; /* Batasi lebar agar tidak terlalu lebar */
+  }
+}

@@ -123,7 +123,7 @@ const LoginPembeli = () => { // <-- Ganti nama komponen menjadi LoginPembeli
           </button>
           {/* Link register mungkin perlu mengarah ke halaman registrasi Pembeli jika berbeda */}
           <p className="register-link">
-            Tidak Punya Akun Pembeli? <Link to="/register/pembeli">Create one</Link> {/* <-- Contoh link register spesifik */}
+            Tidak Punya Akun Pembeli? <Link to="/generalRegister">Create one</Link> {/* <-- Contoh link register spesifik */}
           </p>
         </div>
         {/* Opsional: Link kembali ke halaman pilihan role */}
