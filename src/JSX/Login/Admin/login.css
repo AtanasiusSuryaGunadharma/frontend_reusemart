@@ -184,3 +184,24 @@ body, html {
       max-width: 100%;
     }
   }
+
+  /* Gaya untuk kontainer judul dan tombol di section header */
+  .section-header {
+      display: flex; /* Menggunakan Flexbox */
+      justify-content: space-between; /* Memposisikan item di ujung kontainer */
+      align-items: center; /* Menyelaraskan item secara vertikal di tengah */
+      margin-bottom: 1rem; /* Beri jarak di bawah header jika perlu */
+      /* Hapus margin-bottom dari h3 di dalam section-header jika sudah diatur di sini */
+  }
+
+  .section-header h3 {
+      /* Sesuaikan margin jika dipindahkan dari .dashboard-section h3 */
+      margin-top: 0;
+      margin-bottom: 0; /* Atur margin bawah menjadi 0 karena jarak diatur di parent (.section-header) */
+  }
+
+  /* Sesuaikan gaya tombol jika perlu */
+  .add-employee-btn {
+      /* padding, background, color, dll. sudah ada di gaya employee-form button */
+      /* Anda bisa tambahkan gaya spesifik di sini jika perlu */
+  }
