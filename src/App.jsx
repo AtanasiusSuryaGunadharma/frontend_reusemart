@@ -6,6 +6,7 @@ import Shop from "./JSX/NoLogin/shop.jsx";
 import ProductDetail from "./JSX/NoLogin/productDetail.jsx";
 import Login from "./JSX/Login/Admin/login.jsx";
 import AdminDashboard from "./JSX/Login/Admin/admin.jsx";
+import PenitipDashboard from './JSX/Login/Penitip/dashboardPenitip.jsx';
 import GeneralLogin from "./JSX/Login/generalLogin.jsx";
 import LoginOrganisasi from './JSX/Login/Organisasi/loginOrganisasi.jsx';
 import LoginPembeli from './JSX/Login/pembeli/loginPembeli.jsx';
@@ -30,6 +31,7 @@ function App() {
           <Route path="/barang/:id" element={<ProductDetail />} />
           <Route path="admin/login" element={<Login />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/penitip/dashboard" element={<PenitipDashboard />} />
           <Route path="organisasi/login" element={<LoginOrganisasi />} />
           <Route path="pembeli/login" element={<LoginPembeli />} /> 
           <Route path="penitip/login" element={<LoginPenitip />} />

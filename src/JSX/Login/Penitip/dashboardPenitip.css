@@ -1,0 +1,45 @@
+/* src\JSX\Login\Penitip\dashboardPenitip.css */
+/* Salin gaya umum dari src\JSX\Login\Admin\admin.css */
+
+/* Contoh: */
+/* Gunakan nama class container utama yang lebih spesifik */
+.penitip-dashboard-page {
+  display: flex;
+  flex-direction: column;
+  background: #f9f9f9; /* Sesuaikan background */
+  min-height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Re-use gaya navbar, container dashboard, section, dan profile details */
+/* Pastikan class-class ini disalin dari admin.css */
+.navbar { /* ... */ }
+
+.navbar .logo span { /* ... */ }
+
+.nav-links { /* ... */ }
+
+.nav-links li a { /* ... */ }
+
+.logout-btn { /* ... */ }
+
+.dashboard-container { /* ... */ }
+
+.dashboard-container h2 { /* ... */ }
+
+.dashboard-section { /* ... */ }
+
+.dashboard-section h3 { /* ... */ }
+
+.profile-details { /* ... */ }
+
+.profile-details p { /* ... */ } /* Gaya untuk setiap baris detail profil */
+
+/* Re-use gaya modal jika Anda punya modal di dashboard ini nanti */
+/* .modal { ... } */
+/* .modal-content { ... } */
+/* .modal-actions { ... } */
+
+/* Re-use gaya responsif dari admin.css */
+/* @media (max-width: 768px) { ... } */
