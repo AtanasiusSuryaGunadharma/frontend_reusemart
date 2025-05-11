@@ -53,7 +53,7 @@ const LoginPenitip = () => { // <-- Ganti nama komponen menjadi LoginPenitip
 
         // Redirect ke halaman dashboard Penitip setelah sukses login
         // Anda perlu membuat rute dan komponen dashboard/halaman utama untuk penitip
-        navigate("/"); // <-- Ganti dengan rute dashboard Penitip Anda
+        navigate("/penitip/dashboard"); // <-- Ganti dengan rute dashboard Penitip Anda
 
       } else {
         // Tangani kasus sukses tapi format response tidak sesuai harapan (kurang token/user)
