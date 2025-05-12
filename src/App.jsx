@@ -17,6 +17,7 @@ import GeneralRegistrasi from './JSX/Registrasi/generalRegistrasi.jsx';
 import RegistrasiPembeli from './JSX/Registrasi/Pembeli/registrasiPembeli.jsx';
 import RegistrasiOrganisasi from './JSX/Registrasi/Organisasi/registrasiOrganisasi.jsx';
 import DashboardOwner from './JSX/Login/Owner/dashboardOwner.jsx';
+import DashboardPegawaiGudang from './JSX/Login/PegawaiGudang/dashboardPegawaiGudang.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -43,6 +44,7 @@ function App() {
           <Route path="pembeli/registrasi" element={<RegistrasiPembeli />} />
           <Route path="organisasi/registrasi" element={<RegistrasiOrganisasi />} />
           <Route path="/owner/dashboard" element={<DashboardOwner />} />
+          <Route path="/pegawaiGudang/dashboard" element={<DashboardPegawaiGudang />} />
         </Routes>
       </Router>
       <ToastContainer /> {/* Ini akan menampilkan toast di seluruh aplikasi */}
