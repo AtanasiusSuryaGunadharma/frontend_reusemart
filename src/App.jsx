@@ -16,6 +16,8 @@ import GeneralRegistrasi from './JSX/Registrasi/generalRegistrasi.jsx';
 import RegistrasiPembeli from './JSX/Registrasi/Pembeli/registrasiPembeli.jsx';
 import RegistrasiOrganisasi from './JSX/Registrasi/Organisasi/registrasiOrganisasi.jsx';
 import DashboardOwner from './JSX/Login/Owner/dashboardOwner.jsx';
+import CSDashboard from './JSX/Login/CS/cs.jsx';
+import OrganisasiDashboard from './JSX/Login/Organisasi/dashboardOrganisasi.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "slick-carousel/slick/slick.css"; 
@@ -43,6 +45,8 @@ function App() {
           <Route path="pembeli/registrasi" element={<RegistrasiPembeli />} />
           <Route path="organisasi/registrasi" element={<RegistrasiOrganisasi />} />
           <Route path="/owner/dashboard" element={<DashboardOwner />} />
+          <Route path="cs/dashboard" element={<CSDashboard />} />
+          <Route path="/organisasi/dashboard" element={<OrganisasiDashboard />} />
         </Routes>
       </Router>
       <ToastContainer /> {/* Ini akan menampilkan toast di seluruh aplikasi */}

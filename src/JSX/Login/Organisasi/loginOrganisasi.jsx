@@ -44,7 +44,7 @@ const LoginOrganisasi = () => {
         localStorage.setItem("alamat_organisasi", user.alamat_organisasi);
         localStorage.setItem("password_organisasi", user.password_organisasi);
 
-        navigate("/");
+        navigate("/organisasi/dashboard");
       } else {
         setError(response.data.message || "Login berhasil tapi data tidak lengkap.");
       }
@@ -109,12 +109,8 @@ const LoginOrganisasi = () => {
             Masuk
           </button>
           <p className="register-link">
-            Tidak Punya Akun Organisasi? <Link to="/generalRegister">Create one</Link>
+            Tidak Punya Akun Organisasi? <Link to="/register/organisasi">Create one</Link>
           </p>
-        </div>
-        {/* Opsional: Link kembali ke halaman pilihan role */}
-        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-          <Link to="/generalLogin">Kembali ke Pilihan Role</Link>
         </div>
       </div>
     </div>
