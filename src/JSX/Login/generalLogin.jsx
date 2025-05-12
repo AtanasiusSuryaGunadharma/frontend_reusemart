@@ -14,7 +14,7 @@ const GeneralLogin = () => {
     const roles = [
         { name: "Pegawai", description: "Masuk sebagai pegawai", link: "/admin/login", IconComponent: FaUserTie }, // Link ke halaman login pegawai
         { name: "Penitip", description: "Masuk untuk menitipkan barang", link: "/penitip/login", IconComponent: FaWarehouse }, // Akan diarahkan ke halaman login penitip
-        { name: "Organisasi", description: "Masuk sebagai perwakilan organisasi", link: "/organisasi/login", IconComponent: FaBuilding }, // Akan diarahkan ke halaman login organisasi
+        { name: "Organisasi", description: "Masuk sebagai perwakilan organisasi", link: "JSX/Login/Organisasi/loginOrganisasi", IconComponent: FaBuilding }, // Akan diarahkan ke halaman login organisasi
         { name: "Pembeli", description: "Masuk untuk berbelanja", link: "/pembeli/login", IconComponent: FaShoppingCart }, // Akan diarahkan ke halaman login pembeli
     ];
 
@@ -22,11 +22,8 @@ const GeneralLogin = () => {
         <div className="login-page">
             {/* Navbar - Tetap sama */}
             <nav className="navbar">
-                <div className="logo">
-                    <span>REUSEMART</span>
-                </div>
                 <ul className="nav-links">
-                    <li><Link to="/">Home</Link></li>
+                    <li><Link to="/">Beranda</Link></li>
                 </ul>
                 <div className="nav-icons">
                      <i className="fas fa-search"></i> {/* Jika ikon search juga tidak muncul, Anda mungkin perlu mencari alternatif Font Awesome ini juga */}
@@ -37,7 +34,6 @@ const GeneralLogin = () => {
             <div className="role-selection-container">
                 <div className="login-logo">
                     <img src="/Logo.png" alt="Reusemart Logo" />
-                    <span>REUSEMART</span>
                 </div>
                 <h2>Pilih Role Login Anda</h2>
                 <p>Silakan pilih jenis akun Anda untuk melanjutkan.</p>

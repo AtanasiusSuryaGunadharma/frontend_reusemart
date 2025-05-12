@@ -10,6 +10,8 @@ import GeneralLogin from "./JSX/Login/generalLogin.jsx";
 import LoginOrganisasi from './JSX/Login/Organisasi/loginOrganisasi.jsx';
 import LoginPembeli from './JSX/Login/pembeli/loginPembeli.jsx';
 import LoginPenitip from './JSX/Login/Penitip/loginPenitip.jsx';
+import CSDashboard from './JSX/Login/CS/cs.jsx';
+
 
 function App() {
   return (
@@ -25,6 +27,7 @@ function App() {
           <Route path="organisasi/login" element={<LoginOrganisasi />} />
           <Route path="pembeli/login" element={<LoginPembeli />} /> 
           <Route path="penitip/login" element={<LoginPenitip />} />
+          <Route path="cs/dashboard" element={<CSDashboard />} />
         </Routes>
       </Router>
     </div>
