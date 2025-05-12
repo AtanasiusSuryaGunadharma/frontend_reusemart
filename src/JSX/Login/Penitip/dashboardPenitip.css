@@ -43,3 +43,54 @@
 
 /* Re-use gaya responsif dari admin.css */
 /* @media (max-width: 768px) { ... } */
+
+/* src\JSX\Login\Penitip\dashboardPenitip.css */
+/* Salin gaya umum dari src\JSX\Login\Admin\admin.css */
+
+/* ... (gaya yang sudah ada) ... */
+
+/* Re-use gaya list dan card untuk daftar histori */
+/* Pastikan class-class ini disalin dari admin.css */
+.history-list { /* Re-use .employee-list atau .address-list */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.history-transaction-card { /* Re-use .employee-card atau .address-card */
+    display: flex;
+    flex-direction: column; /* Tampilkan detail transaksi di atas detail barang */
+    gap: 0.5rem; /* Jarak antar elemen di dalam kartu transaksi */
+    padding: 1rem; /* Sesuaikan padding */
+    background: #f1f1f1;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    word-break: break-word; /* Agar teks panjang tidak overflow */
+}
+
+.history-transaction-card span {
+    font-weight: bold; /* Contoh: tebalkan info utama transaksi */
+}
+
+.transaction-details {
+    /* Gaya untuk kontainer detail barang */
+    border-top: 1px solid #ddd; /* Garis pemisah */
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.transaction-details h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #555;
+}
+
+.detail-item p {
+    /* Gaya untuk setiap baris detail barang */
+    margin: 0; /* Hapus margin default p */
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* ... (gaya responsif jika diperlukan) ... */
