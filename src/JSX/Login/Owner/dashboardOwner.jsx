@@ -99,16 +99,39 @@ const DashboardOwner = () => {
     const handleAllocateDonation = (item) => {
         setSelectedDonation(item);
         setAllocationData({
-            nama_organisasi_penerima: "",
+            id_organisasi: "",
             tanggal_donasi: "",
             nama_penerima: "",
             request_donasi_id: "",
-        });
+        });   
         setShowAllocationModal(true);
     };
 
     const handleAllocationSubmit = async (e) => {
     e.preventDefault();
+
+        // Validasi form
+    if (!allocationData.id_organisasi) {
+        toast.error("Organisasi penerima harus dipilih.");
+        return;
+    }
+
+    if (!allocationData.tanggal_donasi) {
+        toast.error("Tanggal donasi tidak boleh kosong.");
+        return;
+    }
+
+    if (!allocationData.nama_penerima.trim()) {
+        toast.error("Nama penerima donasi tidak boleh kosong.");
+        return;
+    }
+
+    const currentDate = new Date().toISOString().split('T')[0];
+    if (allocationData.tanggal_donasi < currentDate) {
+        toast.error("Tanggal donasi tidak boleh sebelum hari ini.");
+        return;
+    }
+
     const token = localStorage.getItem("authToken");
     const id_pegawai = localStorage.getItem("id_pegawai"); // Pastikan id_pegawai tersedia
     if (!selectedDonation || !id_pegawai) return;
@@ -137,14 +160,15 @@ const DashboardOwner = () => {
         );
         console.log("Update barang response:", updateResponse.data); // Debugging
 
+        //const selectedOrg = organizations.find(org => org.nama_organisasi === allocationData.nama_organisasi_penerima);
         // Langkah 2: Buat entri donasi baru
         const donasiPayload = {
-            nama_organisasi_penerima: allocationData.nama_organisasi_penerima,
             tanggal_donasi: allocationData.tanggal_donasi,
             nama_penerima: allocationData.nama_penerima,
             request_donasi_id: allocationData.request_donasi_id || null,
             barang_id_donasi: selectedDonation.id_barang,
             pegawai_id_donasi: id_pegawai,
+            id_organisasi: allocationData.id_organisasi,
         };
 
         const donasiResponse = await axios.post(
@@ -178,8 +202,13 @@ const DashboardOwner = () => {
     const handleCloseAllocationModal = () => {
         setShowAllocationModal(false);
         setSelectedDonation(null);
-        setAllocationData({ nama_organisasi_penerima: "", tanggal_donasi: "", nama_penerima: "", request_donasi_id: "" });
-    };
+        setAllocationData({
+            id_organisasi: "",
+            tanggal_donasi: "",
+            nama_penerima: "",
+            request_donasi_id: "",
+        });    
+};
 
     const handleLogout = () => {
         localStorage.removeItem("userRole");
@@ -263,7 +292,7 @@ const DashboardOwner = () => {
                             donationHistory.map((history) => (
                                 <div key={history.id_donasi} className="history-card">
                                     <span>
-                                        Barang: {history.barang?.nama_barang || 'Tidak Diketahui'} - Organisasi: {history.request_donasi?.organisasi?.nama_organisasi} - 
+                                        Barang: {history.barang?.nama_barang || 'Tidak Diketahui'} - Organisasi: {history.request_donasi?.organisasi?.nama_organisasi || history.organisasi?.nama_organisasi} - 
                                         Tanggal: {history.tanggal_donasi || 'Tidak Diketahui'} - Penerima: {history.nama_penerima || 'Tidak Diketahui'} - 
                                         Status: {history.barang?.status_barang || 'Tidak Diketahui'}
                                     </span>
@@ -302,43 +331,54 @@ const DashboardOwner = () => {
 
             {/* Modal Alokasi Donasi */}
             {showAllocationModal && selectedDonation && (
-                <div className="modal">
-                    <div className="modal-content">
-                        <h3>Alokasi Donasi untuk {selectedDonation.nama_barang}</h3>
-                        <form onSubmit={handleAllocationSubmit}>
-                            <select
-                                value={allocationData.nama_organisasi_penerima}
-                                onChange={(e) => setAllocationData({ ...allocationData, nama_organisasi_penerima: e.target.value })}
-                                required
-                            >
-                                <option value="">Pilih Organisasi</option>
-                                {organizations.map((org) => (
-                                    <option key={org.id_organisasi} value={org.nama_organisasi}>
-                                        {org.nama_organisasi}
-                                    </option>
-                                ))}
-                            </select>
-                            <input
-                                type="date"
-                                value={allocationData.tanggal_donasi}
-                                onChange={(e) => setAllocationData({ ...allocationData, tanggal_donasi: e.target.value })}
-                                required
-                            />
-                            <input
-                                type="text"
-                                placeholder="Nama Penerima Donasi"
-                                value={allocationData.nama_penerima}
-                                onChange={(e) => setAllocationData({ ...allocationData, nama_penerima: e.target.value })}
-                                required
-                            />
-                            <div className="modal-actions">
-                                <button type="submit">Alokasi Donasi</button>
-                                <button type="button" onClick={handleCloseAllocationModal}>Tutup</button>
-                            </div>
-                        </form>
-                    </div>
+    <div className="modal">
+        <div className="modal-content">
+            <h3>Alokasi Donasi untuk {selectedDonation.nama_barang}</h3>
+            <form onSubmit={handleAllocationSubmit}>
+                <select
+                    value={allocationData.id_organisasi}
+                    onChange={(e) => setAllocationData({ ...allocationData, id_organisasi: e.target.value })}
+                    required
+                >
+                    <option value="">Pilih Organisasi</option>
+                    {organizations.map((org) => (
+                        <option key={org.id_organisasi} value={org.id_organisasi}>
+                            {org.nama_organisasi}
+                        </option>
+                    ))}
+                </select>
+                <select
+                    value={allocationData.request_donasi_id}
+                    onChange={(e) => setAllocationData({ ...allocationData, request_donasi_id: e.target.value })}
+                >
+                    <option value="">Tanpa Request Donasi</option>
+                    {donationRequests.map((request) => (
+                        <option key={request.id_request_donasi} value={request.id_request_donasi}>
+                            {request.request_barang_donasi} - {request.organisasi?.nama_organisasi || 'Tidak Diketahui'}
+                        </option>
+                    ))}
+                </select>
+                <input
+                    type="date"
+                    value={allocationData.tanggal_donasi}
+                    onChange={(e) => setAllocationData({ ...allocationData, tanggal_donasi: e.target.value })}
+                    required
+                />
+                <input
+                    type="text"
+                    placeholder="Nama Penerima Donasi"
+                    value={allocationData.nama_penerima}
+                    onChange={(e) => setAllocationData({ ...allocationData, nama_penerima: e.target.value })}
+                    required
+                />
+                <div className="modal-actions">
+                    <button type="submit">Alokasi Donasi</button>
+                    <button type="button" onClick={handleCloseAllocationModal}>Tutup</button>
                 </div>
-            )}
+            </form>
+        </div>
+    </div>
+)}
         </div>
     );
 };

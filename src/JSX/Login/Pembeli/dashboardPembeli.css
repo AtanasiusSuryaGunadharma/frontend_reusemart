@@ -1,0 +1,145 @@
+/* src\JSX\Login\Pembeli\dashboardPembeli.css */
+/* Salin gaya umum dashboard dari src\JSX\Login\Admin\admin.css */
+
+/* Contoh: */
+/* Gunakan nama class container utama yang lebih spesifik */
+.pembeli-dashboard-page {
+    display: flex;
+    flex-direction: column;
+    background: #f9f9f9; /* Sesuaikan background */
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Re-use gaya navbar, container dashboard, section, dan profile details */
+/* Pastikan class-class ini disalin dari admin.css */
+.navbar { /* ... */ }
+.navbar .logo span { /* ... */ }
+.nav-links { /* ... */ }
+.nav-links li a { /* ... */ }
+.logout-btn { /* ... */ }
+
+.dashboard-container { /* ... */ }
+.dashboard-container h2 { /* ... */ }
+
+.dashboard-section { /* ... */ }
+.dashboard-section h3 { /* ... */ } /* Jika h3 ada di dalam section-header, atur margin bawahnya jadi 0 */
+
+.profile-details { /* ... */ }
+.profile-details p { /* ... */ }
+
+/* Re-use gaya section-header (untuk judul dan tombol sejajar) dari admin.css */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem; /* Jarak di bawah header section */
+}
+
+.section-header h3 {
+     margin-top: 0;
+     margin-bottom: 0; /* Atur margin bawah jadi 0 */
+}
+
+
+/* Gaya untuk tombol Tambah Alamat */
+.add-address-btn {
+     padding: 0.5rem 1rem; /* Padding tombol */
+     background-color: #0056a3; /* Warna tombol */
+     color: #fff; /* Warna teks */
+     border: none;
+     border-radius: 5px;
+     cursor: pointer;
+     transition: background-color 0.3s ease;
+     font-size: 1rem;
+}
+
+.add-address-btn:hover {
+     background-color: #004087;
+}
+
+
+/* Re-use gaya list dan card untuk daftar alamat */
+/* Pastikan class-class ini disalin dari admin.css */
+.address-list { /* Re-use .employee-list */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.address-card { /* Re-use .employee-card */
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     padding: 0.75rem 1rem;
+     background: #f1f1f1;
+     border-radius: 5px;
+     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+     flex-wrap: wrap;
+     gap: 0.5rem;
+}
+
+.address-card span { /* Gaya teks alamat */
+     flex-grow: 1;
+     margin-right: 1rem;
+     word-break: break-word;
+}
+
+.address-card div { /* Kontainer tombol */
+     display: flex;
+     gap: 0.5rem;
+}
+
+.address-card button { /* Gaya tombol edit/hapus */
+     padding: 0.25rem 0.75rem;
+     background-color: #0056a3;
+     color: #fff;
+     border: none;
+     border-radius: 4px;
+     cursor: pointer;
+     transition: background-color 0.3s ease;
+     font-size: 0.9rem;
+}
+
+.address-card button:hover {
+     background-color: #004087;
+}
+
+
+/* Re-use gaya modal */
+/* Pastikan class-class ini disalin dari admin.css */
+.modal { /* ... */ }
+.modal-content { /* ... */ }
+.modal-content h3 { /* ... */ }
+.modal-content form { /* ... */ }
+.modal-content form input { /* ... */ }
+.modal-content form input, /* Tambahkan select jika model Alamat punya dropdown */
+.modal-content form select { /* ... */ }
+.modal-actions { /* ... */ }
+.modal-actions button { /* ... */ }
+
+
+/* Re-use gaya responsif dari admin.css */
+/* @media (max-width: 768px) { ... } */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+    }
+    .address-card {
+         flex-direction: column;
+         align-items: flex-start;
+    }
+    .address-card span {
+         margin-right: 0;
+         margin-bottom: 0.5rem;
+    }
+    .address-card div {
+         width: 100%;
+         justify-content: flex-end;
+    }
+    .modal-content {
+        width: 95%;
+    }
+    /* ... gaya responsif lain jika ada ... */
+}
