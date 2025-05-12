@@ -14,7 +14,7 @@ const GeneralLogin = () => {
     const roles = [
         { name: "Pegawai", description: "Masuk sebagai pegawai", link: "/admin/login", IconComponent: FaUserTie }, // Link ke halaman login pegawai
         { name: "Penitip", description: "Masuk untuk menitipkan barang", link: "/penitip/login", IconComponent: FaWarehouse }, // Akan diarahkan ke halaman login penitip
-        { name: "Organisasi", description: "Masuk sebagai perwakilan organisasi", link: "JSX/Login/Organisasi/loginOrganisasi", IconComponent: FaBuilding }, // Akan diarahkan ke halaman login organisasi
+        { name: "Organisasi", description: "Masuk sebagai perwakilan organisasi", link: "/organisasi/login", IconComponent: FaBuilding }, // Akan diarahkan ke halaman login organisasi
         { name: "Pembeli", description: "Masuk untuk berbelanja", link: "/pembeli/login", IconComponent: FaShoppingCart }, // Akan diarahkan ke halaman login pembeli
     ];
 

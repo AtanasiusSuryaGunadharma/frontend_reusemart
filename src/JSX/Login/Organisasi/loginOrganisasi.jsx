@@ -44,7 +44,7 @@ const LoginOrganisasi = () => {
         localStorage.setItem("alamat_organisasi", user.alamat_organisasi);
         localStorage.setItem("password_organisasi", user.password_organisasi);
 
-        navigate("/");
+        navigate("/organisasi/dashboard");
       } else {
         setError(response.data.message || "Login berhasil tapi data tidak lengkap.");
       }

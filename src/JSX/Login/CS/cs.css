@@ -588,6 +588,7 @@ body, html {
   font-size: 0.95rem;
   transition: all 0.3s;
   background-color: #f8fafc;
+  color: #000000;
 }
 
 .search-input:focus {
@@ -677,4 +678,5 @@ body, html {
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
   }
+
 }

@@ -11,6 +11,7 @@ import LoginOrganisasi from './JSX/Login/Organisasi/loginOrganisasi.jsx';
 import LoginPembeli from './JSX/Login/pembeli/loginPembeli.jsx';
 import LoginPenitip from './JSX/Login/Penitip/loginPenitip.jsx';
 import CSDashboard from './JSX/Login/CS/cs.jsx';
+import OrganisasiDashboard from './JSX/Login/Organisasi/dashboardOrganisasi.jsx';
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="pembeli/login" element={<LoginPembeli />} /> 
           <Route path="penitip/login" element={<LoginPenitip />} />
           <Route path="cs/dashboard" element={<CSDashboard />} />
+          <Route path="/organisasi/dashboard" element={<OrganisasiDashboard />} />
         </Routes>
       </Router>
     </div>

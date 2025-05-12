@@ -1,4 +1,3 @@
-// DashboardOrganisasi.jsx
 import React, { useEffect, useState } from "react";
 import "./dashboardOrganisasi.css";
 import axios from "axios";
@@ -9,112 +8,117 @@ const DashboardOrganisasi = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [previewImage, setPreviewImage] = useState(null);
   const [editIndex, setEditIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [orgProfile, setOrgProfile] = useState(null);
 
   const [newRequest, setNewRequest] = useState({
-    nama_barang: "",
-    jumlah: "",
-    kategori: "",
-    deskripsi: "",
-    status: "pending",
-    foto_barang: null,
+    alamat_req_donasi: "",
+    request_barang_donasi: "",
+    organisasi_id: localStorage.getItem("id_organisasi") || "",
   });
 
   const navigate = useNavigate();
 
+  const fetchData = async () => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const id = localStorage.getItem("id_organisasi");
+
+      if (!token || !id) {
+        throw new Error("Token atau ID organisasi tidak ditemukan. Silakan login kembali.");
+      }
+
+      const profileRes = await axios.get(`http://127.0.0.1:8000/api/organisasi/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Profile Response:", profileRes.data);
+      setOrgProfile(profileRes.data);
+
+      const res = await axios.get("http://127.0.0.1:8000/api/request-donasi", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Requests Response:", res.data);
+      const allRequests = Array.isArray(res.data) ? res.data : res.data.data || [];
+      const filteredRequests = allRequests.filter(
+        (request) => request.organisasi_id === parseInt(id)
+      );
+      setRequests(filteredRequests);
+    } catch (err) {
+      console.error("Fetch Data Error:", err.response ? err.response.data : err.message);
+      setError(err.response?.data?.message || "Gagal memuat data. Silakan coba lagi.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     if (role !== "organisasi") {
-      navigate("/login");
+      navigate("/organisasi/login");
+    } else {
+      fetchData();
     }
-
-    const fetchData = async () => {
-      try {
-        const token = localStorage.getItem("authToken");
-        const id = localStorage.getItem("id_organisasi");
-
-        const profileRes = await axios.get(`http://127.0.0.1:8000/api/organisasi/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setOrgProfile(profileRes.data);
-
-        const res = await axios.get("http://127.0.0.1:8000/api/request-donasi-barang", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setRequests(Array.isArray(res.data) ? res.data : res.data.data || []);
-      } catch (err) {
-        setError("Gagal memuat data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
   }, [navigate]);
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/");
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setNewRequest({ ...newRequest, foto_barang: file });
-      setPreviewImage(URL.createObjectURL(file));
-    }
+    navigate("/organisasi/login");
   };
 
   const handleEdit = (index) => {
     const item = requests[index];
+    console.log("Edit Item:", item); // Debugging
+    if (!item || !item.id) {
+      alert("Data tidak valid untuk diedit. Periksa struktur data (id hilang).");
+      return;
+    }
     setEditIndex(index);
     setNewRequest({
-      nama_barang: item.nama_barang,
-      jumlah: item.jumlah,
-      kategori: item.kategori,
-      deskripsi: item.deskripsi,
-      status: item.status,
-      foto_barang: null,
+      alamat_req_donasi: item.alamat_req_donasi || "",
+      request_barang_donasi: item.request_barang_donasi || "",
+      organisasi_id: item.organisasi_id || localStorage.getItem("id_organisasi") || "",
     });
-    if (item.foto_barang) {
-      setPreviewImage(`http://127.0.0.1:8000/storage/${item.foto_barang.replace("public/", "")}`);
-    }
     setShowModal(true);
   };
 
   const handleDelete = async (id) => {
+    console.log("Delete ID:", id); // Debugging
+    if (!id) {
+      alert("ID request tidak ditemukan. Periksa struktur data.");
+      return;
+    }
     if (!window.confirm("Yakin ingin menghapus request ini?")) return;
     const token = localStorage.getItem("authToken");
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/request-donasi-barang/${id}`, {
+      const res = await axios.delete(`http://127.0.0.1:8000/api/request-donasi/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setRequests(requests.filter((r) => r.id !== id));
-    } catch {
-      alert("Gagal menghapus data.");
+      console.log("Delete Response:", res.data);
+      await fetchData(); // Muat ulang data setelah hapus
+    } catch (err) {
+      console.error("Delete Error:", err.response ? err.response.data : err.message);
+      alert("Gagal menghapus data: " + (err.response?.data?.message || err.message));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("authToken");
+    const id = editIndex !== null ? requests[editIndex]?.id : null;
     const url = editIndex !== null
-      ? `http://127.0.0.1:8000/api/request-donasi-barang/${requests[editIndex].id}`
-      : `http://127.0.0.1:8000/api/request-donasi-barang`;
+      ? `http://127.0.0.1:8000/api/request-donasi/${id}`
+      : `http://127.0.0.1:8000/api/request-donasi`;
 
     const method = editIndex !== null ? "put" : "post";
 
     const formData = new FormData();
-    Object.entries(newRequest).forEach(([key, value]) => {
-      if (value || key !== "foto_barang") {
-        formData.append(key, value);
-      }
-    });
+    formData.append("alamat_req_donasi", newRequest.alamat_req_donasi);
+    formData.append("request_barang_donasi", newRequest.request_barang_donasi);
+    formData.append("organisasi_id", newRequest.organisasi_id);
 
     try {
+      console.log("Sending Request:", { method, url, data: Object.fromEntries(formData) });
       const res = await axios({
         method,
         url,
@@ -124,35 +128,24 @@ const DashboardOrganisasi = () => {
           "Content-Type": "multipart/form-data",
         },
       });
-
-      const updatedItem = res.data;
-
-      if (editIndex !== null) {
-        const updated = [...requests];
-        updated[editIndex] = updatedItem;
-        setRequests(updated);
-      } else {
-        setRequests([...requests, updatedItem]);
-      }
+      console.log("Submit Response:", res.data);
+      await fetchData(); // Muat ulang data setelah simpan
 
       setShowModal(false);
       setNewRequest({
-        nama_barang: "",
-        jumlah: "",
-        kategori: "",
-        deskripsi: "",
-        status: "pending",
-        foto_barang: null,
+        alamat_req_donasi: "",
+        request_barang_donasi: "",
+        organisasi_id: localStorage.getItem("id_organisasi") || "",
       });
       setEditIndex(null);
-      setPreviewImage(null);
-    } catch {
-      alert("Gagal menyimpan data.");
+    } catch (err) {
+      console.error("Submit Error:", err.response ? err.response.data : err.message);
+      alert("Gagal menyimpan data: " + (err.response?.data?.message || err.message));
     }
   };
 
   const filteredRequests = requests.filter((r) =>
-    r.nama_barang?.toLowerCase().includes(searchTerm.toLowerCase())
+    r.request_barang_donasi?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -215,7 +208,7 @@ const DashboardOrganisasi = () => {
               <input
                 type="text"
                 className="search-input"
-                placeholder="Cari berdasarkan nama barang..."
+                placeholder="Cari berdasarkan request barang..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -233,20 +226,18 @@ const DashboardOrganisasi = () => {
                 <table className="penitip-table">
                   <thead>
                     <tr>
-                      <th>Nama Barang</th>
-                      <th>Jumlah</th>
-                      <th>Kategori</th>
-                      <th>Status</th>
+                      <th>Alamat</th>
+                      <th>Request Barang</th>
+                      <th>Organisasi ID</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredRequests.map((item, index) => (
-                      <tr key={item.id}>
-                        <td>{item.nama_barang}</td>
-                        <td>{item.jumlah}</td>
-                        <td>{item.kategori}</td>
-                        <td>{item.status}</td>
+                      <tr key={item.id || index}>
+                        <td>{item.alamat_req_donasi}</td>
+                        <td>{item.request_barang_donasi}</td>
+                        <td>{item.organisasi_id}</td>
                         <td className="action-buttons">
                           <button className="edit-btn" onClick={() => handleEdit(index)}>
                             <i className="fas fa-edit"></i> Edit
@@ -269,7 +260,6 @@ const DashboardOrganisasi = () => {
         </div>
       </div>
 
-      {/* Modal */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
@@ -283,69 +273,38 @@ const DashboardOrganisasi = () => {
             <form onSubmit={handleSubmit}>
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Nama Barang</label>
+                  <label>Alamat Request Donasi</label>
                   <input
                     type="text"
-                    value={newRequest.nama_barang}
+                    value={newRequest.alamat_req_donasi}
                     onChange={(e) =>
-                      setNewRequest({ ...newRequest, nama_barang: e.target.value })
+                      setNewRequest({ ...newRequest, alamat_req_donasi: e.target.value })
                     }
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label>Jumlah</label>
+                  <label>Request Barang Donasi</label>
                   <input
-                    type="number"
-                    value={newRequest.jumlah}
+                    type="text"
+                    value={newRequest.request_barang_donasi}
                     onChange={(e) =>
-                      setNewRequest({ ...newRequest, jumlah: e.target.value })
+                      setNewRequest({ ...newRequest, request_barang_donasi: e.target.value })
                     }
                     required
                   />
                 </div>
                 <div className="form-group">
-                  <label>Kategori</label>
+                  <label>Organisasi ID</label>
                   <input
                     type="text"
-                    value={newRequest.kategori}
+                    value={newRequest.organisasi_id}
                     onChange={(e) =>
-                      setNewRequest({ ...newRequest, kategori: e.target.value })
+                      setNewRequest({ ...newRequest, organisasi_id: e.target.value })
                     }
                     required
+                    disabled
                   />
-                </div>
-                <div className="form-group">
-                  <label>Deskripsi</label>
-                  <input
-                    type="text"
-                    value={newRequest.deskripsi}
-                    onChange={(e) =>
-                      setNewRequest({ ...newRequest, deskripsi: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Status</label>
-                  <select
-                    value={newRequest.status}
-                    onChange={(e) =>
-                      setNewRequest({ ...newRequest, status: e.target.value })
-                    }
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="disetujui">Disetujui</option>
-                    <option value="ditolak">Ditolak</option>
-                  </select>
-                </div>
-                <div className="form-group foto-ktp-container">
-                  <label>Foto Barang</label>
-                  <input type="file" onChange={handleFileChange} accept="image/*" />
-                  {previewImage && (
-                    <div className="image-preview">
-                      <img src={previewImage} alt="Preview" />
-                    </div>
-                  )}
                 </div>
               </div>
               <div className="modal-actions">

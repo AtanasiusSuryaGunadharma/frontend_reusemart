@@ -17,15 +17,18 @@ const CSDashboard = () => {
     no_telepon_penitip: "",
     nik_penitip: "",
     foto_ktp_penitip: null,
+    rating_penitip: 0,
+    pendapatan_penitip: 0,
+    bonus_terjual_cepat: 0,
+    reward_program_sosial: 0,
   });
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     const userRole = localStorage.getItem("userRole");
-    // Hanya izinkan peran 'cs' atau 'manager' untuk mengakses dashboard ini
     if (!['cs', 'manager'].includes(userRole)) {
       navigate("/login");
       return;
@@ -34,24 +37,21 @@ const CSDashboard = () => {
     const fetchData = async () => {
       setLoading(true);
       const token = localStorage.getItem("authToken");
-      const id_pegawai = localStorage.getItem("id_pegawai"); // Menggunakan id_pegawai untuk CS
+      const id_pegawai = localStorage.getItem("id_pegawai");
 
       try {
-        // Fetch CS profile data
         const profileResponse = await axios.get(`http://127.0.0.1:8000/api/pegawai/${id_pegawai}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCSProfile(profileResponse.data);
 
-        // Fetch penitip data
         const penitipResponse = await axios.get("http://127.0.0.1:8000/api/penitip", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        
+
         if (Array.isArray(penitipResponse.data)) {
           setPenitip(penitipResponse.data);
         } else if (penitipResponse.data && Array.isArray(penitipResponse.data.data)) {
-          // Handle jika data penitip berada dalam property 'data'
           setPenitip(penitipResponse.data.data);
         } else {
           console.error("Unexpected data format:", penitipResponse.data);
@@ -70,48 +70,37 @@ const CSDashboard = () => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      setNewPenitip({
-        ...newPenitip,
-        foto_ktp_penitip: file
-      });
-      
-      // Create preview URL
-      const previewURL = URL.createObjectURL(file);
-      setPreviewImage(previewURL);
+      setNewPenitip({ ...newPenitip, foto_ktp_penitip: file });
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
 
   const handleAddOrUpdatePenitip = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("authToken");
-    const url = editIndex !== null 
-      ? `http://127.0.0.1:8000/api/penitip/${penitip[editIndex].id_penitip}` 
+    const url = editId !== null 
+      ? `http://127.0.0.1:8000/api/penitip/${editId}` 
       : "http://127.0.0.1:8000/api/penitip";
-    const method = editIndex !== null ? "put" : "post";
-  
+    const method = editId !== null ? "put" : "post";
+
     try {
-      // Buat FormData untuk menangani upload file
       const formData = new FormData();
-      
-      // Tambahkan semua field ke FormData
-      formData.append("nama_penitip", newPenitip.nama_penitip);
-      formData.append("email_penitip", newPenitip.email_penitip);
-      
-      // Hanya tambahkan password jika tidak kosong
+      formData.append("nama_penitip", newPenitip.nama_penitip || "");
+      formData.append("email_penitip", newPenitip.email_penitip || "");
       if (newPenitip.password_penitip) {
         formData.append("password_penitip", newPenitip.password_penitip);
       }
-      
-      formData.append("tgl_lahir_penitip", newPenitip.tgl_lahir_penitip);
-      formData.append("no_telepon_penitip", newPenitip.no_telepon_penitip);
-      formData.append("nik_penitip", newPenitip.nik_penitip);
-      
-      // Tambahkan file KTP jika ada
+      formData.append("tgl_lahir_penitip", newPenitip.tgl_lahir_penitip || "");
+      formData.append("no_telepon_penitip", newPenitip.no_telepon_penitip || "");
+      formData.append("nik_penitip", newPenitip.nik_penitip || "");
+      formData.append("rating_penitip", newPenitip.rating_penitip || 0);
+      formData.append("pendapatan_penitip", newPenitip.pendapatan_penitip || 0);
+      formData.append("bonus_terjual_cepat", newPenitip.bonus_terjual_cepat || 0);
+      formData.append("reward_program_sosial", newPenitip.reward_program_sosial || 0);
       if (newPenitip.foto_ktp_penitip) {
         formData.append("foto_ktp_penitip", newPenitip.foto_ktp_penitip);
       }
-  
-      // Kirim request dengan FormData
+
       const response = await axios({
         method: method,
         url: url,
@@ -121,23 +110,19 @@ const CSDashboard = () => {
           "Content-Type": "multipart/form-data"
         },
       });
-  
-      // Update state penitip
-      if (editIndex !== null) {
-        // Update penitip yang sudah ada
-        setPenitip(penitip.map((item, index) => 
-          index === editIndex ? response.data : item
+
+      if (editId !== null) {
+        setPenitip(penitip.map((item) => 
+          item.id_penitip === editId ? { ...item, ...response.data } : item
         ));
       } else {
-        // Tambah penitip baru
         setPenitip([...penitip, response.data]);
       }
-  
-      // Reset form dan tutup modal
+
       handleCloseModal();
     } catch (err) {
-      console.error("Error Adding/Updating Penitip:", err);
-      alert("Gagal menambahkan/memperbarui data penitip. Silakan coba lagi.");
+      console.error("Error Adding/Updating Penitip:", err.response?.data || err.message);
+      alert("Gagal menambahkan/memperbarui data penitip: " + JSON.stringify(err.response?.data?.errors || err.message));
     }
   };
 
@@ -158,34 +143,32 @@ const CSDashboard = () => {
     }
   };
 
-  const handleEditPenitip = (index) => {
-    const penitipToEdit = penitip[index];
-    setEditIndex(index);
-    
-    // Format tanggal lahir untuk input date
-    let formattedDate = "";
-    if (penitipToEdit.tgl_lahir_penitip) {
-      // Pastikan format tanggal sesuai dengan input type="date" (YYYY-MM-DD)
-      formattedDate = new Date(penitipToEdit.tgl_lahir_penitip)
-        .toISOString()
-        .split("T")[0];
+  const handleEditPenitip = (id) => {
+    const penitipToEdit = penitip.find(p => p.id_penitip === id);
+    if (penitipToEdit) {
+      setEditId(id);
+      let formattedDate = "";
+      if (penitipToEdit.tgl_lahir_penitip) {
+        formattedDate = new Date(penitipToEdit.tgl_lahir_penitip).toISOString().split("T")[0];
+      }
+      setNewPenitip({
+        nama_penitip: penitipToEdit.nama_penitip || "",
+        email_penitip: penitipToEdit.email_penitip || "",
+        password_penitip: "",
+        tgl_lahir_penitip: formattedDate,
+        no_telepon_penitip: penitipToEdit.no_telepon_penitip || "",
+        nik_penitip: penitipToEdit.nik_penitip || "",
+        foto_ktp_penitip: null,
+        rating_penitip: penitipToEdit.rating_penitip || 0,
+        pendapatan_penitip: penitipToEdit.pendapatan_penitip || 0,
+        bonus_terjual_cepat: penitipToEdit.bonus_terjual_cepat || 0,
+        reward_program_sosial: penitipToEdit.reward_program_sosial || 0,
+      });
+      setPreviewImage(penitipToEdit.foto_ktp_penitip ? 
+        `http://127.0.0.1:8000/storage/${penitipToEdit.foto_ktp_penitip.replace('public/', '')}` : 
+        null);
+      setShowModal(true);
     }
-    
-    setNewPenitip({
-      nama_penitip: penitipToEdit.nama_penitip || "",
-      email_penitip: penitipToEdit.email_penitip || "",
-      password_penitip: "", // Kosongkan password untuk keamanan
-      tgl_lahir_penitip: formattedDate,
-      no_telepon_penitip: penitipToEdit.no_telepon_penitip || "",
-      nik_penitip: penitipToEdit.nik_penitip || "",
-      foto_ktp_penitip: null, // File tidak bisa diisi ulang
-    });
-    
-    setPreviewImage(penitipToEdit.foto_ktp_penitip ? 
-      `http://127.0.0.1:8000/storage/${penitipToEdit.foto_ktp_penitip.replace('public/', '')}` : 
-      null);
-      
-    setShowModal(true);
   };
 
   const handleLogout = () => {
@@ -199,7 +182,7 @@ const CSDashboard = () => {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setEditIndex(null); // Reset ke mode "tambah"
+    setEditId(null);
     setPreviewImage(null);
     setNewPenitip({
       nama_penitip: "",
@@ -209,10 +192,13 @@ const CSDashboard = () => {
       no_telepon_penitip: "",
       nik_penitip: "",
       foto_ktp_penitip: null,
+      rating_penitip: 0,
+      pendapatan_penitip: 0,
+      bonus_terjual_cepat: 0,
+      reward_program_sosial: 0,
     });
   };
 
-  // Handle search function
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -221,7 +207,6 @@ const CSDashboard = () => {
     setSearchTerm("");
   };
 
-  // Filter penitip based on search term
   const filteredPenitip = penitip.filter((item) => {
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -232,10 +217,8 @@ const CSDashboard = () => {
     );
   });
 
-  // Highlight search term in text
   const highlightMatch = (text, term) => {
     if (!term || !text) return text;
-    
     const parts = text.toString().split(new RegExp(`(${term})`, 'gi'));
     return parts.map((part, index) => 
       part.toLowerCase() === term.toLowerCase() ? 
@@ -245,7 +228,6 @@ const CSDashboard = () => {
 
   return (
     <div className="cs-dashboard">
-      {/* Navbar */}
       <nav className="navbar">
         <div className="logo">
           <span>ReUseMart</span>
@@ -253,25 +235,23 @@ const CSDashboard = () => {
         <ul className="nav-links">
           <li>
             <button onClick={handleLogout} className="logout-btn">
-              <i className="fas fa-sign-out-alt"></i>Keluar</button>
+              <i className="fas fa-sign-out-alt"></i>Keluar
+            </button>
           </li>
         </ul>
       </nav>
 
-       {/* Dashboard Content */}
-       <div className="dashboard-container">
+      <div className="dashboard-container">
         <div className="dashboard-header">
           <h2>Dashboard Customer Service</h2>
           <p className="welcome-text">Selamat datang, {csProfile?.nama_pegawai || "Customer Service"}</p>
         </div>
 
         <div className="dashboard-grid">
-          {/* Profil CS Panel */}
           <div className="dashboard-panel">
             <div className="panel-header">
               <h3>Profil Customer Service</h3>
             </div>
-            
             {loading ? (
               <div className="loading-container">
                 <div className="loading-spinner"></div>
@@ -308,7 +288,6 @@ const CSDashboard = () => {
             )}
           </div>
 
-          {/* Manajemen Penitip Panel */}
           <div className="dashboard-panel penitip-panel">
             <div className="panel-header">
               <h3>Manajemen Penitip</h3>
@@ -316,7 +295,28 @@ const CSDashboard = () => {
                 <i className="fas fa-plus"></i> Tambah Penitip
               </button>
             </div>
-            
+            <div className="search-container">
+              <i className="fas fa-search search-icon"></i>
+              <input 
+                type="text" 
+                placeholder="Cari penitip berdasarkan nama, email, telepon, atau NIK" 
+                className="search-input"
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+              {searchTerm && (
+                <button className="clear-search" onClick={clearSearch}>
+                  <i className="fas fa-times"></i>
+                </button>
+              )}
+            </div>
+
+            {searchTerm && (
+              <div className="search-results-info">
+                Menampilkan {filteredPenitip.length} dari {penitip.length} penitip
+              </div>
+            )}
+
             {loading ? (
               <div className="loading-container">
                 <div className="loading-spinner"></div>
@@ -327,7 +327,7 @@ const CSDashboard = () => {
                 <i className="fas fa-exclamation-circle"></i>
                 <p>{error}</p>
               </div>
-            ) : penitip.length > 0 ? (
+            ) : filteredPenitip.length > 0 ? (
               <div className="penitip-table-container">
                 <table className="penitip-table">
                   <thead>
@@ -341,19 +341,19 @@ const CSDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {penitip.map((item, index) => (
+                    {filteredPenitip.map((item) => (
                       <tr key={item.id_penitip}>
-                        <td>{item.nama_penitip}</td>
-                        <td>{item.email_penitip}</td>
-                        <td>{item.no_telepon_penitip}</td>
-                        <td>{item.nik_penitip}</td>
+                        <td>{highlightMatch(item.nama_penitip, searchTerm)}</td>
+                        <td>{highlightMatch(item.email_penitip, searchTerm)}</td>
+                        <td>{highlightMatch(item.no_telepon_penitip, searchTerm)}</td>
+                        <td>{highlightMatch(item.nik_penitip, searchTerm)}</td>
                         <td>
                           {item.tgl_lahir_penitip
                             ? new Date(item.tgl_lahir_penitip).toLocaleDateString('id-ID')
                             : '-'}
                         </td>
                         <td className="action-buttons">
-                          <button className="edit-btn" onClick={() => handleEditPenitip(index)}>
+                          <button className="edit-btn" onClick={() => handleEditPenitip(item.id_penitip)}>
                             <i className="fas fa-edit">Edit</i>
                           </button>
                           <button className="delete-btn" onClick={() => handleDeletePenitip(item.id_penitip)}>
@@ -380,17 +380,15 @@ const CSDashboard = () => {
         </div>
       </div>
 
-      {/* Modal Tambah / Edit Penitip */}
       {showModal && (
         <div className="modal">
           <div className="modal-content">
             <div className="modal-header">
-              <h3>{editIndex !== null ? "Edit Data Penitip" : "Tambah Penitip"}</h3>
+              <h3>{editId !== null ? "Edit Data Penitip" : "Tambah Penitip"}</h3>
               <button className="close-btn" onClick={handleCloseModal}>
                 <i className="fas fa-times"></i>
               </button>
             </div>
-            
             <form onSubmit={handleAddOrUpdatePenitip}>
               <div className="form-grid">
                 <div className="form-group">
@@ -406,7 +404,6 @@ const CSDashboard = () => {
                     required
                   />
                 </div>
-                
                 <div className="form-group">
                   <label htmlFor="email_penitip">
                     <i className="fas fa-envelope"></i> Email
@@ -420,21 +417,19 @@ const CSDashboard = () => {
                     required
                   />
                 </div>
-                
                 <div className="form-group">
                   <label htmlFor="password_penitip">
-                    <i className="fas fa-lock"></i> {editIndex !== null ? "Password (Kosongkan jika tidak diubah)" : "Password"}
+                    <i className="fas fa-lock"></i> {editId !== null ? "Password (Kosongkan jika tidak diubah)" : "Password"}
                   </label>
                   <input
                     type="password"
                     id="password_penitip"
-                    placeholder={editIndex !== null ? "Kosongkan jika tidak diubah" : "Masukkan password"}
+                    placeholder={editId !== null ? "Kosongkan jika tidak diubah" : "Masukkan password"}
                     value={newPenitip.password_penitip}
                     onChange={(e) => setNewPenitip({ ...newPenitip, password_penitip: e.target.value })}
-                    required={editIndex === null} // Hanya required jika menambah baru
+                    required={editId === null}
                   />
                 </div>
-                
                 <div className="form-group">
                   <label htmlFor="no_telepon_penitip">
                     <i className="fas fa-phone"></i> Nomor Telepon
@@ -448,7 +443,6 @@ const CSDashboard = () => {
                     required
                   />
                 </div>
-                
                 <div className="form-group">
                   <label htmlFor="tgl_lahir_penitip">
                     <i className="fas fa-calendar-alt"></i> Tanggal Lahir
@@ -461,7 +455,6 @@ const CSDashboard = () => {
                     required
                   />
                 </div>
-                
                 <div className="form-group">
                   <label htmlFor="nik_penitip">
                     <i className="fas fa-id-card"></i> NIK
@@ -476,12 +469,10 @@ const CSDashboard = () => {
                   />
                 </div>
               </div>
-              
               <div className="form-group foto-ktp-container">
                 <label htmlFor="foto_ktp_penitip">
                   <i className="fas fa-image"></i> Foto KTP
                 </label>
-                
                 <div className="foto-ktp-input">
                   <input
                     type="file"
@@ -489,39 +480,36 @@ const CSDashboard = () => {
                     onChange={handleFileChange}
                     accept="image/*"
                     className="file-input"
-                    required={editIndex === null} // Hanya required jika menambah baru
+                    required={false}
                   />
                   <label htmlFor="foto_ktp_penitip" className="file-label">
                     <i className="fas fa-upload"></i>
                     <span>
                       {newPenitip.foto_ktp_penitip ? 
                         newPenitip.foto_ktp_penitip.name : 
-                        editIndex !== null && previewImage ? 
+                        editId !== null && previewImage ? 
                           "Foto KTP sudah ada" : 
-                          "Pilih file foto KTP"}
+                          "Pilih file foto KTP (opsional)"}
                     </span>
                   </label>
                 </div>
-                
                 {previewImage && (
                   <div className="image-preview">
                     <img src={previewImage} alt="Preview KTP" />
                   </div>
                 )}
-                
-                {editIndex !== null && (
+                {editId !== null && (
                   <p className="file-note">
                     <i className="fas fa-info-circle"></i> Biarkan kosong jika tidak ingin mengubah foto KTP
                   </p>
                 )}
               </div>
-              
               <div className="modal-actions">
                 <button type="button" className="cancel-btn" onClick={handleCloseModal}>
                   <i className="fas fa-times"></i> Batal
                 </button>
                 <button type="submit" className="submit-btn">
-                  <i className="fas fa-save"></i> {editIndex !== null ? "Perbarui Data" : "Simpan Data"}
+                  <i className="fas fa-save"></i> {editId !== null ? "Perbarui Data" : "Simpan Data"}
                 </button>
               </div>
             </form>
