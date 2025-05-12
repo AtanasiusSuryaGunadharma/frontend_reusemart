@@ -18,6 +18,8 @@ import RegistrasiOrganisasi from './JSX/Registrasi/Organisasi/registrasiOrganisa
 import DashboardOwner from './JSX/Login/Owner/dashboardOwner.jsx';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick-theme.css";
 
 
 
