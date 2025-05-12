@@ -44,15 +44,11 @@ const LoginPembeli = () => { // <-- Ganti nama komponen menjadi LoginPembeli
         localStorage.setItem("username_pembeli", user.username_pembeli); // Simpan username atau nama
         localStorage.setItem("email_pembeli", user.email_pembeli); // Simpan email
         localStorage.setItem("password_pembeli", user.password_pembeli); // Simpan password
-        // localStorage.setItem("alamat_pembeli", user.alamat_pembeli); // Simpan alamat
         localStorage.setItem("no_telepon_pembeli", user.no_telepon_pembeli); // Simpan no telepon
         localStorage.setItem("poin_loyalitas", user.poin_loyalitas); // Simpan poin
         localStorage.setItem("tgl_lahir_pembeli", user.tgl_lahir_pembeli); // Simpan tanggal lahir
 
-        // ... simpan data pembeli lainnya jika dibutuhkan (poin, no telepon, dll)
-
-        // Redirect ke halaman tujuan setelah sukses login (misal: halaman Shop atau Home)
-        navigate("/"); // <-- Ganti dengan rute halaman tujuan pembeli Anda (misal: /shop, /home, atau /pembeli/dashboard)
+        navigate("/pembeli/dashboard"); // <-- Ganti dengan rute halaman tujuan pembeli Anda (misal: /shop, /home, atau /pembeli/dashboard)
 
       } else {
         // Tangani kasus sukses tapi format response tidak sesuai harapan (kurang token/user)

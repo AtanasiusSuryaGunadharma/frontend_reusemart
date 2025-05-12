@@ -1,44 +1,57 @@
-// src\JSX\Login\Admin\admin.jsx (Modified)
-import React, { useState, useEffect } from "react";
-import "./admin.css";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from 'react-toastify';
-
+import React, { useState, useEffect } from "react"; 
+import "./admin.css"; 
+import { Link, useNavigate } from "react-router-dom"; 
+import axios from "axios"; 
+import { toast } from 'react-toastify'; 
 
 const AdminDashboard = () => {
     // State untuk Manajemen Pegawai
     const [employees, setEmployees] = useState([]);
-    const [adminProfile, setAdminProfile] = useState(null); // Profil admin/pegawai yang login
-    const [newEmployee, setNewEmployee] = useState({ // State form tambah pegawai
+    const [adminProfile, setAdminProfile] = useState(null);
+    const [newEmployee, setNewEmployee] = useState({
         nama_pegawai: "", email_pegawai: "", password_pegawai: "",
         tgl_lahir_pegawai: "", no_telepon_pegawai: "", pegawai_id_jabatan: "",
     });
-    const [editEmployeeIndex, setEditEmployeeIndex] = useState(null); // Index pegawai yang diedit
-    const [showEmployeeModal, setShowEmployeeModal] = useState(false); // Status modal pegawai
+    const [editEmployeeIndex, setEditEmployeeIndex] = useState(null);
+    const [showEmployeeModal, setShowEmployeeModal] = useState(false);
+    const [searchTermEmployee, setSearchTermEmployee] = useState(''); // State baru untuk pencarian pegawai
 
-    // State BARU untuk Manajemen Organisasi
-    const [organizations, setOrganizations] = useState([]); // Menyimpan data organisasi dari API
-    const [searchTerm, setSearchTerm] = useState(''); // State untuk input pencarian organisasi
+    // State untuk Manajemen Organisasi
+    const [organizations, setOrganizations] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [editingOrganization, setEditingOrganization] = useState(null);
+    const [showOrganizationModal, setShowOrganizationModal] = useState(false);
 
-    // State untuk Modal Edit Organisasi
-    const [editingOrganization, setEditingOrganization] = useState(null); // Data organisasi yang sedang diedit (object atau null)
-    const [showOrganizationModal, setShowOrganizationModal] = useState(false); // Status buka/tutup modal organisasi
-
-    // State BARU untuk menyimpan role user dari local storage
+    // State untuk menyimpan role user dari local storage
     const [userRoleState, setUserRoleState] = useState(null);
 
-
     const navigate = useNavigate();
+
+    // Fungsi untuk fetch data pegawai dari backend
+    const fetchEmployees = async (token, search = '') => {
+        try {
+            const response = await axios.get(`http://127.0.0.1:8000/api/pegawai`, {
+                headers: { Authorization: `Bearer ${token}` },
+                params: { search: search } // Kirim searchTerm sebagai query parameter
+            });
+            setEmployees(response.data); // Update state pegawai
+        } catch (err) {
+            console.error("Error fetching employees:", err);
+            toast.error("Gagal memuat data pegawai.");
+            if (err.response && err.response.status === 401) {
+                handleLogout();
+            }
+        }
+    };
 
     // Fungsi untuk fetch data organisasi dari backend
     const fetchOrganizations = async (token, search = '') => {
         try {
             const response = await axios.get(`http://127.0.0.1:8000/api/organisasi`, {
                 headers: { Authorization: `Bearer ${token}` },
-                params: { search: search } // Kirim searchTerm sebagai query parameter
+                params: { search: search }
             });
-            setOrganizations(response.data); // Update state organisasi
+            setOrganizations(response.data);
         } catch (err) {
             console.error("Error fetching organizations:", err);
             toast.error("Gagal memuat data organisasi.");
@@ -48,23 +61,19 @@ const AdminDashboard = () => {
         }
     };
 
-
     // useEffect untuk cek role dan fetch data awal
     useEffect(() => {
         const token = localStorage.getItem("authToken");
         const id_pegawai = localStorage.getItem("id_pegawai");
-        const role = localStorage.getItem("userRole"); // <-- Ambil role dari local storage
+        const role = localStorage.getItem("userRole");
 
-        // Simpan role di state
-        setUserRoleState(role); // <-- Set state role
+        setUserRoleState(role);
 
-        // Cek role untuk pengamanan rute
-        if (!token || !role || !['admin', 'manager'].includes(role)) { // <-- Gunakan role dari local storage
+        if (!token || !role || !['admin', 'manager'].includes(role)) {
             navigate("/generalLogin");
             toast.error("Anda tidak memiliki akses ke halaman ini atau sesi berakhir.");
             return;
         }
-
 
         const fetchData = async () => {
             try {
@@ -75,14 +84,10 @@ const AdminDashboard = () => {
                 setAdminProfile(profileResponse.data);
 
                 // Fetch Data Pegawai
-                const employeesResponse = await axios.get("http://127.0.0.1:8000/api/pegawai", {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setEmployees(employeesResponse.data);
+                await fetchEmployees(token);
 
-                // Fetch Data Organisasi (tanpa parameter search di awal)
+                // Fetch Data Organisasi
                 await fetchOrganizations(token);
-
 
             } catch (err) {
                 console.error("Error fetching initial data:", err);
@@ -93,26 +98,30 @@ const AdminDashboard = () => {
             }
         };
 
-        // Panggil fetchData hanya jika sudah lolos cek token dan role awal
-         if (token && role && ['admin', 'manager'].includes(role)) {
-             fetchData();
-         }
+        if (token && role && ['admin', 'manager'].includes(role)) {
+            fetchData();
+        }
+    }, [navigate]);
 
-    }, [navigate]); // Dependency array
-
+    // Handler untuk input pencarian pegawai
+    const handleSearchEmployeeChange = (e) => {
+        setSearchTermEmployee(e.target.value);
+        const token = localStorage.getItem("authToken");
+        if (token) {
+            fetchEmployees(token, e.target.value);
+        }
+    };
 
     // Handler untuk input pencarian organisasi
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
         const token = localStorage.getItem("authToken");
         if (token) {
-            // Panggil fetchOrganizations dengan searchTerm yang baru
             fetchOrganizations(token, e.target.value);
         }
     };
 
-
-    // Handler Form Pegawai (kode sudah ada, hanya penyesuaian nama state/fungsi)
+    // Handler Form Pegawai
     const handleAddOrUpdateEmployee = async (e) => {
         e.preventDefault();
         const token = localStorage.getItem("authToken");
@@ -149,7 +158,8 @@ const AdminDashboard = () => {
             await axios.delete(`http://127.0.0.1:8000/api/pegawai/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setEmployees(employees.filter((emp) => emp.id_pegawai !== id));
+            // Fetch ulang pegawai setelah delete agar daftar terupdate dengan hasil search saat ini
+            fetchEmployees(token, searchTermEmployee);
             toast.success("Pegawai berhasil dihapus.");
         } catch (err) {
             console.error("Error deleting employee:", err);
@@ -163,8 +173,8 @@ const AdminDashboard = () => {
         setNewEmployee({
             nama_pegawai: employees[index].nama_pegawai,
             email_pegawai: employees[index].email_pegawai,
-            password_pegawai: "", // Kosongkan password saat edit
-            tgl_lahir_pegawai: employees[index].tgl_lahir_pegawai ? employees[index].tgl_lahir_pegawai.split('T')[0] : '', // Format<ctrl97>-MM-DD
+            password_pegawai: "",
+            tgl_lahir_pegawai: employees[index].tgl_lahir_pegawai ? employees[index].tgl_lahir_pegawai.split('T')[0] : '',
             no_telepon_pegawai: employees[index].no_telepon_pegawai,
             pegawai_id_jabatan: employees[index].pegawai_id_jabatan || '',
         });
@@ -180,12 +190,11 @@ const AdminDashboard = () => {
         });
     };
 
-
     // Handler untuk update data Organisasi
     const handleEditOrganization = (organization) => {
         setEditingOrganization({
             ...organization,
-            password_organisasi: "", // Kosongkan password saat edit
+            password_organisasi: "",
         });
         setShowOrganizationModal(true);
     };
@@ -199,7 +208,6 @@ const AdminDashboard = () => {
             await axios.delete(`http://127.0.0.1:8000/api/organisasi/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            // Fetch ulang organisasi setelah delete agar daftar terupdate dengan hasil search saat ini
             fetchOrganizations(token, searchTerm);
             toast.success("Organisasi berhasil dihapus.");
         } catch (err) {
@@ -230,8 +238,6 @@ const AdminDashboard = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            console.log("Organization update successful:", response.data);
-            // Fetch ulang organisasi setelah update agar daftar terupdate dengan hasil search saat ini
             fetchOrganizations(token, searchTerm);
             toast.success(response.data.message || "Organisasi berhasil diperbarui.");
 
@@ -248,7 +254,6 @@ const AdminDashboard = () => {
         setShowOrganizationModal(false);
         setEditingOrganization(null);
     };
-
 
     const handleLogout = () => {
         localStorage.removeItem("userRole");
@@ -270,9 +275,7 @@ const AdminDashboard = () => {
         toast.info("Anda telah logout.");
     };
 
-    // Tentukan apakah user adalah admin atau manager untuk menampilkan bagian manajemen
     const isAdminOrManager = userRoleState && ['admin', 'manager'].includes(userRoleState);
-
 
     return (
         <div className="admin-dashboard">
@@ -283,10 +286,8 @@ const AdminDashboard = () => {
                 </div>
                 <ul className="nav-links">
                     <li><Link to="/admin/dashboard">Dashboard</Link></li>
-                    {/* Link profil mungkin perlu disesuaikan berdasarkan role admin */}
-                    <li><Link to="/admin/profile">Profil</Link></li> {/* Asumsikan ada rute ini */}
+                    <li><Link to="/admin/profile">Profil</Link></li>
                     <li><button onClick={handleLogout}>Logout</button></li>
-
                 </ul>
             </nav>
 
@@ -302,75 +303,79 @@ const AdminDashboard = () => {
                             <p><strong>ID:</strong> {adminProfile.id_pegawai}</p>
                             <p><strong>Nama:</strong> {adminProfile.nama_pegawai}</p>
                             <p><strong>Email:</strong> {adminProfile.email_pegawai}</p>
-                            {/* Tampilkan jabatan jika ada relasi yang diload */}
                             <p><strong>Jabatan:</strong> {adminProfile.jabatan?.nama_jabatan || 'Tidak Ada'}</p>
-                            {/* Tampilkan role yang digunakan untuk conditional rendering */}
-                             <p><strong>Role Sistem:</strong> {userRoleState || 'Tidak Diketahui'}</p>
+                            <p><strong>Role Sistem:</strong> {userRoleState || 'Tidak Diketahui'}</p>
                         </div>
                     ) : (
                         <p>Memuat profil...</p>
                     )}
-                    {/* Link edit profil */}
-                    {/* <Link to="/admin/profile" className="profile-link">Edit Profil</Link> */}
                 </div>
 
                 {/* Bagian Manajemen Pegawai */}
                 {isAdminOrManager && (
-                  <div className="dashboard-section">
-                    {/* BUNGKUS JUDUL DAN TOMBOL DALAM DIV BARU */}
-                    <div className="section-header"> {/* <-- Tambahkan div baru */}
-                      <h3>Manajemen Pegawai</h3> {/* Judul */}
-                      {/* UNCOMMENT tombol Tambah Pegawai */}
-                      <button
-                        className="add-employee-btn"
-                        onClick={() => {
-                          setEditEmployeeIndex(null); // Pastikan mode 'add'
-                          setNewEmployee({
-                            // Reset form
-                            nama_pegawai: "",
-                            email_pegawai: "",
-                            password_pegawai: "",
-                            tgl_lahir_pegawai: "",
-                            no_telepon_pegawai: "",
-                            pegawai_id_jabatan: "",
-                          });
-                          setShowEmployeeModal(true); // Tampilkan modal pegawai
-                        }}
-                      >
-                        Tambah Pegawai
-                      </button> {/* Tombol */}
-                    </div> {/* <-- Tutup div baru */}
+                    <div className="dashboard-section">
+                        <div className="section-header">
+                            <h3>Manajemen Pegawai</h3>
+                            <button
+                                className="add-employee-btn"
+                                onClick={() => {
+                                    setEditEmployeeIndex(null);
+                                    setNewEmployee({
+                                        nama_pegawai: "",
+                                        email_pegawai: "",
+                                        password_pegawai: "",
+                                        tgl_lahir_pegawai: "",
+                                        no_telepon_pegawai: "",
+                                        pegawai_id_jabatan: "",
+                                    });
+                                    setShowEmployeeModal(true);
+                                }}
+                            >
+                                Tambah Pegawai
+                            </button>
+                        </div>
 
-                    <p>Daftar Pegawai:</p> {/* Ini tetap di bawah */}
-                    <div className="employee-list">
-                      {/* ... Daftar Pegawai JSX ... */}
-                      {employees.length > 0 ? (
-                        employees.map((emp, index) => (
-                          <div key={emp.id_pegawai} className="employee-card">
-                            <span>
-                              {emp.nama_pegawai} - {emp.jabatan?.nama_jabatan || "Tidak Ada"} (
-                              {emp.email_pegawai})
-                            </span>
-                            <div>
-                              <button onClick={() => handleEditEmployee(index)}>Edit</button>
-                              <button onClick={() => handleDeleteEmployee(emp.id_pegawai)}>Hapus</button>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <p>Tidak ada data pegawai.</p>
-                      )}
+                        {/* Input Search Pegawai */}
+                        <div className="search-bar">
+                            <input
+                                type="text"
+                                placeholder="Cari Nama Pegawai..."
+                                value={searchTermEmployee}
+                                onChange={handleSearchEmployeeChange}
+                            />
+                        </div>
+
+                        <p>Daftar Pegawai:</p>
+                        <div className="employee-list" style={{ marginTop: '1rem' }}>
+                            {employees.length > 0 ? (
+                                employees.map((emp, index) => (
+                                    <div key={emp.id_pegawai} className="employee-card">
+                                        <span>
+                                            {emp.nama_pegawai} - {emp.jabatan?.nama_jabatan || "Tidak Ada"} (
+                                            {emp.email_pegawai})
+                                        </span>
+                                        <div>
+                                            <button onClick={() => handleEditEmployee(index)}>Edit</button>
+                                            <button onClick={() => handleDeleteEmployee(emp.id_pegawai)}>Hapus</button>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                searchTermEmployee !== '' ? (
+                                    <p>Tidak ditemukan pegawai dengan nama "{searchTermEmployee}".</p>
+                                ) : (
+                                    <p>Tidak ada data pegawai.</p>
+                                )
+                            )}
+                        </div>
                     </div>
-                  </div>
                 )}
 
                 {/* Bagian Manajemen Organisasi */}
-                {/* Tampilkan bagian ini hanya jika userRoleState adalah admin atau manager */}
-                 {isAdminOrManager && (
+                {isAdminOrManager && (
                     <div className="dashboard-section">
                         <h3>Manajemen Organisasi</h3>
-                        {/* Input Search Organisasi */}
-                        <div className="search-bar"> {/* style marginBottom dipindahkan ke sini */}
+                        <div className="search-bar">
                             <input
                                 type="text"
                                 placeholder="Cari Nama Organisasi..."
@@ -379,8 +384,7 @@ const AdminDashboard = () => {
                             />
                         </div>
 
-                        {/* Daftar Organisasi */}
-                        <div className="organization-list" style={{ marginTop: '1rem' }}> {/* style marginTop dipindahkan ke sini */}
+                        <div className="organization-list" style={{ marginTop: '1rem' }}>
                             {organizations.length > 0 ? (
                                 organizations.map(org => (
                                     <div key={org.id_organisasi} className="organization-card employee-card">
@@ -400,32 +404,29 @@ const AdminDashboard = () => {
                             )}
                         </div>
                     </div>
-                 )}
-
+                )}
             </div>
 
             {/* Modal Tambah / Edit Pegawai */}
             {showEmployeeModal && (
-                 <div className="modal">
+                <div className="modal">
                     <div className="modal-content">
-                         <h3>{editEmployeeIndex !== null ? "Edit Pegawai" : "Tambah Pegawai"}</h3>
-                         <form onSubmit={handleAddOrUpdateEmployee}>
-                             {/* Input fields pegawai */}
+                        <h3>{editEmployeeIndex !== null ? "Edit Pegawai" : "Tambah Pegawai"}</h3>
+                        <form onSubmit={handleAddOrUpdateEmployee}>
                             <input type="text" placeholder="Nama" name="nama_pegawai" value={newEmployee.nama_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, nama_pegawai: e.target.value })} required />
                             <input type="email" placeholder="Email" name="email_pegawai" value={newEmployee.email_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, email_pegawai: e.target.value })} required />
                             <input type="password" placeholder="Password" name="password_pegawai" value={newEmployee.password_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, password_pegawai: e.target.value })} required={editEmployeeIndex === null || newEmployee.password_pegawai !== ""} />
                             <input type="date" placeholder="Tanggal Lahir" name="tgl_lahir_pegawai" value={newEmployee.tgl_lahir_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, tgl_lahir_pegawai: e.target.value })} required />
                             <input type="text" placeholder="Nomor Telepon" name="no_telepon_pegawai" value={newEmployee.no_telepon_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, no_telepon_pegawai: e.target.value })} required />
-                            {/* Ganti input text ini jika Anda punya dropdown jabatan */}
                             <input type="text" placeholder="ID Jabatan" name="pegawai_id_jabatan" value={newEmployee.pegawai_id_jabatan} onChange={(e) => setNewEmployee({ ...newEmployee, pegawai_id_jabatan: e.target.value })} required />
 
-                             <div className="modal-actions">
-                                 <button type="submit">{editEmployeeIndex !== null ? "Perbarui Pegawai" : "Tambah Pegawai"}</button>
-                                 <button type="button" onClick={handleCloseEmployeeModal}>Tutup</button>
-                             </div>
-                         </form>
+                            <div className="modal-actions">
+                                <button type="submit">{editEmployeeIndex !== null ? "Perbarui Pegawai" : "Tambah Pegawai"}</button>
+                                <button type="button" onClick={handleCloseEmployeeModal}>Tutup</button>
+                            </div>
+                        </form>
                     </div>
-                 </div>
+                </div>
             )}
 
             {/* Modal Edit Organisasi */}
@@ -448,7 +449,6 @@ const AdminDashboard = () => {
                     </div>
                 </div>
             )}
-
         </div>
     );
 };
