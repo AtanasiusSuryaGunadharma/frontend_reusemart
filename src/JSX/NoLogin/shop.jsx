@@ -92,10 +92,8 @@ const Shop = () => {
         <ul className="nav-links">
           <li><Link to="/">Home</Link></li>
           <li><Link to="/shop">Shop</Link></li>
+          <li><Link to="/generalLogin">Login</Link></li>
         </ul>
-        <div className="login-link">
-          <Link to="/generalLogin">Login</Link> {/* Tombol Login */}
-        </div>
       </nav>
 
       {/* Search and Category Filter */}

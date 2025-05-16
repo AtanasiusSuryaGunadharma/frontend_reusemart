@@ -1,0 +1,42 @@
+/* src\JSX\Login\PegawaiGudang\dashboardPegawaiGudang.css */
+/* Salin gaya umum dashboard dari src\JSX\Login\Admin\admin.css atau dashboardOwner.css */
+
+/* Contoh: */
+/* Gunakan nama class container utama yang lebih spesifik */
+.pegawai-gudang-dashboard-page { /* <-- Ganti nama class */
+    display: flex;
+    flex-direction: column;
+    background: #f9f9f9; /* Sesuaikan background */
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Re-use gaya navbar, container dashboard, section, dan profile details */
+/* Pastikan class-class ini disalin dari admin.css atau dashboardOwner.css */
+.navbar { /* ... */ }
+.navbar .logo span { /* ... */ }
+.nav-links { /* ... */ }
+.nav-links li a { /* ... */ }
+.logout-btn { /* ... */ } /* Pastikan gaya logout-btn disalin */
+
+.dashboard-container { /* ... */ }
+.dashboard-container h2 { /* ... */ }
+
+.dashboard-section { /* ... */ }
+.dashboard-section h3 { /* ... */ }
+
+.profile-details { /* ... */ }
+.profile-details p { /* ... */ }
+.profile-details p strong { /* ... */ } /* Gaya untuk label bold */
+
+
+/* Hapus atau abaikan gaya-gaya yang tidak relevan untuk tampilan profil saja */
+/* .request-list, .request-card, .history-list, .history-card, .penitip-table-container, .penitip-table, .modal, .modal-content, dll. */
+
+/* Re-use gaya loading dan error */
+/* .loading-state, .error-state { ... } */
+/* .loading-container, .loading-spinner { ... } */
+
+/* Re-use gaya responsif jika diperlukan */
+/* @media (max-width: 768px) { ... } */
