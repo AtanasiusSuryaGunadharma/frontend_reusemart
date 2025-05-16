@@ -92,5 +92,43 @@
     font-size: 0.9rem;
     color: #666;
 }
+.profile-table, .transaction-table, .transaction-detail-table {
+width: 100%;
+border-collapse: collapse;
+margin-bottom: 1.5rem;
+background-color: white;
+ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+border-radius: 8px;
+overflow: hidden;
+}
 
-/* ... (gaya responsif jika diperlukan) ... */
+.profile-table td, .transaction-table td, .transaction-table th,
+.transaction-detail-table td, .transaction-detail-table th {
+border: 1px solid #ddd;
+padding: 10px;
+text-align: left;
+}
+
+.profile-table tr:nth-child(even),
+.transaction-table tr:nth-child(even),
+.transaction-detail-table tr:nth-child(even) {
+ background-color: #f9f9f9;
+}
+
+.profile-table th, .transaction-table th, .transaction-detail-table th {
+background-color: #f2f2f2;
+font-weight: bold;
+}
+
+.transaction-table-wrapper {
+ margin-bottom: 2rem;
+}
+
+.transaction-table-wrapper h4 {
+ margin-bottom: 0.5rem;
+}
+
+.transaction-table-wrapper h5 {
+ margin-top: 1rem;
+margin-bottom: 0.
+}

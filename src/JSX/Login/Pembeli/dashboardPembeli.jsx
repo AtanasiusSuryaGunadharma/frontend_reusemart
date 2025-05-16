@@ -11,11 +11,11 @@ const PembeliDashboard = () => {
     const [pembeliProfile, setPembeliProfile] = useState(null);
     // State untuk daftar alamat Pembeli
     const [addresses, setAddresses] = useState([]);
-    // State BARU untuk input pencarian alamat
+    // State untuk input pencarian alamat
     const [searchTermAddress, setSearchTermAddress] = useState('');
 
-    // State BARU untuk diskusi produk Pembeli
-    const [myDiscussions, setMyDiscussions] = useState([]); // <-- State baru untuk diskusi pembeli
+    // State untuk diskusi produk Pembeli
+    const [myDiscussions, setMyDiscussions] = useState([]);
     const [showAddDiscussionModal, setShowAddDiscussionModal] = useState(false); // Modal tambah diskusi
     const [discussionFormData, setDiscussionFormData] = useState({ // State form diskusi
         komentar_pembeli: '',
@@ -32,26 +32,28 @@ const PembeliDashboard = () => {
     const [addressFormData, setAddressFormData] = useState({
         alamat_lengkap: "",
     });
-    // State loading dan error (bisa dipisah per section kalau mau lebih detail)
+    // State loading dan error
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     const navigate = useNavigate();
 
-    // Handler Logout (sama seperti sebelumnya)
+    // Handler Logout
     const handleLogout = () => {
-        // ... (kode logout sama) ...
         localStorage.removeItem("userRole");
         localStorage.removeItem("authToken");
         localStorage.removeItem("id_pembeli");
+        localStorage.removeItem("nama_pembeli"); // Pastikan nama_pembeli juga dihapus
         localStorage.removeItem("username_pembeli");
         localStorage.removeItem("email_pembeli");
         localStorage.removeItem("password_pembeli");
         localStorage.removeItem("no_telepon_pembeli");
         localStorage.removeItem("poin_loyalitas");
         localStorage.removeItem("tgl_lahir_pembeli");
+
+        // Hapus juga data role lain jika ada (penting untuk keamanan)
         localStorage.removeItem("id_pegawai");
-        localStorage.removeItem("name");
+        localStorage.removeItem("name"); // Ini mungkin nama pegawai/admin
         localStorage.removeItem("jabatan");
         localStorage.removeItem("id_organisasi");
         localStorage.removeItem("nama_organisasi");
@@ -59,12 +61,13 @@ const PembeliDashboard = () => {
         localStorage.removeItem("id_penitip");
         localStorage.removeItem("email_penitip");
         localStorage.removeItem("no_telepon_penitip");
+        localStorage.removeItem("nama_penitip"); // Pastikan nama_penitip juga dihapus
 
         navigate("/generalLogin");
         toast.info("Anda telah logout.");
     };
 
-    // Fetch profil Pembeli (sama seperti sebelumnya)
+    // Fetch profil Pembeli
     const fetchPembeliProfile = async (token, pembeliId) => {
         try {
             const response = await axios.get(`http://127.0.0.1:8000/api/pembeli/${pembeliId}`, {
@@ -73,11 +76,17 @@ const PembeliDashboard = () => {
             setPembeliProfile(response.data);
         } catch (err) {
             console.error("Error fetching pembeli profile:", err);
-            if (err.response?.status === 401) handleLogout();
+            // Jika 401, coba logout
+            if (err.response?.status === 401) {
+                 toast.error("Sesi Anda telah berakhir. Silakan login kembali.");
+                 handleLogout();
+            } else {
+                setError("Gagal memuat profil.");
+            }
         }
     };
 
-    // Fetch daftar alamat (sama seperti sebelumnya)
+    // Fetch daftar alamat
     const fetchPembeliAddresses = async (token, search = '') => {
         try {
             const response = await axios.get(`http://127.0.0.1:8000/api/alamat`, {
@@ -85,15 +94,27 @@ const PembeliDashboard = () => {
                 params: { search: search }
             });
             console.log("Fetched addresses:", response.data);
-            setAddresses(response.data);
+            // Pastikan response.data adalah array atau memiliki property 'data' yang array
+            if (Array.isArray(response.data)) {
+                setAddresses(response.data);
+            } else if (response.data && Array.isArray(response.data.data)) {
+                setAddresses(response.data.data); // Handle jika data di property 'data'
+            } else {
+                console.error("Unexpected address data format:", response.data);
+                setAddresses([]); // Kosongkan daftar jika format tidak sesuai
+            }
         } catch (err) {
             console.error("Error fetching addresses:", err.response?.data || err.message);
-            setError("Gagal memuat daftar alamat.");
-            if (err.response?.status === 401) handleLogout();
+             if (err.response?.status === 401) {
+                 toast.error("Sesi Anda telah berakhir. Silakan login kembali.");
+                 handleLogout();
+            } else {
+                setError("Gagal memuat daftar alamat.");
+            }
         }
     };
 
-    // Fungsi BARU untuk fetch diskusi produk milik Pembeli
+    // Fungsi untuk fetch diskusi produk milik Pembeli
     const fetchMyDiscussions = async (token) => {
         try {
             const response = await axios.get(`http://127.0.0.1:8000/api/diskusi-produk/my-discussions`, { headers: { Authorization: `Bearer ${token}` } });
@@ -108,18 +129,36 @@ const PembeliDashboard = () => {
                  setMyDiscussions([]); // Kosongkan daftar jika format tidak sesuai
             }
 
-        } catch (err) { console.error("Error fetching my discussions:", err.response?.data || err.message); if (err.response?.status === 401) handleLogout(); }
+        } catch (err) {
+            console.error("Error fetching my discussions:", err.response?.data || err.message);
+             if (err.response?.status === 401) {
+                 toast.error("Sesi Anda telah berakhir. Silakan login kembali.");
+                 handleLogout();
+            } else {
+                 // Ini mungkin bukan error kritis, tampilkan pesan jika perlu tapi jangan kosongkan diskusi jika ada
+                 // setError("Gagal memuat diskusi Anda."); // Opsi: tampilkan error di UI
+                 console.warn("Failed to load discussions, but continuing.");
+            }
+        }
     };
 
-    // Fungsi BARU untuk fetch daftar barang (dengan search) untuk dipilih di modal diskusi
+    // Fungsi untuk fetch daftar barang (dengan search) untuk dipilih di modal diskusi
     const fetchProductsForDiscussion = async (token, search = '') => {
         try {
+            // Mengambil daftar barang yang 'tersedia' atau 'dapat didiskusikan' jika ada endpoint spesifik
+            // Jika tidak ada, gunakan endpoint barang biasa
             const response = await axios.get(`http://127.0.0.1:8000/api/barang`, { headers: { Authorization: `Bearer ${token}` }, params: { search: search } });
             console.log("Fetched products for discussion:", response.data);
             if (Array.isArray(response.data)) { setAvailableProducts(response.data); }
              else if (response.data && Array.isArray(response.data.data)) { setAvailableProducts(response.data.data); }
             else { console.error("Unexpected product data format:", response.data); setAvailableProducts([]); }
-        } catch (err) { console.error("Error fetching products for discussion:", err.response?.data || err.message); if (err.response?.status === 401) handleLogout(); }
+        } catch (err) {
+            console.error("Error fetching products for discussion:", err.response?.data || err.message);
+             if (err.response?.status === 401) {
+                 toast.error("Sesi Anda telah berakhir. Silakan login kembali.");
+                 handleLogout();
+            }
+        }
     };
 
     // Load data saat komponen mount
@@ -138,10 +177,12 @@ const PembeliDashboard = () => {
             setLoading(true);
             setError(null); // Reset error
 
-            await fetchPembeliProfile(token, pembeliId);
-            await fetchPembeliAddresses(token); // Fetch alamat
-
-            await fetchMyDiscussions(token); // <-- Fetch diskusi milik Pembeli
+            // Fetch data secara paralel jika memungkinkan untuk performa lebih baik
+            await Promise.all([
+                 fetchPembeliProfile(token, pembeliId),
+                 fetchPembeliAddresses(token),
+                 fetchMyDiscussions(token)
+            ]);
 
             setLoading(false); // Selesai loading
         };
@@ -150,29 +191,53 @@ const PembeliDashboard = () => {
 
     }, [navigate]); // Dependency array
 
-    // Handler untuk input pencarian alamat (sama seperti sebelumnya)
+     // Efek untuk fetch alamat saat searchTermAddress berubah
+    useEffect(() => {
+         const token = localStorage.getItem('authToken');
+         if (token) {
+             // Opsional: debounce ini jika pencarian API lambat
+             const delayDebounceFn = setTimeout(() => {
+                 fetchPembeliAddresses(token, searchTermAddress);
+             }, 300); // Jeda 300ms setelah user berhenti mengetik
+
+             return () => clearTimeout(delayDebounceFn); // Cleanup debounce timer
+         }
+    }, [searchTermAddress]);
+
+
+    // Handler untuk input pencarian alamat
     const handleSearchAddressChange = (e) => {
-        const searchTerm = e.target.value;
-        setSearchTermAddress(searchTerm);
-        const token = localStorage.getItem("authToken");
-        if (token) { fetchPembeliAddresses(token, searchTerm); }
+        setSearchTermAddress(e.target.value);
+        // Fetching dipindahkan ke useEffect dengan debounce
     };
 
-    // Handler BARU untuk input pencarian barang di modal diskusi (Debounce opsional)
+    // Handler untuk input pencarian barang di modal diskusi (Debounce)
     const handleProductSearchChange = async (e) => {
          const searchTerm = e.target.value;
          setProductSearchTerm(searchTerm); // Update state input search barang
 
-         // Panggil fetch products saat mengetik (dengan debounce opsional jika API lambat)
+         // Panggil fetch products saat mengetik (dengan debounce)
          const token = localStorage.getItem('authToken');
-         if (token && searchTerm.length > 2) { // Trigger search setelah minimal 3 karakter (opsional)
-             await fetchProductsForDiscussion(token, searchTerm);
-         } else if (searchTerm.length === 0) {
-             setAvailableProducts([]); // Kosongkan daftar jika input search kosong
+         if (token) {
+              // Debounce logika di sini atau langsung panggil fetch jika API cepat
+              // Implementasi debounce sederhana:
+              // Anda mungkin perlu useRef untuk menyimpan timeout ID
+              // const debounceTimeoutRef = useRef(null);
+              // clearTimeout(debounceTimeoutRef.current);
+              // debounceTimeoutRef.current = setTimeout(async () => {
+              //    if (searchTerm.length > 1 || searchTerm.length === 0) { // Trigger search setelah minimal 2 karakter
+              //         await fetchProductsForDiscussion(token, searchTerm);
+              //    }
+              // }, 300);
+
+             // Untuk saat ini, panggil langsung, tambahkan debounce jika perlu
+             if (searchTerm.length > 1 || searchTerm.length === 0) {
+                 await fetchProductsForDiscussion(token, searchTerm);
+             }
          }
     };
 
-    // Handler BARU saat barang dipilih dari daftar di modal
+    // Handler saat barang dipilih dari daftar di modal
     const handleProductSelect = (product) => {
         setSelectedProduct(product); // Simpan objek barang yang dipilih
         setDiscussionFormData({ // Set barang_id_diskusi di form data diskusi
@@ -210,7 +275,6 @@ const PembeliDashboard = () => {
              return;
         }
 
-
         const payload = {
             komentar_pembeli: discussionFormData.komentar_pembeli,
             barang_id_diskusi: selectedProduct.id_barang,
@@ -244,7 +308,7 @@ const PembeliDashboard = () => {
         setAvailableProducts([]); // Kosongkan daftar saran saat menutup
     };
 
-    // --- Handler Alamat (kode sama seperti sebelumnya) ---
+    // --- Handler Alamat ---
     // Modal tambah alamat
     const handleAddAddressClick = () => {
         setEditingAddress(null);
@@ -270,6 +334,7 @@ const PembeliDashboard = () => {
             const response = await axios[method](`http://127.0.0.1:8000${url}`, addressFormData, { headers: { Authorization: `Bearer ${token}` } });
             toast.success(response.data.message || (editingAddress ? "Alamat berhasil diperbarui" : "Alamat berhasil ditambahkan"));
             const currentToken = localStorage.getItem('authToken');
+            // Fetch ulang alamat setelah aksi berhasil, pertahankan searchTermAddress
             if(currentToken) { await fetchPembeliAddresses(currentToken, searchTermAddress); }
             handleCloseAddressModal();
         } catch (err) {
@@ -287,6 +352,7 @@ const PembeliDashboard = () => {
             await axios.delete(`http://127.0.0.1:8000/api/alamat/${id}`, { headers: { Authorization: `Bearer ${token}` } });
             toast.success("Alamat berhasil dihapus.");
             const currentToken = localStorage.getItem('authToken');
+            // Fetch ulang alamat setelah hapus, pertahankan searchTermAddress
             if(currentToken) { await fetchPembeliAddresses(currentToken, searchTermAddress); }
         } catch (err) {
             console.error("Error deleting address:", err);
@@ -304,6 +370,11 @@ const PembeliDashboard = () => {
 
     if (loading) return <div className="loading-state">Memuat Dashboard...</div>;
     if (error) return <div className="error-state">Error: {error}</div>;
+    // Pastikan profile dan addresses/discussions tidak null sebelum render
+     if (!pembeliProfile && addresses.length === 0 && myDiscussions.length === 0 && !loading && !error) {
+         return <div className="empty-dashboard">Tidak ada data untuk ditampilkan.</div>; // Atau pesan lain
+     }
+
 
     return (
     <div className="pembeli-dashboard-page">
@@ -314,8 +385,9 @@ const PembeliDashboard = () => {
         </div>
         <ul className="nav-links">
           <li><Link to="/pembeli/dashboard">Dashboard</Link></li>
-          <li><Link to="/shop">Shop</Link></li>
-          <li><button onClick={handleLogout}>Logout</button></li>
+          {/* Link ke halaman shop bisa ditambahkan */}
+          {/* <li><Link to="/shop">Shop</Link></li> */}
+          <li><button onClick={handleLogout} className="logout-btn">Logout</button></li>
         </ul>
       </nav>
 
@@ -326,7 +398,7 @@ const PembeliDashboard = () => {
         {/* Bagian Profil Pembeli */}
         <div className="dashboard-section">
           <h3>Profil Anda</h3>
-          {!loading && !error && pembeliProfile ? (
+          {pembeliProfile ? (
             <div className="profile-details">
               <p><strong>ID:</strong> {pembeliProfile.id_pembeli}</p>
               <p><strong>Nama:</strong> {pembeliProfile.nama_pembeli}</p>
@@ -337,7 +409,7 @@ const PembeliDashboard = () => {
               <p><strong>Poin Reward:</strong> {pembeliProfile.poin_loyalitas}</p>
             </div>
           ) : (
-            !loading && !error && <p>Profil tidak dapat dimuat.</p>
+            <p>Profil tidak dapat dimuat.</p>
           )}
         </div>
 
@@ -349,37 +421,46 @@ const PembeliDashboard = () => {
               Tambah Alamat
             </button>
           </div>
-          <p>Daftar alamat:</p>
-          <div className="search-bar">
-            <input 
-              type="text" 
-              placeholder="Cari Alamat..." 
-              value={searchTermAddress} 
-              onChange={handleSearchAddressChange} 
-              style={{ padding: '0.5rem', width: '100%', borderRadius: '5px', border: '1px solid #ddd' }} 
+          <div className="search-bar" style={{ marginBottom: '1rem' }}>
+            <input
+              type="text"
+              placeholder="Cari Alamat..."
+              value={searchTermAddress}
+              onChange={handleSearchAddressChange}
+              style={{ padding: '0.5rem', width: '100%', borderRadius: '5px', border: '1px solid #ddd' }}
             />
           </div>
-          <div className="address-list employee-list" style={{ marginTop: '1rem' }}>
-            {!loading && !error && (
-              addresses.length > 0 ? (
-                addresses.map(address => (
-                  <div key={address.id_alamat} className="address-card employee-card">
-                    <span>{address.alamat_lengkap}</span>
-                    <div>
-                      <button onClick={() => handleEditAddressClick(address)}>Edit</button>
-                      <button onClick={() => handleDeleteAddress(address.id_alamat)}>Hapus</button>
-                    </div>
-                  </div>
-                ))
+
+          {/* Tampilan Alamat dalam Tabel */}
+          <div className="table-container"> {/* Container untuk overflow horizontal */}
+            {addresses.length > 0 ? (
+              <table className="address-table">
+                <thead>
+                  <tr>
+                    <th>Alamat Lengkap</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {addresses.map(address => (
+                    <tr key={address.id_alamat}>
+                      <td>{address.alamat_lengkap}</td>
+                      <td className="action-buttons">
+                        <button onClick={() => handleEditAddressClick(address)} className="edit-btn">Edit</button>
+                        <button onClick={() => handleDeleteAddress(address.id_alamat)} className="delete-btn">Hapus</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              searchTermAddress !== '' ? (
+                <p>Tidak ditemukan alamat yang cocok dengan "{searchTermAddress}".</p>
               ) : (
-                searchTermAddress !== '' ? (
-                  <p>Tidak ditemukan alamat yang cocok dengan "{searchTermAddress}".</p>
-                ) : (
-                  <p>Anda belum memiliki alamat tersimpan.</p>
-                )
+                <p>Anda belum memiliki alamat tersimpan.</p>
               )
             )}
-          </div>
+          </div> {/* Tutup table-container */}
         </div>
 
         {/* Bagian Diskusi Produk */}
@@ -392,78 +473,84 @@ const PembeliDashboard = () => {
           </div>
           <p>Daftar diskusi Anda:</p>
 
-          {/* Input Search Diskusi (Opsional di sini) */}
-          {/* <div className="search-bar"> ... </div> */}
-
-          {/* Rendering Daftar Diskusi Pembeli */}
-          <div className="discussion-list employee-list" style={{ marginTop: '1rem' }}>
-            {!loading && !error && (
-              myDiscussions.length > 0 ? (
-                myDiscussions.map(discussion => (
-                  <div key={discussion.id_diskusi} className="discussion-card employee-card">
-                    <div className="discussion-item-header" style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      marginBottom: '0.5rem' 
-                    }}>
-                      {discussion.barang?.image && (
-                        <img 
-                          src={`http://127.0.0.1:8000/images/${discussion.barang.image}`} 
-                          alt={discussion.barang.nama_barang || 'Barang'} 
-                          style={{ 
-                            width: '50px', 
-                            height: '50px', 
-                            objectFit: 'cover', 
-                            borderRadius: '4px', 
-                            marginRight: '1rem' 
-                          }} 
-                        />
-                      )}
-                      <div>
-                        <strong>Barang:</strong> {discussion.barang?.nama_barang || 'N/A'}
-                      </div>
-                    </div>
-
-                    <div className="pembeli-comment" style={{ marginBottom: '0.5rem' }}>
-                      <strong>Anda:</strong> {discussion.komentar_pembeli}
-                    </div>
-
-                    {discussion.komentar_pegawai ? (
-                      <div className="cs-reply">
-                        <strong>CS ({discussion.pegawai?.nama_pegawai || 'N/A'}):</strong> {discussion.komentar_pegawai}
-                      </div>
-                    ) : (
-                      <div className="cs-reply-pending" style={{ fontStyle: 'italic', color: '#666' }}>
-                        <em>Menunggu balasan dari CS...</em>
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p>Anda belum mengajukan diskusi produk.</p>
-              )
+          {/* Tampilan Diskusi dalam Tabel */}
+          <div className="table-container"> {/* Container untuk overflow horizontal */}
+            {myDiscussions.length > 0 ? (
+              <table className="discussion-table">
+                <thead>
+                  <tr>
+                    <th>Barang</th>
+                    <th>Komentar Pembeli</th>
+                    <th>Balasan CS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {myDiscussions.map(discussion => (
+                    <tr key={discussion.id_diskusi}>
+                      <td className="product-cell">
+                         {/* Tampilkan Foto dan Nama Barang */}
+                         {discussion.barang ? (
+                             <div className="product-info-cell">
+                                 {discussion.barang.image && (
+                                     <img
+                                         src={`http://127.0.0.1:8000/images/${discussion.barang.image}`}
+                                         alt={discussion.barang.nama_barang || 'Barang'}
+                                         className="product-image-small"
+                                     />
+                                 )}
+                                 <span>{discussion.barang.nama_barang || 'N/A'}</span>
+                             </div>
+                         ) : (
+                             <span>Barang tidak tersedia</span> // Atau pesan lain jika barang terkait dihapus
+                         )}
+                      </td>
+                      <td>{discussion.komentar_pembeli}</td>
+                      <td>
+                        {discussion.komentar_pegawai ? (
+                          <div>
+                            <strong>CS ({discussion.pegawai?.nama_pegawai || 'N/A'}):</strong> {discussion.komentar_pegawai}
+                          </div>
+                        ) : (
+                          <em style={{ color: '#666' }}>Menunggu balasan...</em>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <p>Anda belum mengajukan diskusi produk.</p>
             )}
-          </div>
+          </div> {/* Tutup table-container */}
         </div>
       </div> {/* Tutup dashboard-container */}
 
-      {/* Modal Tambah / Edit Alamat (sama seperti sebelumnya) */}
+      {/* Modal Tambah / Edit Alamat */}
       {showAddressModal && (
         <div className="modal">
           <div className="modal-content">
-            <h3>{editingAddress ? "Edit Alamat" : "Tambah Alamat Baru"}</h3>
+            <div className="modal-header">
+              <h3>{editingAddress ? "Edit Alamat" : "Tambah Alamat Baru"}</h3>
+              <button className="close-btn" onClick={handleCloseAddressModal}>&times;</button> {/* Simbol X */}
+            </div>
             <form onSubmit={handleAddressSubmit}>
-              <input 
-                type="text" 
-                placeholder="Alamat Lengkap" 
-                name="alamat_lengkap" 
-                value={addressFormData.alamat_lengkap} 
-                onChange={(e) => setAddressFormData({ ...addressFormData, alamat_lengkap: e.target.value })} 
-                required 
-              />
+              <div className="form-group">
+                 <label htmlFor="alamat_lengkap">Alamat Lengkap:</label>
+                  <textarea
+                    id="alamat_lengkap"
+                    placeholder="Masukkan alamat lengkap Anda"
+                    name="alamat_lengkap"
+                    value={addressFormData.alamat_lengkap}
+                    onChange={(e) => setAddressFormData({ ...addressFormData, alamat_lengkap: e.target.value })}
+                    required
+                    rows="4"
+                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '0.95rem' }}
+                  ></textarea>
+              </div>
+
               <div className="modal-actions">
-                <button type="submit">{editingAddress ? "Perbarui Alamat" : "Simpan Alamat"}</button>
-                <button type="button" onClick={handleCloseAddressModal}>Batal</button>
+                <button type="button" className="cancel-btn" onClick={handleCloseAddressModal}>Batal</button>
+                <button type="submit" className="submit-btn">{editingAddress ? "Perbarui Alamat" : "Simpan Alamat"}</button>
               </div>
             </form>
           </div>
@@ -476,15 +563,13 @@ const PembeliDashboard = () => {
           <div className="modal-content">
             <div className="modal-header">
               <h3>Tambah Diskusi Produk Baru</h3>
-              <button className="close-btn" onClick={handleCloseAddDiscussionModal}>
-                <i className="fas fa-times"></i>
-              </button>
+              <button className="close-btn" onClick={handleCloseAddDiscussionModal}>&times;</button> {/* Simbol X */}
             </div>
 
             <form onSubmit={handleDiscussionSubmit}>
-              <div className="form-grid">
+              <div className="form-grid"> {/* Use a form grid for better layout */}
                 {/* Bagian Pilih Barang */}
-                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                <div className="form-group" style={{ gridColumn: '1 / -1', position: 'relative' }}> {/* Relative for absolute positioning of suggestions */}
                   <label htmlFor="productSearch">Pilih Barang:</label>
                   <input
                     type="text"
@@ -492,6 +577,8 @@ const PembeliDashboard = () => {
                     placeholder="Cari nama barang..."
                     value={productSearchTerm}
                     onChange={handleProductSearchChange}
+                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '0.95rem' }}
+                    autoComplete="off" // Matikan autocomplete browser
                   />
 
                   {/* Tampilkan daftar saran barang jika ada hasil dan input tidak kosong */}
@@ -504,14 +591,16 @@ const PembeliDashboard = () => {
                       padding: 0,
                       margin: '0.5rem 0 0',
                       backgroundColor: '#fff',
-                      position: 'absolute',
-                      width: 'calc(100% - 2rem)',
+                      position: 'absolute', // Absolute positioning relative to parent .form-group
+                      width: 'calc(100% - 2px)', // Sesuaikan lebar agar pas dengan input
+                      left: '0',
+                      top: '100%', // Letakkan di bawah input
                       zIndex: 10
                     }}>
                       {availableProducts.map(product => (
-                        <li 
-                          key={product.id_barang} 
-                          onClick={() => handleProductSelect(product)} 
+                        <li
+                          key={product.id_barang}
+                          onClick={() => handleProductSelect(product)}
                           style={{
                             padding: '0.75rem 1rem',
                             borderBottom: '1px solid #eee',
@@ -530,14 +619,15 @@ const PembeliDashboard = () => {
 
                 {/* Tampilkan Barang yang Dipilih */}
                 {selectedProduct && (
-                  <div className="form-group" style={{
+                  <div className="form-group selected-product-display" style={{
                     gridColumn: '1 / -1',
                     border: '1px solid #eee',
                     padding: '1rem',
                     borderRadius: '8px',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '1rem'
+                    gap: '1rem',
+                    backgroundColor: '#f9f9f9'
                   }}>
                     {/* Foto Barang */}
                     {selectedProduct.image && (
@@ -585,17 +675,17 @@ const PembeliDashboard = () => {
 
               {/* Modal Actions (Submit/Cancel) */}
               <div className="modal-actions">
-                <button 
-                  type="button" 
-                  className="cancel-btn" 
+                <button
+                  type="button"
+                  className="cancel-btn"
                   onClick={handleCloseAddDiscussionModal}
                 >
                   Batal
                 </button>
-                <button 
-                  type="submit" 
-                  className="submit-btn" 
-                  disabled={!selectedProduct || loading}
+                <button
+                  type="submit"
+                  className="submit-btn"
+                  disabled={!selectedProduct || loading} // Disable jika barang belum dipilih atau sedang loading
                 >
                   {loading ? 'Mengirim...' : 'Kirim Diskusi'}
                 </button>

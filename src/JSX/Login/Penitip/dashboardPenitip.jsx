@@ -117,64 +117,83 @@ const PenitipDashboard = () => {
           <div className="dashboard-section">
             <h3>Profil Anda</h3>
             {penitipProfile ? (
-              <div className="profile-details">
-                <p><strong>ID:</strong> {penitipProfile.id_penitip}</p>
-                <p><strong>Nama:</strong> {penitipProfile.nama_penitip}</p>
-                <p><strong>Email:</strong> {penitipProfile.email_penitip}</p>
-                <p><strong>Nomor Telepon:</strong> {penitipProfile.no_telepon_penitip}</p>
-                <p><strong>Tanggal Lahir:</strong> {penitipProfile.tgl_lahir_penitip}</p>
-                <p><strong>Rating:</strong> {penitipProfile.rating_penitip}</p>
-                <p><strong>Saldo:</strong> Rp. {penitipProfile.pendapatan_penitip}</p>
-                <p><strong>Bonus Terjual Cepat:</strong> Rp. {penitipProfile.bonus_terjual_cepat}</p>
-                <p><strong>Reward Program Sosial:</strong> Rp. {penitipProfile.reward_program_sosial}</p>
-              </div>
+              <table className="profile-table">
+                <tbody>
+                  <tr><td><strong>ID</strong></td><td>{penitipProfile.id_penitip}</td></tr>
+                  <tr><td><strong>Nama</strong></td><td>{penitipProfile.nama_penitip}</td></tr>
+                  <tr><td><strong>Email</strong></td><td>{penitipProfile.email_penitip}</td></tr>
+                  <tr><td><strong>No Telepon</strong></td><td>{penitipProfile.no_telepon_penitip}</td></tr>
+                  <tr><td><strong>Tanggal Lahir</strong></td><td>{penitipProfile.tgl_lahir_penitip}</td></tr>
+                  <tr><td><strong>Rating</strong></td><td>{penitipProfile.rating_penitip}</td></tr>
+                  <tr><td><strong>Saldo</strong></td><td>Rp. {penitipProfile.pendapatan_penitip}</td></tr>
+                  <tr><td><strong>Bonus Terjual Cepat</strong></td><td>Rp. {penitipProfile.bonus_terjual_cepat}</td></tr>
+                  <tr><td><strong>Reward Sosial</strong></td><td>Rp. {penitipProfile.reward_program_sosial}</td></tr>
+                </tbody>
+              </table>
             ) : (
               <p>Profil tidak dapat dimuat.</p>
             )}
           </div>
 
+
           <div className="dashboard-section">
             <h3>History Transaksi Penitipan</h3>
 
-            <div className="history-list employee-list">
-              {consignmentHistory.length > 0 ? (
-                consignmentHistory.map(transaction => (
-                  <div key={transaction.id_penitipan_transaksi} className="history-transaction-card employee-card">
-                    <span>
-                      <strong>ID Transaksi:</strong> {transaction.id_penitipan_transaksi} |{" "}
-                      <strong>Mulai:</strong> {transaction.tanggal_mulai_penitipan} |{" "}
-                      <strong>Akhir:</strong> {transaction.tanggal_akhir_penitipan} |{" "}
-                      <strong>Status:</strong> {transaction.status_penitipan}
-                    </span>
+            {consignmentHistory.length > 0 ? (
+              consignmentHistory.map(transaction => (
+                <div key={transaction.id_penitipan_transaksi} className="transaction-table-wrapper">
+                  <h4>ID Transaksi: {transaction.id_penitipan_transaksi}</h4>
+                  <table className="transaction-table">
+                    <thead>
+                      <tr>
+                        <th>Tanggal Mulai</th>
+                        <th>Tanggal Akhir</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>{transaction.tanggal_mulai_penitipan}</td>
+                        <td>{transaction.tanggal_akhir_penitipan}</td>
+                        <td>{transaction.status_penitipan}</td>
+                      </tr>
+                    </tbody>
+                  </table>
 
-                    <div className="transaction-details" style={{ marginTop: '1rem', width: '100%' }}>
-                      <h4>Detail Barang:</h4>
-                      {transaction.detail_transaksi_penitipans && transaction.detail_transaksi_penitipans.length > 0 ? (
+                  <h5>Detail Barang</h5>
+                  <table className="transaction-detail-table">
+                    <thead>
+                      <tr>
+                        <th>Nama Barang</th>
+                        <th>Jumlah Titip</th>
+                        <th>Terjual</th>
+                        <th>Gagal Terjual</th>
+                        <th>Bonus</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transaction.detail_transaksi_penitipans?.length > 0 ? (
                         transaction.detail_transaksi_penitipans.map(detail => (
-                          <div
-                            key={detail.id_penitipan_detail_transaksi}
-                            className="detail-item"
-                            style={{ marginBottom: '0.5rem' }}
-                          >
-                            <p>
-                              - <strong>Nama Barang:</strong> {detail.barang?.nama_barang || 'N/A'} |{" "}
-                              <strong>Jumlah Titip:</strong> {detail.jumlah_barang_penitip} |{" "}
-                              <strong>Terjual:</strong> {detail.jumlah_item_terjual} |{" "}
-                              <strong>Gagal:</strong> {detail.jumlah_item_gagal_terjual} |{" "}
-                              <strong>Bonus:</strong> Rp. {detail.bonus_terjual_cepat}
-                            </p>
-                          </div>
+                          <tr key={detail.id_penitipan_detail_transaksi}>
+                            <td>{detail.barang?.nama_barang || 'N/A'}</td>
+                            <td>{detail.jumlah_barang_penitip}</td>
+                            <td>{detail.jumlah_item_terjual}</td>
+                            <td>{detail.jumlah_item_gagal_terjual}</td>
+                            <td>Rp. {detail.bonus_terjual_cepat}</td>
+                          </tr>
                         ))
                       ) : (
-                        <p>Tidak ada detail barang dalam transaksi ini.</p>
+                        <tr>
+                          <td colSpan="5">Tidak ada detail barang.</td>
+                        </tr>
                       )}
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p>Belum ada histori transaksi penitipan.</p>
-              )}
-            </div>
+                    </tbody>
+                  </table>
+                </div>
+              ))
+            ) : (
+              <p>Belum ada histori transaksi penitipan.</p>
+            )}
           </div>
         </div>
       </div>
