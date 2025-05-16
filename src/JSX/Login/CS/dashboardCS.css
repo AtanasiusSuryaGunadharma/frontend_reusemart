@@ -104,7 +104,7 @@ body, html {
 .dashboard-container {
   flex-grow: 1;
   padding: 2rem;
-  max-width: 13000px;
+  max-width: 1300px; /* Diperbaiki dari 13000px menjadi 1300px agar lebih realistis */
   margin: 0 auto;
   width: 100%;
 }
@@ -129,10 +129,10 @@ body, html {
 
 /* Dashboard Grid Layout */
 .dashboard-grid {
-  display: flex;
-  grid-template-columns: 500px 5fr;
+  display: flex; /* Mengganti grid dengan flex agar lebih fleksibel */
   gap: 2rem;
   margin-top: 2rem;
+  flex-wrap: wrap; /* Membungkus elemen jika tidak cukup ruang */
 }
 
 /* Dashboard Panel */
@@ -143,7 +143,8 @@ body, html {
   overflow: hidden;
   transition: all 0.3s;
   height: fit-content;
-  width: 600px;
+  flex: 1; /* Menggunakan flex untuk distribusi ruang */
+  min-width: 300px; /* Minimal lebar untuk mencegah elemen terlalu kecil */
 }
 
 .dashboard-panel:hover {
@@ -151,11 +152,12 @@ body, html {
   transform: translateY(-3px);
 }
 
-.penitip-panel{
+.penitip-panel {
   height: fit-content;
-  width: 2000px;
+  flex: 1;
 }
 
+/* Panel Header */
 .panel-header {
   padding: 1.5rem;
   border-bottom: 1px solid #f0f0f0;
@@ -172,91 +174,109 @@ body, html {
   color: #0056a3;
 }
 
-/* Profile Card */
-.profile-card {
+/* Discussion Table */
+.discussion-table-container {
   padding: 1.5rem;
-  display: flex;
-  gap: 1.5rem;
+  overflow-x: auto; /* Mengizinkan scroll horizontal jika tabel terlalu lebar */
 }
 
-.profile-avatar {
+.discussion-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.discussion-table thead {
+  background-color: #f9fafb;
+}
+
+.discussion-table th {
+  padding: 1rem;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #eaeaea;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+}
+
+.discussion-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eaeaea;
+  color: #555;
+  vertical-align: top; /* Mengatur konten ke atas */
+  line-height: 1.4;
+}
+
+.discussion-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.discussion-table .product-cell {
+  width: 20%;
+  min-width: 180px;
+}
+
+.discussion-table .product-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.discussion-table .product-image-small {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
   flex-shrink: 0;
 }
 
-.avatar-placeholder {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background-color: #0056a3;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: 600;
+.discussion-table td:nth-child(2) {
+  width: 20%;
+  min-width: 150px;
 }
 
-.profile-info {
-  flex-grow: 1;
+.discussion-table td:nth-child(3) {
+  width: 30%;
+  min-width: 200px;
 }
 
-.info-item {
-  margin-bottom: 1rem;
+.discussion-table td:nth-child(4) {
+  width: 25%;
+  min-width: 200px;
 }
 
-.info-label {
-  display: block;
-  font-size: 0.85rem;
-  color: #666;
-  margin-bottom: 0.25rem;
+.discussion-table td:nth-child(5) {
+  width: 5%;
+  min-width: 80px;
+  text-align: center;
 }
 
-.info-value {
-  display: block;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #333;
-}
-
-/* Profile Link */
-.profile-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.discussion-table .action-buttons .reply-btn {
   padding: 0.5rem 1rem;
   background-color: #0056a3;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 5px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.3s;
-}
-
-.profile-link:hover {
-  background-color: #004087;
-  transform: translateY(-2px);
-}
-
-/* Add Button */
-.add-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #10b981;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: all 0.3s;
+  font-size: 0.8rem;
+  transition: background-color 0.3s ease;
 }
 
-.add-btn:hover {
-  background-color: #059669;
-  transform: translateY(-2px);
+.discussion-table .action-buttons .reply-btn:hover {
+  background-color: #004087;
+}
+
+.discussion-table .cs-reply-pending {
+  color: #666;
+  font-style: italic;
+}
+
+.no-data-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  font-style: italic;
 }
 
 /* Penitip Table */
@@ -296,7 +316,7 @@ body, html {
 /* Action Buttons */
 .action-buttons {
   display: flex;
-  gap: 0.1rem;
+  gap: 0.5rem;
   justify-content: center;
 }
 
@@ -387,6 +407,27 @@ body, html {
   transform: translateY(-2px);
 }
 
+/* Add Button */
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #10b981;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.add-btn:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+}
+
 /* Modal Styles */
 .modal {
   position: fixed;
@@ -462,7 +503,8 @@ body, html {
 }
 
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   width: 100%;
   padding: 0.75rem;
   border: 1px solid #cbd5e1;
@@ -472,7 +514,8 @@ body, html {
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: #0056a3;
   box-shadow: 0 0 0 3px rgba(0, 86, 163, 0.15);
@@ -588,6 +631,7 @@ body, html {
   font-size: 0.95rem;
   transition: all 0.3s;
   background-color: #f8fafc;
+  color: #000000;
 }
 
 .search-input:focus {
@@ -639,7 +683,7 @@ body, html {
 /* Responsive Adjustments */
 @media screen and (max-width: 768px) {
   .dashboard-grid {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
   
   .navbar {
@@ -656,6 +700,12 @@ body, html {
   
   .dashboard-container {
     padding: 1rem;
+  }
+
+  .discussion-table th, 
+  .discussion-table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
   }
 }
 
@@ -676,5 +726,11 @@ body, html {
   .penitip-table td {
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
+  }
+
+  .discussion-table th, 
+  .discussion-table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
   }
 }

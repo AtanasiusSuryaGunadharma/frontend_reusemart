@@ -205,3 +205,51 @@ body, html {
       /* padding, background, color, dll. sudah ada di gaya employee-form button */
       /* Anda bisa tambahkan gaya spesifik di sini jika perlu */
   }
+
+  /* src\JSX\Login\Admin\login.css (Tambahan) */
+
+/* ... (gaya yang sudah ada) ... */
+
+/* Gaya untuk link lupa password */
+.forgot-password-link button {
+    /* Menggunakan inline style di JSX, tapi bisa dipindahkan ke sini */
+    /* background: none; */
+    /* border: none; */
+    /* color: #0056a3; */
+    /* text-decoration: underline; */
+    /* cursor: pointer; */
+    /* font-size: 0.9rem; */
+    /* Jika dipindahkan ke sini, hapus inline style di JSX */
+}
+
+/* Pastikan gaya modal disalin dari file CSS dashboard Anda, misal admin.css */
+/* .modal { ... } */
+/* .modal-content { ... } */
+/* .modal-header { ... } */
+/* .close-btn { ... } */
+/* .form-group { ... } */
+/* .modal-actions { ... } */
+/* .cancel-btn { ... } */
+/* .submit-btn { ... } */
+
+/* Contoh gaya modal dasar jika belum ada */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5); display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+.modal-content {
+    background-color: white; padding: 20px; border-radius: 8px; max-width: 400px; width: 90%;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+.modal-header h3 { margin: 0; font-size: 1.2rem; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+.form-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; }
+.modal-actions button { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; }
+.cancel-btn { background-color: #ccc; color: #333; }
+.submit-btn { background-color: #0056a3; color: white; }
+
+
+/* ... (gaya media query jika ada) ... */
