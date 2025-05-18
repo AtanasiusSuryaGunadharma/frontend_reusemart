@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import "./dashboardOrganisasi.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const DashboardOrganisasi = () => {
   const [requests, setRequests] = useState([]);
@@ -32,20 +34,17 @@ const DashboardOrganisasi = () => {
       const profileRes = await axios.get(`http://127.0.0.1:8000/api/organisasi/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Profile Response:", profileRes.data);
       setOrgProfile(profileRes.data);
 
       const res = await axios.get("http://127.0.0.1:8000/api/request-donasi", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Requests Response:", res.data);
       const allRequests = Array.isArray(res.data) ? res.data : res.data.data || [];
       const filteredRequests = allRequests.filter(
         (request) => request.organisasi_id === parseInt(id)
       );
       setRequests(filteredRequests);
     } catch (err) {
-      console.error("Fetch Data Error:", err.response ? err.response.data : err.message);
       setError(err.response?.data?.message || "Gagal memuat data. Silakan coba lagi.");
     } finally {
       setLoading(false);
@@ -68,9 +67,8 @@ const DashboardOrganisasi = () => {
 
   const handleEdit = (index) => {
     const item = requests[index];
-    console.log("Edit Item:", item);
     if (!item || !item.id_request_donasi) {
-      alert("Data tidak valid untuk diedit. Periksa struktur data (id_request_donasi hilang).");
+      toast.error("Data tidak valid untuk diedit.");
       return;
     }
     setEditIndex(index);
@@ -83,22 +81,20 @@ const DashboardOrganisasi = () => {
   };
 
   const handleDelete = async (id) => {
-    console.log("Delete ID:", id);
     if (!id) {
-      alert("ID request tidak ditemukan. Periksa struktur data.");
+      toast.error("ID request tidak ditemukan.");
       return;
     }
     if (!window.confirm("Yakin ingin menghapus request ini?")) return;
     const token = localStorage.getItem("authToken");
     try {
-      const res = await axios.delete(`http://127.0.0.1:8000/api/request-donasi/${id}`, {
+      await axios.delete(`http://127.0.0.1:8000/api/request-donasi/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Delete Response:", res.data);
       await fetchData();
+      toast.success("Request berhasil dihapus.");
     } catch (err) {
-      console.error("Delete Error:", err.response ? err.response.data : err.message);
-      alert("Gagal menghapus data: " + (err.response?.data?.message || err.message));
+      toast.error("Gagal menghapus data: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -112,13 +108,11 @@ const DashboardOrganisasi = () => {
 
     const method = editIndex !== null ? "put" : "post";
 
-    // Validasi sebelum mengirim
     if (!newRequest.alamat_req_donasi || !newRequest.request_barang_donasi || !newRequest.organisasi_id) {
-      alert("Semua field wajib diisi: Alamat, Request Barang, dan Organisasi ID.");
+      toast.error("Semua field wajib diisi.");
       return;
     }
 
-    // Kirim data sebagai JSON biasa, bukan FormData
     const data = {
       alamat_req_donasi: newRequest.alamat_req_donasi,
       request_barang_donasi: newRequest.request_barang_donasi,
@@ -126,19 +120,16 @@ const DashboardOrganisasi = () => {
     };
 
     try {
-      console.log("Sending Request:", { method, url, data });
-      const res = await axios({
+      await axios({
         method,
         url,
-        data, // Kirim data sebagai JSON
+        data,
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json", // Ubah header menjadi JSON
+          "Content-Type": "application/json",
         },
       });
-      console.log("Submit Response:", res.data);
       await fetchData();
-
       setShowModal(false);
       setNewRequest({
         alamat_req_donasi: "",
@@ -146,9 +137,9 @@ const DashboardOrganisasi = () => {
         organisasi_id: localStorage.getItem("id_organisasi") || "",
       });
       setEditIndex(null);
+      toast.success(editIndex !== null ? "Request berhasil diperbarui." : "Request berhasil ditambahkan.");
     } catch (err) {
-      console.error("Submit Error:", err.response ? err.response.data : err.message);
-      alert("Gagal menyimpan data: " + (err.response?.data?.message || err.message));
+      toast.error("Gagal menyimpan data: " + (err.response?.data?.message || err.message));
     }
   };
 

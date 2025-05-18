@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react"; 
-import "./admin.css"; 
-import { Link, useNavigate } from "react-router-dom"; 
-import axios from "axios"; 
-import { toast } from 'react-toastify'; 
+import React, { useState, useEffect } from "react";
+import "./admin.css";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from 'react-toastify';
 
 const AdminDashboard = () => {
     // State untuk Manajemen Pegawai
@@ -133,11 +133,9 @@ const AdminDashboard = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            const updatedEmployees = editEmployeeIndex !== null
-                ? employees.map((emp, index) => (index === editEmployeeIndex ? response.data.data || response.data : emp))
-                : [...employees, response.data.data || response.data];
+            // Refresh data setelah penambahan/pembaruan untuk memastikan data terkini termasuk dari hasil search
+            fetchEmployees(token, searchTermEmployee);
 
-            setEmployees(updatedEmployees);
             toast.success(response.data.message || (editEmployeeIndex !== null ? "Pegawai berhasil diperbarui" : "Pegawai berhasil ditambahkan"));
 
             handleCloseEmployeeModal();
@@ -194,7 +192,7 @@ const AdminDashboard = () => {
     const handleEditOrganization = (organization) => {
         setEditingOrganization({
             ...organization,
-            password_organisasi: "",
+            password_organisasi: "", // Kosongkan password saat edit dibuka
         });
         setShowOrganizationModal(true);
     };
@@ -208,7 +206,7 @@ const AdminDashboard = () => {
             await axios.delete(`http://127.0.0.1:8000/api/organisasi/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            fetchOrganizations(token, searchTerm);
+            fetchOrganizations(token, searchTerm); // Refresh list after deletion
             toast.success("Organisasi berhasil dihapus.");
         } catch (err) {
             console.error("Error deleting organization:", err);
@@ -230,6 +228,7 @@ const AdminDashboard = () => {
             alamat_organisasi: editingOrganization.alamat_organisasi,
             no_telepon_organisasi: editingOrganization.no_telepon_organisasi,
             email_organisasi: editingOrganization.email_organisasi,
+            // Hanya kirim password jika diisi saat edit
             ...(editingOrganization.password_organisasi && { password_organisasi: editingOrganization.password_organisasi }),
         };
 
@@ -238,7 +237,7 @@ const AdminDashboard = () => {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            fetchOrganizations(token, searchTerm);
+            fetchOrganizations(token, searchTerm); // Refresh list after update
             toast.success(response.data.message || "Organisasi berhasil diperbarui.");
 
             handleCloseOrganizationModal();
@@ -286,7 +285,8 @@ const AdminDashboard = () => {
                 </div>
                 <ul className="nav-links">
                     <li><Link to="/admin/dashboard">Dashboard</Link></li>
-                    <li><Link to="/admin/profile">Profil</Link></li>
+                    {/* Link Profil mungkin perlu disesuaikan jika ada halaman profil terpisah atau hanya tampil di dashboard */}
+                    {/* <li><Link to="/admin/profile">Profil</Link></li> */}
                     <li><button onClick={handleLogout}>Logout</button></li>
                 </ul>
             </nav>
@@ -311,7 +311,7 @@ const AdminDashboard = () => {
                     )}
                 </div>
 
-                {/* Bagian Manajemen Pegawai */}
+                {/* Bagian Manajemen Pegawai - Diubah ke Tabel */}
                 {isAdminOrManager && (
                     <div className="dashboard-section">
                         <div className="section-header">
@@ -344,22 +344,37 @@ const AdminDashboard = () => {
                                 onChange={handleSearchEmployeeChange}
                             />
                         </div>
-
-                        <p>Daftar Pegawai:</p>
-                        <div className="employee-list" style={{ marginTop: '1rem' }}>
+                        <div className="table-container" style={{ marginTop: '1rem', overflowX: 'auto' }}> {/* Added container for scroll */}
                             {employees.length > 0 ? (
-                                employees.map((emp, index) => (
-                                    <div key={emp.id_pegawai} className="employee-card">
-                                        <span>
-                                            {emp.nama_pegawai} - {emp.jabatan?.nama_jabatan || "Tidak Ada"} (
-                                            {emp.email_pegawai})
-                                        </span>
-                                        <div>
-                                            <button onClick={() => handleEditEmployee(index)}>Edit</button>
-                                            <button onClick={() => handleDeleteEmployee(emp.id_pegawai)}>Hapus</button>
-                                        </div>
-                                    </div>
-                                ))
+                                <table className="employee-table"> {/* Class name changed to employee-table */}
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nama Pegawai</th>
+                                            <th>Email</th>
+                                            <th>Tgl. Lahir</th>
+                                            <th>Telepon</th>
+                                            <th>Jabatan</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {employees.map((emp, index) => (
+                                            <tr key={emp.id_pegawai}>
+                                                <td>{emp.id_pegawai}</td>
+                                                <td>{emp.nama_pegawai}</td>
+                                                <td>{emp.email_pegawai}</td>
+                                                <td>{emp.tgl_lahir_pegawai ? emp.tgl_lahir_pegawai.split('T')[0] : ''}</td>
+                                                <td>{emp.no_telepon_pegawai}</td>
+                                                <td>{emp.jabatan?.nama_jabatan || "Tidak Ada"}</td>
+                                                <td className="table-actions">
+                                                    <button onClick={() => handleEditEmployee(index)}>Edit</button>
+                                                    <button onClick={() => handleDeleteEmployee(emp.id_pegawai)}>Hapus</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             ) : (
                                 searchTermEmployee !== '' ? (
                                     <p>Tidak ditemukan pegawai dengan nama "{searchTermEmployee}".</p>
@@ -371,7 +386,7 @@ const AdminDashboard = () => {
                     </div>
                 )}
 
-                {/* Bagian Manajemen Organisasi */}
+                {/* Bagian Manajemen Organisasi - Diubah ke Tabel */}
                 {isAdminOrManager && (
                     <div className="dashboard-section">
                         <h3>Manajemen Organisasi</h3>
@@ -384,17 +399,34 @@ const AdminDashboard = () => {
                             />
                         </div>
 
-                        <div className="organization-list" style={{ marginTop: '1rem' }}>
+                        {/* Tabel Organisasi */}
+                        <div className="table-container" style={{ marginTop: '1rem', overflowX: 'auto' }}> {/* Added container for scroll */}
                             {organizations.length > 0 ? (
-                                organizations.map(org => (
-                                    <div key={org.id_organisasi} className="organization-card employee-card">
-                                        <span>{org.nama_organisasi} ({org.email_organisasi}) - Telp: {org.no_telepon_organisasi} - Alamat: {org.alamat_organisasi}</span>
-                                        <div>
-                                            <button onClick={() => handleEditOrganization(org)}>Edit</button>
-                                            <button onClick={() => handleDeleteOrganization(org.id_organisasi)}>Hapus</button>
-                                        </div>
-                                    </div>
-                                ))
+                                <table className="organization-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Nama Organisasi</th>
+                                            <th>Email</th>
+                                            <th>Telepon</th>
+                                            <th>Alamat</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {organizations.map(org => (
+                                            <tr key={org.id_organisasi}>
+                                                <td>{org.nama_organisasi}</td>
+                                                <td>{org.email_organisasi}</td>
+                                                <td>{org.no_telepon_organisasi}</td>
+                                                <td>{org.alamat_organisasi}</td>
+                                                <td className="table-actions">
+                                                    <button onClick={() => handleEditOrganization(org)}>Edit</button>
+                                                    <button onClick={() => handleDeleteOrganization(org.id_organisasi)}>Hapus</button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             ) : (
                                 searchTerm !== '' ? (
                                     <p>Tidak ditemukan organisasi dengan nama "{searchTerm}".</p>
@@ -415,7 +447,8 @@ const AdminDashboard = () => {
                         <form onSubmit={handleAddOrUpdateEmployee}>
                             <input type="text" placeholder="Nama" name="nama_pegawai" value={newEmployee.nama_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, nama_pegawai: e.target.value })} required />
                             <input type="email" placeholder="Email" name="email_pegawai" value={newEmployee.email_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, email_pegawai: e.target.value })} required />
-                            <input type="password" placeholder="Password" name="password_pegawai" value={newEmployee.password_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, password_pegawai: e.target.value })} required={editEmployeeIndex === null || newEmployee.password_pegawai !== ""} />
+                            {/* Password hanya required saat tambah atau jika diisi saat edit */}
+                            <input type="password" placeholder="Password" name="password_pegawai" value={newEmployee.password_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, password_pegawai: e.target.value })} required={editEmployeeIndex === null} />
                             <input type="date" placeholder="Tanggal Lahir" name="tgl_lahir_pegawai" value={newEmployee.tgl_lahir_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, tgl_lahir_pegawai: e.target.value })} required />
                             <input type="text" placeholder="Nomor Telepon" name="no_telepon_pegawai" value={newEmployee.no_telepon_pegawai} onChange={(e) => setNewEmployee({ ...newEmployee, no_telepon_pegawai: e.target.value })} required />
                             <input type="text" placeholder="ID Jabatan" name="pegawai_id_jabatan" value={newEmployee.pegawai_id_jabatan} onChange={(e) => setNewEmployee({ ...newEmployee, pegawai_id_jabatan: e.target.value })} required />
