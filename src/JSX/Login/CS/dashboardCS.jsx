@@ -2,17 +2,18 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import "./dashboardCS.css";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const CSDashboard = () => {
+  const [activeMenu, setActiveMenu] = useState("dashboard"); // State untuk menu aktif
   const [penitip, setPenitip] = useState([]);
   const [csProfile, setCSProfile] = useState(null);
   const [allDiscussions, setAllDiscussions] = useState([]);
   const [showReplyModal, setShowReplyModal] = useState(false);
   const [replyFormData, setReplyFormData] = useState({
-    komentar_pegawai: '',
+    komentar_pegawai: "",
     discussion_id: null,
   });
   const [replyingDiscussion, setReplyingDiscussion] = useState(null);
@@ -35,6 +36,9 @@ const CSDashboard = () => {
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+  const [currentPagePenitip, setCurrentPagePenitip] = useState(1); // State untuk halaman penitip
+  const [currentPageDiscussion, setCurrentPageDiscussion] = useState(1); // State untuk halaman diskusi
+  const itemsPerPage = 7; // Jumlah item per halaman
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,7 +46,7 @@ const CSDashboard = () => {
     const id_pegawai = localStorage.getItem("id_pegawai");
     const userRole = localStorage.getItem("userRole");
 
-    if (!token || !userRole || !['cs', 'manager', 'admin'].includes(userRole)) {
+    if (!token || !userRole || !["cs", "manager", "admin"].includes(userRole)) {
       navigate("/generalLogin");
       toast.error("Anda tidak memiliki akses ke halaman ini atau sesi berakhir.");
       return;
@@ -53,9 +57,12 @@ const CSDashboard = () => {
       setError(null);
 
       try {
-        const profileResponse = await axios.get(`http://127.0.0.1:8000/api/pegawai/${id_pegawai}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const profileResponse = await axios.get(
+          `http://127.0.0.1:8000/api/pegawai/${id_pegawai}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
         setCSProfile(profileResponse.data);
 
         const penitipResponse = await axios.get("http://127.0.0.1:8000/api/penitip", {
@@ -82,16 +89,16 @@ const CSDashboard = () => {
       }
     };
 
-    if (token && userRole && ['cs', 'manager', 'admin'].includes(userRole)) {
+    if (token && userRole && ["cs", "manager", "admin"].includes(userRole)) {
       fetchData();
     }
   }, [navigate]);
 
-  const fetchAllDiscussions = async (token, search = '') => {
+  const fetchAllDiscussions = async (token, search = "") => {
     try {
       const response = await axios.get(`http://127.0.0.1:8000/api/diskusi-produk`, {
         headers: { Authorization: `Bearer ${token}` },
-        params: { search: search }
+        params: { search: search },
       });
       console.log("Fetched All Discussions (CS):", response.data);
       if (Array.isArray(response.data)) {
@@ -120,15 +127,24 @@ const CSDashboard = () => {
   const handleAddOrUpdatePenitip = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("authToken");
-    const url = editId !== null 
-      ? `http://127.0.0.1:8000/api/penitip/${editId}` 
-      : "http://127.0.0.1:8000/api/penitip";
+    const url =
+      editId !== null
+        ? `http://127.0.0.1:8000/api/penitip/${editId}`
+        : "http://127.0.0.1:8000/api/penitip";
     const method = editId !== null ? "put" : "post";
 
     if (editId === null) {
-      if (!newPenitip.nama_penitip || !newPenitip.email_penitip || !newPenitip.password_penitip || 
-          !newPenitip.tgl_lahir_penitip || !newPenitip.no_telepon_penitip || !newPenitip.nik_penitip) {
-        alert("Semua field wajib diisi: Nama, Email, Password, Tanggal Lahir, No Telepon, dan NIK.");
+      if (
+        !newPenitip.nama_penitip ||
+        !newPenitip.email_penitip ||
+        !newPenitip.password_penitip ||
+        !newPenitip.tgl_lahir_penitip ||
+        !newPenitip.no_telepon_penitip ||
+        !newPenitip.nik_penitip
+      ) {
+        alert(
+          "Semua field wajib diisi: Nama, Email, Password, Tanggal Lahir, No Telepon, dan NIK."
+        );
         return;
       }
       const nikRegex = /^[0-9]{16}$/;
@@ -146,11 +162,16 @@ const CSDashboard = () => {
     try {
       if (newPenitip.foto_ktp_penitip) {
         const formData = new FormData();
-        if (newPenitip.nama_penitip) formData.append("nama_penitip", newPenitip.nama_penitip);
-        if (newPenitip.email_penitip) formData.append("email_penitip", newPenitip.email_penitip);
-        if (newPenitip.password_penitip) formData.append("password_penitip", newPenitip.password_penitip);
-        if (newPenitip.tgl_lahir_penitip) formData.append("tgl_lahir_penitip", newPenitip.tgl_lahir_penitip);
-        if (newPenitip.no_telepon_penitip) formData.append("no_telepon_penitip", newPenitip.no_telepon_penitip);
+        if (newPenitip.nama_penitip)
+          formData.append("nama_penitip", newPenitip.nama_penitip);
+        if (newPenitip.email_penitip)
+          formData.append("email_penitip", newPenitip.email_penitip);
+        if (newPenitip.password_penitip)
+          formData.append("password_penitip", newPenitip.password_penitip);
+        if (newPenitip.tgl_lahir_penitip)
+          formData.append("tgl_lahir_penitip", newPenitip.tgl_lahir_penitip);
+        if (newPenitip.no_telepon_penitip)
+          formData.append("no_telepon_penitip", newPenitip.no_telepon_penitip);
         if (newPenitip.nik_penitip) formData.append("nik_penitip", newPenitip.nik_penitip);
         formData.append("rating_penitip", newPenitip.rating_penitip || 0);
         formData.append("pendapatan_penitip", newPenitip.pendapatan_penitip || 0);
@@ -164,16 +185,18 @@ const CSDashboard = () => {
           method: method,
           url: url,
           data: formData,
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data"
+            "Content-Type": "multipart/form-data",
           },
         });
 
         if (editId !== null) {
-          setPenitip(penitip.map((item) => 
-            item.id_penitip === editId ? { ...item, ...response.data } : item
-          ));
+          setPenitip(
+            penitip.map((item) =>
+              item.id_penitip === editId ? { ...item, ...response.data } : item
+            )
+          );
         } else {
           setPenitip([...penitip, response.data]);
         }
@@ -181,9 +204,12 @@ const CSDashboard = () => {
         const data = {};
         if (newPenitip.nama_penitip) data.nama_penitip = newPenitip.nama_penitip;
         if (newPenitip.email_penitip) data.email_penitip = newPenitip.email_penitip;
-        if (newPenitip.password_penitip) data.password_penitip = newPenitip.password_penitip;
-        if (newPenitip.tgl_lahir_penitip) data.tgl_lahir_penitip = newPenitip.tgl_lahir_penitip;
-        if (newPenitip.no_telepon_penitip) data.no_telepon_penitip = newPenitip.no_telepon_penitip;
+        if (newPenitip.password_penitip)
+          data.password_penitip = newPenitip.password_penitip;
+        if (newPenitip.tgl_lahir_penitip)
+          data.tgl_lahir_penitip = newPenitip.tgl_lahir_penitip;
+        if (newPenitip.no_telepon_penitip)
+          data.no_telepon_penitip = newPenitip.no_telepon_penitip;
         if (newPenitip.nik_penitip) data.nik_penitip = newPenitip.nik_penitip;
         data.rating_penitip = newPenitip.rating_penitip || 0;
         data.pendapatan_penitip = newPenitip.pendapatan_penitip || 0;
@@ -196,16 +222,18 @@ const CSDashboard = () => {
           method: method,
           url: url,
           data: data,
-          headers: { 
+          headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
           },
         });
 
         if (editId !== null) {
-          setPenitip(penitip.map((item) => 
-            item.id_penitip === editId ? { ...item, ...response.data } : item
-          ));
+          setPenitip(
+            penitip.map((item) =>
+              item.id_penitip === editId ? { ...item, ...response.data } : item
+            )
+          );
         } else {
           setPenitip([...penitip, response.data]);
         }
@@ -216,10 +244,12 @@ const CSDashboard = () => {
     } catch (err) {
       console.error("Error Adding/Updating Penitip:", err.response?.data || err.message);
       const errorMessage = err.response?.data?.message || "Terjadi kesalahan";
-      const errorDetails = err.response?.data?.errors 
+      const errorDetails = err.response?.data?.errors
         ? Object.values(err.response.data.errors).flat().join(", ")
         : err.message;
-      toast.error(`Gagal menambahkan/memperbarui data penitip: ${errorMessage}. Detail: ${errorDetails}`);
+      toast.error(
+        `Gagal menambahkan/memperbarui data penitip: ${errorMessage}. Detail: ${errorDetails}`
+      );
     }
   };
 
@@ -227,7 +257,7 @@ const CSDashboard = () => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus penitip ini?")) {
       return;
     }
-    
+
     const token = localStorage.getItem("authToken");
     try {
       await axios.delete(`http://127.0.0.1:8000/api/penitip/${id}`, {
@@ -242,12 +272,14 @@ const CSDashboard = () => {
   };
 
   const handleEditPenitip = (id) => {
-    const penitipToEdit = penitip.find(p => p.id_penitip === id);
+    const penitipToEdit = penitip.find((p) => p.id_penitip === id);
     if (penitipToEdit) {
       setEditId(id);
       let formattedDate = "";
       if (penitipToEdit.tgl_lahir_penitip) {
-        formattedDate = new Date(penitipToEdit.tgl_lahir_penitip).toISOString().split("T")[0];
+        formattedDate = new Date(penitipToEdit.tgl_lahir_penitip)
+          .toISOString()
+          .split("T")[0];
       }
       setNewPenitip({
         nama_penitip: penitipToEdit.nama_penitip || "",
@@ -262,9 +294,14 @@ const CSDashboard = () => {
         bonus_terjual_cepat: penitipToEdit.bonus_terjual_cepat || 0,
         reward_program_sosial: penitipToEdit.reward_program_sosial || 0,
       });
-      setPreviewImage(penitipToEdit.foto_ktp_penitip ? 
-        `http://127.0.0.1:8000/storage/${penitipToEdit.foto_ktp_penitip.replace('public/', '')}` : 
-        null);
+      setPreviewImage(
+        penitipToEdit.foto_ktp_penitip
+          ? `http://127.0.0.1:8000/storage/${penitipToEdit.foto_ktp_penitip.replace(
+              "public/",
+              ""
+            )}`
+          : null
+      );
       setShowModal(true);
     }
   };
@@ -309,10 +346,12 @@ const CSDashboard = () => {
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+    setCurrentPagePenitip(1); // Reset ke halaman 1 saat pencarian berubah
   };
 
   const clearSearch = () => {
     setSearchTerm("");
+    setCurrentPagePenitip(1); // Reset ke halaman 1 saat pencarian dihapus
   };
 
   const filteredPenitip = penitip.filter((item) => {
@@ -320,24 +359,30 @@ const CSDashboard = () => {
     return (
       (item.nama_penitip && item.nama_penitip.toLowerCase().includes(searchLower)) ||
       (item.email_penitip && item.email_penitip.toLowerCase().includes(searchLower)) ||
-      (item.no_telepon_penitip && item.no_telepon_penitip.toLowerCase().includes(searchLower)) ||
+      (item.no_telepon_penitip &&
+        item.no_telepon_penitip.toLowerCase().includes(searchLower)) ||
       (item.nik_penitip && item.nik_penitip.toLowerCase().includes(searchLower))
     );
   });
 
   const highlightMatch = (text, term) => {
     if (!term || !text) return text;
-    const parts = text.toString().split(new RegExp(`(${term})`, 'gi'));
-    return parts.map((part, index) => 
-      part.toLowerCase() === term.toLowerCase() ? 
-        <span key={index} className="search-highlight">{part}</span> : part
+    const parts = text.toString().split(new RegExp(`(${term})`, "gi"));
+    return parts.map((part, index) =>
+      part.toLowerCase() === term.toLowerCase() ? (
+        <span key={index} className="cs-search-highlight">
+          {part}
+        </span>
+      ) : (
+        part
+      )
     );
   };
 
   const handleReplyClick = (discussion) => {
     setReplyingDiscussion(discussion);
     setReplyFormData({
-      komentar_pegawai: discussion.komentar_pegawai || '',
+      komentar_pegawai: discussion.komentar_pegawai || "",
       discussion_id: discussion.id_diskusi,
     });
     setShowReplyModal(true);
@@ -360,14 +405,18 @@ const CSDashboard = () => {
     };
 
     try {
-      const response = await axios.put(`http://127.0.0.1:8000/api/diskusi-produk/${replyFormData.discussion_id}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.put(
+        `http://127.0.0.1:8000/api/diskusi-produk/${replyFormData.discussion_id}`,
+        payload,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       console.log("Reply submitted successfully:", response.data);
       toast.success(response.data.message || "Balasan berhasil dikirim.");
 
-      const currentToken = localStorage.getItem('authToken');
+      const currentToken = localStorage.getItem("authToken");
       if (currentToken) {
         await fetchAllDiscussions(currentToken);
       }
@@ -375,7 +424,11 @@ const CSDashboard = () => {
       handleCloseReplyModal();
     } catch (err) {
       console.error("Error submitting reply:", err.response?.data || err.message);
-      const backendErrorMessage = err.response?.data?.message || (err.response?.data?.errors ? Object.values(err.response.data.errors).flat().join(' ') : 'Gagal mengirim balasan.');
+      const backendErrorMessage =
+        err.response?.data?.message ||
+        (err.response?.data?.errors
+          ? Object.values(err.response.data.errors).flat().join(" ")
+          : "Gagal mengirim balasan.");
       toast.error(backendErrorMessage);
     }
   };
@@ -383,137 +436,112 @@ const CSDashboard = () => {
   const handleCloseReplyModal = () => {
     setShowReplyModal(false);
     setReplyingDiscussion(null);
-    setReplyFormData({ komentar_pegawai: '', discussion_id: null });
+    setReplyFormData({ komentar_pegawai: "", discussion_id: null });
   };
 
-  if (loading) return <div className="loading-container">Memuat Dashboard...</div>;
-  if (error) return <div className="error-state">Error: {error}</div>;
+  // Logika paginasi untuk penitip
+  const indexOfLastItemPenitip = currentPagePenitip * itemsPerPage;
+  const indexOfFirstItemPenitip = indexOfLastItemPenitip - itemsPerPage;
+  const currentItemsPenitip = filteredPenitip.slice(indexOfFirstItemPenitip, indexOfLastItemPenitip);
+  const totalPagesPenitip = Math.ceil(filteredPenitip.length / itemsPerPage);
 
-  return (
-    <div className="cs-dashboard">
-      <nav className="navbar">
-        <div className="logo">
-          <span>ReUseMart CS</span>
-        </div>
-        <ul className="nav-links">
-          <li><Link to="/cs/dashboard">Dashboard</Link></li>
-          <li><button onClick={handleLogout} className="logout-btn"><i className="fas fa-sign-out-alt"></i>Keluar</button></li>
-        </ul>
-      </nav>
+  const paginatePenitip = (pageNumber) => setCurrentPagePenitip(pageNumber);
+  const nextPagePenitip = () => {
+    if (currentPagePenitip < totalPagesPenitip) setCurrentPagePenitip(currentPagePenitip + 1);
+  };
+  const prevPagePenitip = () => {
+    if (currentPagePenitip > 1) setCurrentPagePenitip(currentPagePenitip - 1);
+  };
 
-      <div className="dashboard-container">
-        <div className="dashboard-header">
-          <h2>Dashboard Customer Service</h2>
-          <p className="welcome-text">Selamat datang, {csProfile?.nama_pegawai || "Customer Service"}</p>
-        </div>
+  // Logika paginasi untuk diskusi
+  const indexOfLastItemDiscussion = currentPageDiscussion * itemsPerPage;
+  const indexOfFirstItemDiscussion = indexOfLastItemDiscussion - itemsPerPage;
+  const currentItemsDiscussion = allDiscussions.slice(indexOfFirstItemDiscussion, indexOfLastItemDiscussion);
+  const totalPagesDiscussion = Math.ceil(allDiscussions.length / itemsPerPage);
 
-        <div className="dashboard-grid">
-          <div className="dashboard-panel" style={{ flex: 1 }}>
-            <div className="panel-header">
-              <h3>Daftar Diskusi Produk</h3>
-            </div>
-            <div className="discussion-table-container">
-              {allDiscussions.length > 0 ? (
-                <table className="discussion-table">
-                  <thead>
-                    <tr>
-                      <th>Barang</th>
-                      <th>Pembeli</th>
-                      <th>Komentar Pembeli</th>
-                      <th>Balasan CS</th>
-                      <th>Aksi</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allDiscussions.map(discussion => (
-                      <tr key={discussion.id_diskusi}>
-                        <td className="product-cell">
-                          <div className="product-info-cell">
-                            {discussion.barang?.image && (
-                              <img
-                                src={`http://127.0.0.1:8000/images/${discussion.barang.image}`}
-                                alt={discussion.barang.nama_barang || 'Barang'}
-                                className="product-image-small"
-                              />
-                            )}
-                            <span>{discussion.barang?.nama_barang || 'N/A'}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <strong>Nama:</strong> {discussion.pembeli?.nama_pembeli || 'N/A'}<br />
-                          <strong>Email:</strong> {discussion.pembeli?.email_pembeli || 'N/A'}
-                        </td>
-                        <td>{discussion.komentar_pembeli}</td>
-                        <td>
-                          {discussion.komentar_pegawai ? (
-                            <div>
-                              <strong>Oleh:</strong> {discussion.pegawai?.nama_pegawai || 'N/A'}<br />
-                              {discussion.komentar_pegawai}
-                            </div>
-                          ) : (
-                            <em className="cs-reply-pending">Belum ada balasan.</em>
-                          )}
-                        </td>
-                        <td className="action-buttons">
-                          <button
-                            className="reply-btn"
-                            onClick={() => handleReplyClick(discussion)}
-                          >
-                            Balas
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <p className="no-data-message">Tidak ada diskusi produk saat ini.</p>
-              )}
-            </div>
+  const paginateDiscussion = (pageNumber) => setCurrentPageDiscussion(pageNumber);
+  const nextPageDiscussion = () => {
+    if (currentPageDiscussion < totalPagesDiscussion) setCurrentPageDiscussion(currentPageDiscussion + 1);
+  };
+  const prevPageDiscussion = () => {
+    if (currentPageDiscussion > 1) setCurrentPageDiscussion(currentPageDiscussion - 1);
+  };
+
+  // Render konten utama berdasarkan menu aktif
+  const renderContent = () => {
+    switch (activeMenu) {
+      case "dashboard":
+        return (
+          <div className="cs-dashboard-section">
+            <h3>Profil Customer Service</h3>
+            {csProfile ? (
+              <div className="cs-profile-details">
+                <p>
+                  <strong>ID:</strong> {csProfile.id_pegawai}
+                </p>
+                <p>
+                  <strong>Nama:</strong> {csProfile.nama_pegawai}
+                </p>
+                <p>
+                  <strong>Email:</strong> {csProfile.email_pegawai}
+                </p>
+                <p>
+                  <strong>Jabatan:</strong>{" "}
+                  {csProfile.jabatan?.nama_jabatan || "Tidak Ada"}
+                </p>
+              </div>
+            ) : (
+              <p>Memuat profil...</p>
+            )}
           </div>
-
-          <div className="dashboard-panel penitip-panel" style={{ flex: 1 }}>
-            <div className="panel-header">
+        );
+      case "penitip":
+        return (
+          <div className="cs-dashboard-section">
+            <div className="cs-section-header">
               <h3>Manajemen Penitip</h3>
-              <button className="add-btn" onClick={() => setShowModal(true)}>
+              <button
+                className="cs-add-btn"
+                onClick={() => setShowModal(true)}
+              >
                 <i className="fas fa-plus"></i> Tambah Penitip
               </button>
             </div>
-            <div className="search-container">
-              <i className="fas fa-search search-icon"></i>
-              <input 
-                type="text" 
-                placeholder="Cari penitip berdasarkan nama, email, telepon, atau NIK" 
-                className="search-input"
+            <div className="cs-search-container">
+              <i className="fas fa-search cs-search-icon"></i>
+              <input
+                type="text"
+                placeholder="Cari penitip berdasarkan nama, email, telepon, atau NIK"
+                className="cs-search-input"
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
               {searchTerm && (
-                <button className="clear-search" onClick={clearSearch}>
+                <button className="cs-clear-search" onClick={clearSearch}>
                   <i className="fas fa-times"></i>
                 </button>
               )}
             </div>
 
             {searchTerm && (
-              <div className="search-results-info">
+              <div className="cs-search-results-info">
                 Menampilkan {filteredPenitip.length} dari {penitip.length} penitip
               </div>
             )}
 
             {loading ? (
-              <div className="loading-container">
-                <div className="loading-spinner"></div>
+              <div className="cs-loading-container">
+                <div className="cs-loading-spinner"></div>
                 <p>Memuat data penitip...</p>
               </div>
             ) : error ? (
-              <div className="error-message">
+              <div className="cs-error-message">
                 <i className="fas fa-exclamation-circle"></i>
                 <p>{error}</p>
               </div>
-            ) : filteredPenitip.length > 0 ? (
-              <div className="penitip-table-container">
-                <table className="penitip-table">
+            ) : currentItemsPenitip.length > 0 ? (
+              <div className="cs-penitip-table-container">
+                <table className="cs-penitip-table">
                   <thead>
                     <tr>
                       <th>Nama</th>
@@ -525,7 +553,7 @@ const CSDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredPenitip.map((item) => (
+                    {currentItemsPenitip.map((item) => (
                       <tr key={item.id_penitip}>
                         <td>{highlightMatch(item.nama_penitip, searchTerm)}</td>
                         <td>{highlightMatch(item.email_penitip, searchTerm)}</td>
@@ -533,14 +561,20 @@ const CSDashboard = () => {
                         <td>{highlightMatch(item.nik_penitip, searchTerm)}</td>
                         <td>
                           {item.tgl_lahir_penitip
-                            ? new Date(item.tgl_lahir_penitip).toLocaleDateString('id-ID')
-                            : '-'}
+                            ? new Date(item.tgl_lahir_penitip).toLocaleDateString("id-ID")
+                            : "-"}
                         </td>
-                        <td className="action-buttons">
-                          <button className="edit-btn" onClick={() => handleEditPenitip(item.id_penitip)}>
+                        <td className="cs-action-buttons">
+                          <button
+                            className="cs-edit-btn"
+                            onClick={() => handleEditPenitip(item.id_penitip)}
+                          >
                             <i className="fas fa-edit">Edit</i>
                           </button>
-                          <button className="delete-btn" onClick={() => handleDeletePenitip(item.id_penitip)}>
+                          <button
+                            className="cs-delete-btn"
+                            onClick={() => handleDeletePenitip(item.id_penitip)}
+                          >
                             <i className="fas fa-trash-alt">Hapus</i>
                           </button>
                         </td>
@@ -548,208 +582,450 @@ const CSDashboard = () => {
                     ))}
                   </tbody>
                 </table>
+
+                {/* Paginasi untuk Penitip */}
+                <div className="cs-pagination">
+                  <button
+                    className="cs-paginate-btn"
+                    onClick={prevPagePenitip}
+                    disabled={currentPagePenitip === 1}
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPagesPenitip }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      className={`cs-paginate-btn ${currentPagePenitip === number ? "cs-active" : ""}`}
+                      onClick={() => paginatePenitip(number)}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  <button
+                    className="cs-paginate-btn"
+                    onClick={nextPagePenitip}
+                    disabled={currentPagePenitip === totalPagesPenitip}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="no-data-container">
-                <div className="no-data-icon">
+              <div className="cs-no-data-container">
+                <div className="cs-no-data-icon">
                   <i className="fas fa-users-slash"></i>
                 </div>
                 <p>Belum ada data penitip</p>
-                <button className="add-btn-empty" onClick={() => setShowModal(true)}>
+                <button
+                  className="cs-add-btn-empty"
+                  onClick={() => setShowModal(true)}
+                >
                   <i className="fas fa-plus"></i> Tambah Penitip Pertama
                 </button>
               </div>
             )}
           </div>
-        </div>
-      </div>
+        );
+      case "diskusi":
+        return (
+          <div className="cs-dashboard-section">
+            <h3>Daftar Diskusi Produk</h3>
+            <div className="cs-discussion-table-container">
+              {currentItemsDiscussion.length > 0 ? (
+                <>
+                  <table className="cs-discussion-table">
+                    <thead>
+                      <tr>
+                        <th>Barang</th>
+                        <th>Pembeli</th>
+                        <th>Komentar Pembeli</th>
+                        <th>Balasan CS</th>
+                        <th>Aksi</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentItemsDiscussion.map((discussion) => (
+                        <tr key={discussion.id_diskusi}>
+                          <td className="cs-product-cell">
+                            <div className="cs-product-info-cell">
+                              {discussion.barang?.image && (
+                                <img
+                                  src={`http://127.0.0.1:8000/images/${discussion.barang.image}`}
+                                  alt={discussion.barang.nama_barang || "Barang"}
+                                  className="cs-product-image-small"
+                                />
+                              )}
+                              <span>{discussion.barang?.nama_barang || "N/A"}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <strong>Nama:</strong>{" "}
+                            {discussion.pembeli?.nama_pembeli || "N/A"}
+                            <br />
+                            <strong>Email:</strong>{" "}
+                            {discussion.pembeli?.email_pembeli || "N/A"}
+                          </td>
+                          <td>{discussion.komentar_pembeli}</td>
+                          <td>
+                            {discussion.komentar_pegawai ? (
+                              <div>
+                                <strong>Oleh:</strong>{" "}
+                                {discussion.pegawai?.nama_pegawai || "N/A"}
+                                <br />
+                                {discussion.komentar_pegawai}
+                              </div>
+                            ) : (
+                              <em className="cs-reply-pending">Belum ada balasan.</em>
+                            )}
+                          </td>
+                          <td className="cs-action-buttons">
+                            <button
+                              className="cs-reply-btn"
+                              onClick={() => handleReplyClick(discussion)}
+                            >
+                              Balas
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
 
-      {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>{editId !== null ? "Edit Data Penitip" : "Tambah Penitip"}</h3>
-              <button className="close-btn" onClick={handleCloseModal}>
-                <i className="fas fa-times"></i>
-              </button>
-            </div>
-            <form onSubmit={handleAddOrUpdatePenitip}>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label htmlFor="nama_penitip">
-                    <i className="fas fa-user"></i> Nama Lengkap
-                  </label>
-                  <input
-                    type="text"
-                    id="nama_penitip"
-                    placeholder="Masukkan nama lengkap"
-                    value={newPenitip.nama_penitip}
-                    onChange={(e) => setNewPenitip({ ...newPenitip, nama_penitip: e.target.value })}
-                    required={editId === null}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="email_penitip">
-                    <i className="fas fa-envelope"></i> Email
-                  </label>
-                  <input
-                    type="email"
-                    id="email_penitip"
-                    placeholder="Masukkan alamat email"
-                    value={newPenitip.email_penitip}
-                    onChange={(e) => setNewPenitip({ ...newPenitip, email_penitip: e.target.value })}
-                    required={editId === null}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="password_penitip">
-                    <i className="fas fa-lock"></i> {editId !== null ? "Password (Kosongkan jika tidak diubah)" : "Password"}
-                  </label>
-                  <input
-                    type="password"
-                    id="password_penitip"
-                    placeholder={editId !== null ? "Kosongkan jika tidak diubah" : "Masukkan password"}
-                    value={newPenitip.password_penitip}
-                    onChange={(e) => setNewPenitip({ ...newPenitip, password_penitip: e.target.value })}
-                    required={editId === null}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="no_telepon_penitip">
-                    <i className="fas fa-phone"></i> Nomor Telepon
-                  </label>
-                  <input
-                    type="text"
-                    id="no_telepon_penitip"
-                    placeholder="Masukkan nomor telepon (contoh: +6281234567890)"
-                    value={newPenitip.no_telepon_penitip}
-                    onChange={(e) => setNewPenitip({ ...newPenitip, no_telepon_penitip: e.target.value })}
-                    required={editId === null}
-                    pattern="[0-9\+-]+"
-                    title="Nomor telepon hanya boleh berisi angka, tanda +, atau tanda -"
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="tgl_lahir_penitip">
-                    <i className="fas fa-calendar-alt"></i> Tanggal Lahir
-                  </label>
-                  <input
-                    type="date"
-                    id="tgl_lahir_penitip"
-                    value={newPenitip.tgl_lahir_penitip}
-                    onChange={(e) => setNewPenitip({ ...newPenitip, tgl_lahir_penitip: e.target.value })}
-                    required={editId === null}
-                  />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="nik_penitip">
-                    <i className="fas fa-id-card"></i> NIK
-                  </label>
-                  <input
-                    type="text"
-                    id="nik_penitip"
-                    placeholder="Masukkan Nomor Induk Kependudukan (16 digit)"
-                    value={newPenitip.nik_penitip}
-                    onChange={(e) => setNewPenitip({ ...newPenitip, nik_penitip: e.target.value })}
-                    required={editId === null}
-                    pattern="[0-9]{16}"
-                    title="NIK harus terdiri dari 16 digit angka"
-                  />
-                </div>
-              </div>
-              <div className="form-group foto-ktp-container">
-                <label htmlFor="foto_ktp_penitip">
-                  <i className="fas fa-image"></i> Foto KTP
-                </label>
-                <div className="foto-ktp-input">
-                  <input
-                    type="file"
-                    id="foto_ktp_penitip"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                    className="file-input"
-                    required={false}
-                  />
-                  <label htmlFor="foto_ktp_penitip" className="file-label">
-                    <i className="fas fa-upload"></i>
-                    <span>
-                      {newPenitip.foto_ktp_penitip ? 
-                        newPenitip.foto_ktp_penitip.name : 
-                        editId !== null && previewImage ? 
-                          "Foto KTP sudah ada" : 
-                          "Pilih file foto KTP (opsional)"}
-                    </span>
-                  </label>
-                </div>
-                {previewImage && (
-                  <div className="image-preview">
-                    <img src={previewImage} alt="Preview KTP" />
+                  {/* Paginasi untuk Diskusi */}
+                  <div className="cs-pagination">
+                    <button
+                      className="cs-paginate-btn"
+                      onClick={prevPageDiscussion}
+                      disabled={currentPageDiscussion === 1}
+                    >
+                      Previous
+                    </button>
+                    {Array.from({ length: totalPagesDiscussion }, (_, i) => i + 1).map((number) => (
+                      <button
+                        key={number}
+                        className={`cs-paginate-btn ${currentPageDiscussion === number ? "cs-active" : ""}`}
+                        onClick={() => paginateDiscussion(number)}
+                      >
+                        {number}
+                      </button>
+                    ))}
+                    <button
+                      className="cs-paginate-btn"
+                      onClick={nextPageDiscussion}
+                      disabled={currentPageDiscussion === totalPagesDiscussion}
+                    >
+                      Next
+                    </button>
                   </div>
-                )}
-                {editId !== null && (
-                  <p className="file-note">
-                    <i className="fas fa-info-circle"></i> Biarkan kosong jika tidak ingin mengubah foto KTP
-                  </p>
-                )}
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={handleCloseModal}>
-                  <i className="fas fa-times"></i> Batal
-                </button>
-                <button type="submit" className="submit-btn">
-                  <i className="fas fa-save"></i> {editId !== null ? "Perbarui Data" : "Simpan Data"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {showReplyModal && replyingDiscussion && (
-        <div className="modal">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>Balas Diskusi Produk</h3>
-              <button className="close-btn" onClick={handleCloseReplyModal}>
-                <i className="fas fa-times"></i>
-              </button>
+                </>
+              ) : (
+                <p className="cs-no-data-message">Tidak ada diskusi produk saat ini.</p>
+              )}
             </div>
-            <form onSubmit={handleReplySubmit}>
-              <div className="form-grid">
-                <div className="form-group" style={{ gridColumn: '1 / -1', border: '1px solid #eee', padding: '1rem', borderRadius: '8px' }}>
-                  <h4>Diskusi:</h4>
-                  <p><strong>Barang:</strong> {replyingDiscussion.barang?.nama_barang || 'N/A'}</p>
-                  <p><strong>Pembeli:</strong> {replyingDiscussion.pembeli?.nama_pembeli || 'N/A'}</p>
-                  <p><strong>Komentar:</strong> {replyingDiscussion.komentar_pembeli}</p>
-                  {replyingDiscussion.barang?.image && (
-                    <img
-                      src={`http://127.0.0.1:8000/images/${replyingDiscussion.barang.image}`}
-                      alt={replyingDiscussion.barang.nama_barang || 'Barang'}
-                      style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '4px', marginTop: '0.5rem' }}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
+  if (loading) return <div className="cs-loading-container">Memuat Dashboard...</div>;
+  if (error) return <div className="cs-error-state">Error: {error}</div>;
+
+  return (
+    <div className="cs-dashboard">
+      {/* Sidebar kiri */}
+      <aside className="cs-sidebar">
+        <div className="cs-sidebar-logo">REUSEMART CS</div>
+        <nav className="cs-sidebar-nav">
+          <ul>
+            <li
+              className={activeMenu === "dashboard" ? "cs-active" : ""}
+              onClick={() => setActiveMenu("dashboard")}
+            >
+              Dashboard
+            </li>
+            <li
+              className={activeMenu === "penitip" ? "cs-active" : ""}
+              onClick={() => setActiveMenu("penitip")}
+            >
+              Manajemen Penitip
+            </li>
+            <li
+              className={activeMenu === "diskusi" ? "cs-active" : ""}
+              onClick={() => setActiveMenu("diskusi")}
+            >
+              Diskusi Produk
+            </li>
+            <li onClick={handleLogout} className="cs-logout-btn">
+              Logout
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Konten utama */}
+      <main className="cs-dashboard-container">
+        <h2>
+          {activeMenu === "dashboard"
+            ? "Dashboard Customer Service"
+            : activeMenu === "penitip"
+            ? "Manajemen Penitip"
+            : "Diskusi Produk"}
+        </h2>
+        {renderContent()}
+
+        {/* Modal Penitip */}
+        {showModal && (
+          <div className="cs-modal">
+            <div className="cs-modal-content">
+              <div className="cs-modal-header">
+                <h3>{editId !== null ? "Edit Data Penitip" : "Tambah Penitip"}</h3>
+                <button className="cs-close-btn" onClick={handleCloseModal}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <form onSubmit={handleAddOrUpdatePenitip}>
+                <div className="cs-form-grid">
+                  <div className="cs-form-group">
+                    <label htmlFor="nama_penitip">
+                      <i className="fas fa-user"></i> Nama Lengkap
+                    </label>
+                    <input
+                      type="text"
+                      id="nama_penitip"
+                      placeholder="Masukkan nama lengkap"
+                      value={newPenitip.nama_penitip}
+                      onChange={(e) =>
+                        setNewPenitip({ ...newPenitip, nama_penitip: e.target.value })
+                      }
+                      required={editId === null}
                     />
+                  </div>
+                  <div className="cs-form-group">
+                    <label htmlFor="email_penitip">
+                      <i className="fas fa-envelope"></i> Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email_penitip"
+                      placeholder="Masukkan alamat email"
+                      value={newPenitip.email_penitip}
+                      onChange={(e) =>
+                        setNewPenitip({ ...newPenitip, email_penitip: e.target.value })
+                      }
+                      required={editId === null}
+                    />
+                  </div>
+                  <div className="cs-form-group">
+                    <label htmlFor="password_penitip">
+                      <i className="fas fa-lock"></i>{" "}
+                      {editId !== null ? "Password (Kosongkan jika tidak diubah)" : "Password"}
+                    </label>
+                    <input
+                      type="password"
+                      id="password_penitip"
+                      placeholder={
+                        editId !== null ? "Kosongkan jika tidak diubah" : "Masukkan password"
+                      }
+                      value={newPenitip.password_penitip}
+                      onChange={(e) =>
+                        setNewPenitip({ ...newPenitip, password_penitip: e.target.value })
+                      }
+                      required={editId === null}
+                    />
+                  </div>
+                  <div className="cs-form-group">
+                    <label htmlFor="no_telepon_penitip">
+                      <i className="fas fa-phone"></i> Nomor Telepon
+                    </label>
+                    <input
+                      type="text"
+                      id="no_telepon_penitip"
+                      placeholder="Masukkan nomor telepon (contoh: +6281234567890)"
+                      value={newPenitip.no_telepon_penitip}
+                      onChange={(e) =>
+                        setNewPenitip({ ...newPenitip, no_telepon_penitip: e.target.value })
+                      }
+                      required={editId === null}
+                      pattern="[0-9\+-]+"
+                      title="Nomor telepon hanya boleh berisi angka, tanda +, atau tanda -"
+                    />
+                  </div>
+                  <div className="cs-form-group">
+                    <label htmlFor="tgl_lahir_penitip">
+                      <i className="fas fa-calendar-alt"></i> Tanggal Lahir
+                    </label>
+                    <input
+                      type="date"
+                      id="tgl_lahir_penitip"
+                      value={newPenitip.tgl_lahir_penitip}
+                      onChange={(e) =>
+                        setNewPenitip({ ...newPenitip, tgl_lahir_penitip: e.target.value })
+                      }
+                      required={editId === null}
+                    />
+                  </div>
+                  <div className="cs-form-group">
+                    <label htmlFor="nik_penitip">
+                      <i className="fas fa-id-card"></i> NIK
+                    </label>
+                    <input
+                      type="text"
+                      id="nik_penitip"
+                      placeholder="Masukkan Nomor Induk Kependudukan (16 digit)"
+                      value={newPenitip.nik_penitip}
+                      onChange={(e) =>
+                        setNewPenitip({ ...newPenitip, nik_penitip: e.target.value })
+                      }
+                      required={editId === null}
+                      pattern="[0-9]{16}"
+                      title="NIK harus terdiri dari 16 digit angka"
+                    />
+                  </div>
+                </div>
+                <div className="cs-form-group cs-foto-ktp-container">
+                  <label htmlFor="foto_ktp_penitip">
+                    <i className="fas fa-image"></i> Foto KTP
+                  </label>
+                  <div className="cs-foto-ktp-input">
+                    <input
+                      type="file"
+                      id="foto_ktp_penitip"
+                      onChange={handleFileChange}
+                      accept="image/*"
+                      className="cs-file-input"
+                      required={false}
+                    />
+                    <label htmlFor="foto_ktp_penitip" className="cs-file-label">
+                      <i className="fas fa-upload"></i>
+                      <span>
+                        {newPenitip.foto_ktp_penitip
+                          ? newPenitip.foto_ktp_penitip.name
+                          : editId !== null && previewImage
+                          ? "Foto KTP sudah ada"
+                          : "Pilih file foto KTP (opsional)"}
+                      </span>
+                    </label>
+                  </div>
+                  {previewImage && (
+                    <div className="cs-image-preview">
+                      <img src={previewImage} alt="Preview KTP" />
+                    </div>
+                  )}
+                  {editId !== null && (
+                    <p className="cs-file-note">
+                      <i className="fas fa-info-circle"></i> Biarkan kosong jika tidak ingin
+                      mengubah foto KTP
+                    </p>
                   )}
                 </div>
-                <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                  <label htmlFor="komentar_pegawai">Balasan Anda:</label>
-                  <textarea
-                    id="komentar_pegawai"
-                    placeholder="Tulis balasan Anda di sini..."
-                    value={replyFormData.komentar_pegawai}
-                    onChange={(e) => setReplyFormData({ ...replyFormData, komentar_pegawai: e.target.value })}
-                    required
-                    rows="4"
-                    style={{ width: '100%', padding: '0.75rem', border: '1px solid #ddd', borderRadius: '5px', fontSize: '0.95rem' }}
-                  ></textarea>
+                <div className="cs-modal-actions">
+                  <button
+                    type="button"
+                    className="cs-cancel-btn"
+                    onClick={handleCloseModal}
+                  >
+                    <i className="fas fa-times"></i> Batal
+                  </button>
+                  <button type="submit" className="cs-submit-btn">
+                    <i className="fas fa-save"></i>{" "}
+                    {editId !== null ? "Perbarui Data" : "Simpan Data"}
+                  </button>
                 </div>
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={handleCloseReplyModal}>Batal</button>
-                <button type="submit" className="submit-btn">Kirim Balasan</button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Modal Reply Diskusi */}
+        {showReplyModal && replyingDiscussion && (
+          <div className="cs-modal">
+            <div className="cs-modal-content">
+              <div className="cs-modal-header">
+                <h3>Balas Diskusi Produk</h3>
+                <button className="cs-close-btn" onClick={handleCloseReplyModal}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <form onSubmit={handleReplySubmit}>
+                <div className="cs-form-grid">
+                  <div
+                    className="cs-form-group"
+                    style={{
+                      gridColumn: "1 / -1",
+                      border: "1px solid #eee",
+                      padding: "1rem",
+                      borderRadius: "8px",
+                    }}
+                  >
+                    <h4>Diskusi:</h4>
+                    <p>
+                      <strong>Barang:</strong>{" "}
+                      {replyingDiscussion.barang?.nama_barang || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Pembeli:</strong>{" "}
+                      {replyingDiscussion.pembeli?.nama_pembeli || "N/A"}
+                    </p>
+                    <p>
+                      <strong>Komentar:</strong> {replyingDiscussion.komentar_pembeli}
+                    </p>
+                    {replyingDiscussion.barang?.image && (
+                      <img
+                        src={`http://127.0.0.1:8000/images/${replyingDiscussion.barang.image}`}
+                        alt={replyingDiscussion.barang.nama_barang || "Barang"}
+                        style={{
+                          width: "80px",
+                          height: "80px",
+                          objectFit: "cover",
+                          borderRadius: "4px",
+                          marginTop: "0.5rem",
+                        }}
+                      />
+                    )}
+                  </div>
+                  <div className="cs-form-group" style={{ gridColumn: "1 / -1" }}>
+                    <label htmlFor="komentar_pegawai">Balasan Anda:</label>
+                    <textarea
+                      id="komentar_pegawai"
+                      placeholder="Tulis balasan Anda di sini..."
+                      value={replyFormData.komentar_pegawai}
+                      onChange={(e) =>
+                        setReplyFormData({
+                          ...replyFormData,
+                          komentar_pegawai: e.target.value,
+                        })
+                      }
+                      required
+                      rows="4"
+                      style={{
+                        width: "100%",
+                        padding: "0.75rem",
+                        border: "1px solid #ddd",
+                        borderRadius: "5px",
+                        fontSize: "0.95rem",
+                      }}
+                    ></textarea>
+                  </div>
+                </div>
+                <div className="cs-modal-actions">
+                  <button
+                    type="button"
+                    className="cs-cancel-btn"
+                    onClick={handleCloseReplyModal}
+                  >
+                    Batal
+                  </button>
+                  <button type="submit" className="cs-submit-btn">
+                    Kirim Balasan
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };

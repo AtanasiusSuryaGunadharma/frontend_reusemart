@@ -5,8 +5,7 @@ body, html {
   font-family: 'Segoe UI', sans-serif;
   background: #f9f9f9; /* Sesuaikan background */
   min-height: 100vh;
-  width: 100vw;
-  overflow-x: hidden; /* Mencegah scroll horizontal */
+  width: 100vw; /* Mencegah scroll horizontal */
 }
 
 /* Login Page - Kontainer utama yang mencakup navbar dan konten */

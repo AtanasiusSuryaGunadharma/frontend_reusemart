@@ -1,25 +1,57 @@
-// src\JSX\Login\PegawaiGudang\dashboardPegawaiGudang.jsx
-/* eslint-disable no-unused-vars */ // Izinkan unused vars sementara
 import React, { useState, useEffect } from "react";
-import "./dashboardPegawaiGudang.css"; // Import CSS yang sesuai
+import "./dashboardPegawaiGudang.css";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from "react-toastify"; // Import toast
+import { toast } from "react-toastify";
 
 const DashboardPegawaiGudang = () => {
-  // State untuk Profil Pegawai Gudang
-  const [pegawaiProfile, setPegawaiProfile] = useState(null);
-
-  // State loading dan error
+  const [employeeProfile, setEmployeeProfile] = useState(null);
+  const [consignmentTransactions, setConsignmentTransactions] = useState([]);
+  const [dropdownData, setDropdownData] = useState({
+    kategoriBarangs: [],
+    penitips: [],
+    pegawais: [],
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeMenu, setActiveMenu] = useState("dashboard");
+  const [currentItemsPage, setCurrentItemsPage] = useState(1);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const itemsPerPage = 7;
 
-  // State untuk Role
-  const [userRoleState, setUserRoleState] = useState(null);
+  const [addData, setAddData] = useState({
+    nama_barang: "",
+    deskripsi_barang: "",
+    harga_barang: "",
+    berat_barang: "",
+    status_barang: "tersedia",
+    tanggal_garansi: "",
+    id_kategoribarang: "",
+    jumlah_barang: "",
+    penitip_id: "",
+    pegawai_id: "",
+    tanggal_mulai: "",
+    tanggal_akhir: "",
+    tanggal_batas: "",
+    image: null,
+    image2: null,
+  });
+
+  const [editData, setEditData] = useState({
+    tanggal_mulai_penitipan: "",
+    tanggal_akhir_penitipan: "",
+    tanggal_diperpanjang: "",
+    status_penitipan: "",
+    tanggal_batas_penitipan: "",
+    penitip_id_penitipan: "",
+    pegawai_id_penitipan: "",
+  });
 
   const navigate = useNavigate();
 
-  // Handler Logout
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("authToken");
@@ -40,106 +72,738 @@ const DashboardPegawaiGudang = () => {
     toast.info("Anda telah logout.");
   };
 
-  // Fetch data profil Pegawai Gudang
+  const fetchEmployeeProfile = async (token, employeeId) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/pegawai/${employeeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Profile:", response.data);
+      setEmployeeProfile(response.data);
+    } catch (err) {
+      console.error("Error fetching employee profile:", err);
+      if (err.response?.status === 401) handleLogout();
+    }
+  };
+
+  const fetchConsignmentTransactions = async (token, query = "") => {
+    try {
+      const url = query
+        ? `http://127.0.0.1:8000/api/transaksi-penitipan/search?query=${encodeURIComponent(query)}`
+        : `http://127.0.0.1:8000/api/transaksi-penitipan`;
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("Consignment Transactions:", response.data);
+      setConsignmentTransactions(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      console.error("Error fetching consignment transactions:", err.response?.data || err.message);
+      setError("Gagal memuat daftar transaksi penitipan.");
+      if (err.response?.status === 401) handleLogout();
+      setConsignmentTransactions([]);
+    }
+  };
+
+  const fetchDropdownData = async (token) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/transaksi-penitipan/dropdown-data`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setDropdownData(response.data);
+    } catch (err) {
+      console.error("Error fetching dropdown data:", err.response?.data || err.message);
+      toast.error("Gagal memuat data dropdown.");
+    }
+  };
+
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+
+    if (
+      !addData.nama_barang ||
+      !addData.harga_barang ||
+      !addData.berat_barang ||
+      !addData.status_barang ||
+      !addData.id_kategoribarang ||
+      !addData.jumlah_barang ||
+      !addData.penitip_id ||
+      !addData.pegawai_id ||
+      !addData.tanggal_mulai ||
+      !addData.tanggal_akhir ||
+      !addData.tanggal_batas ||
+      !addData.image ||
+      !addData.image2
+    ) {
+      toast.error("Semua field wajib diisi kecuali deskripsi barang dan tanggal garansi.");
+      return;
+    }
+
+    const currentDate = new Date().toISOString().split("T")[0];
+    if (
+      addData.tanggal_mulai < currentDate ||
+      addData.tanggal_akhir < addData.tanggal_mulai ||
+      addData.tanggal_batas < addData.tanggal_mulai
+    ) {
+      toast.error("Tanggal tidak valid.");
+      return;
+    }
+
+    const token = localStorage.getItem("authToken");
+    const formData = new FormData();
+    formData.append("nama_barang", addData.nama_barang);
+    formData.append("deskripsi_barang", addData.deskripsi_barang || "");
+    formData.append("harga_barang", addData.harga_barang);
+    formData.append("berat_barang", addData.berat_barang);
+    formData.append("status_barang", addData.status_barang);
+    formData.append("tanggal_garansi", addData.tanggal_garansi || "");
+    formData.append("id_kategoribarang", addData.id_kategoribarang);
+    formData.append("jumlah_barang", addData.jumlah_barang);
+    formData.append("penitip_id", addData.penitip_id);
+    formData.append("pegawai_id", addData.pegawai_id);
+    formData.append("tanggal_mulai", addData.tanggal_mulai);
+    formData.append("tanggal_akhir", addData.tanggal_akhir);
+    formData.append("tanggal_batas", addData.tanggal_batas);
+    formData.append("image", addData.image);
+    formData.append("image2", addData.image2);
+
+    try {
+      const response = await axios.post(`http://127.0.0.1:8000/api/transaksi-penitipan/add-barang`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      console.log("Response:", response.data);
+      await fetchConsignmentTransactions(token);
+      toast.success("Barang dan transaksi penitipan berhasil ditambahkan.");
+      setShowAddModal(false);
+      setAddData({
+        nama_barang: "",
+        deskripsi_barang: "",
+        harga_barang: "",
+        berat_barang: "",
+        status_barang: "tersedia",
+        tanggal_garansi: "",
+        id_kategoribarang: "",
+        jumlah_barang: "",
+        penitip_id: "",
+        pegawai_id: "",
+        tanggal_mulai: "",
+        tanggal_akhir: "",
+        tanggal_batas: "",
+        image: null,
+        image2: null,
+      });
+    } catch (err) {
+      console.error("Error adding barang and transaction:", err.response?.data || err.message);
+      toast.error(err.response?.data?.message || "Gagal menambahkan barang dan transaksi.");
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    if (
+      !editData.tanggal_mulai_penitipan ||
+      !editData.tanggal_akhir_penitipan ||
+      !editData.tanggal_batas_penitipan ||
+      !editData.penitip_id_penitipan ||
+      !editData.pegawai_id_penitipan ||
+      !editData.status_penitipan
+    ) {
+      toast.error("Semua field wajib diisi kecuali tanggal diperpanjang.");
+      return;
+    }
+
+    const currentDate = new Date().toISOString().split("T")[0];
+    if (
+      editData.tanggal_mulai_penitipan < currentDate ||
+      editData.tanggal_akhir_penitipan < editData.tanggal_mulai_penitipan ||
+      editData.tanggal_batas_penitipan < editData.tanggal_mulai_penitipan
+    ) {
+      toast.error("Tanggal tidak valid.");
+      return;
+    }
+
+    const token = localStorage.getItem("authToken");
+
+    try {
+      const payload = {
+        tanggal_mulai_penitipan: editData.tanggal_mulai_penitipan,
+        tanggal_akhir_penitipan: editData.tanggal_akhir_penitipan,
+        tanggal_diperpanjang: editData.tanggal_diperpanjang || null,
+        status_penitipan: editData.status_penitipan,
+        tanggal_batas_penitipan: editData.tanggal_batas_penitipan,
+        penitip_id_penitipan: editData.penitip_id_penitipan,
+        pegawai_id_penitipan: editData.pegawai_id_penitipan,
+      };
+
+      await axios.put(`http://127.0.0.1:8000/api/transaksi-penitipan/${selectedTransaction.id_penitipan_transaksi}`, payload, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      await fetchConsignmentTransactions(token, searchQuery);
+      toast.success("Transaksi barang titipan berhasil diperbarui.");
+      setShowEditModal(false);
+      setSelectedTransaction(null);
+    } catch (err) {
+      console.error("Error updating transaction:", err.response?.data || err.message);
+      toast.error(err.response?.data?.message || "Gagal memperbarui transaksi.");
+    }
+  };
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false);
+    setAddData({
+      nama_barang: "",
+      deskripsi_barang: "",
+      harga_barang: "",
+      berat_barang: "",
+      status_barang: "tersedia",
+      tanggal_garansi: "",
+      id_kategoribarang: "",
+      jumlah_barang: "",
+      penitip_id: "",
+      pegawai_id: "",
+      tanggal_mulai: "",
+      tanggal_akhir: "",
+      tanggal_batas: "",
+      image: null,
+      image2: null,
+    });
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setSelectedTransaction(null);
+    setEditData({
+      tanggal_mulai_penitipan: "",
+      tanggal_akhir_penitipan: "",
+      tanggal_diperpanjang: "",
+      status_penitipan: "",
+      tanggal_batas_penitipan: "",
+      penitip_id_penitipan: "",
+      pegawai_id_penitipan: "",
+    });
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("authToken");
-    const id_pegawai = localStorage.getItem("id_pegawai");
+    const employeeId = localStorage.getItem("id_pegawai");
     const userRole = localStorage.getItem("userRole");
 
-    setUserRoleState(userRole);
-
-    if (!token || !id_pegawai || userRole !== "warehouse") {
+    if (!token || !employeeId || userRole !== "pegawaiGudang") {
       navigate("/generalLogin");
       toast.error("Anda tidak memiliki akses ke halaman ini atau sesi berakhir.");
       return;
     }
 
-    const fetchPegawaiProfile = async () => {
+    const fetchData = async () => {
       setLoading(true);
       setError(null);
-
-      try {
-        const profileResponse = await axios.get(
-          `http://127.0.0.1:8000/api/pegawai/${id_pegawai}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        );
-        setPegawaiProfile(profileResponse.data);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching pegawai profile:", err);
-        setError("Gagal memuat data profil pegawai.");
-        setLoading(false);
-        if (err.response && err.response.status === 401) {
-          handleLogout();
-        }
-      }
+      await fetchEmployeeProfile(token, employeeId);
+      await fetchConsignmentTransactions(token);
+      await fetchDropdownData(token);
+      setLoading(false);
     };
 
-    if (token && id_pegawai && userRole === "warehouse") {
-      fetchPegawaiProfile();
-    }
+    fetchData();
   }, [navigate]);
 
-  if (loading) return <div className="loading-state">Memuat Dashboard...</div>;
-  if (error) return <div className="error-state">Error: {error}</div>;
+  if (loading) return <div className="warehouse-loading-state">Memuat Dashboard...</div>;
+  if (error) return <div className="warehouse-error-state">Error: {error}</div>;
+
+  const indexOfLastItem = currentItemsPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const filteredTransactions = consignmentTransactions.filter((transaction) =>
+    transaction &&
+    transaction.id_penitipan_transaksi &&
+    transaction.id_penitipan_transaksi.toString().includes(searchQuery)
+  );
+  const currentTransactions = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
+  const totalItemsPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+
+  const paginateItems = (pageNumber) => setCurrentItemsPage(pageNumber);
+  const nextItemsPage = () => {
+    if (currentItemsPage < totalItemsPages) setCurrentItemsPage(currentItemsPage + 1);
+  };
+  const prevItemsPage = () => {
+    if (currentItemsPage > 1) setCurrentItemsPage(currentItemsPage - 1);
+  };
+
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentItemsPage(1);
+    fetchConsignmentTransactions(localStorage.getItem("authToken"), e.target.value);
+  };
+
+  const handleAddTransaction = () => {
+    setShowAddModal(true);
+  };
+
+  const handleEditTransaction = (transaction) => {
+    setSelectedTransaction(transaction);
+    setEditData({
+      tanggal_mulai_penitipan: transaction.tanggal_mulai_penitipan || "",
+      tanggal_akhir_penitipan: transaction.tanggal_akhir_penitipan || "",
+      tanggal_diperpanjang: transaction.tanggal_diperpanjang || "",
+      status_penitipan: transaction.status_penitipan || "",
+      tanggal_batas_penitipan: transaction.tanggal_batas_penitipan || "",
+      penitip_id_penitipan: transaction.penitip_id_penitipan || "",
+      pegawai_id_penitipan: transaction.pegawai_id_penitipan || "",
+    });
+    setShowEditModal(true);
+  };
+
+  const renderContent = () => {
+    switch (activeMenu) {
+      case "dashboard":
+        return (
+          <div className="warehouse-dashboard-section">
+            <h3>Profil Anda</h3>
+            {employeeProfile ? (
+              <table className="warehouse-profile-table">
+                <tbody>
+                  <tr><td><strong>ID</strong></td><td>{employeeProfile.id_pegawai}</td></tr>
+                  <tr><td><strong>Nama</strong></td><td>{employeeProfile.nama_pegawai}</td></tr>
+                  <tr><td><strong>Email</strong></td><td>{employeeProfile.email_pegawai}</td></tr>
+                  <tr><td><strong>Jabatan</strong></td><td>{employeeProfile.jabatan?.nama_jabatan || "Tidak Diketahui"}</td></tr>
+                </tbody>
+              </table>
+            ) : (
+              <p>Profil tidak dapat dimuat.</p>
+            )}
+          </div>
+        );
+      case "items":
+        return (
+          <div className="warehouse-dashboard-section">
+            <h3>Daftar Transaksi Barang Titipan</h3>
+            <div className="warehouse-search-bar">
+              <input
+                type="text"
+                placeholder="Cari berdasarkan ID transaksi..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="warehouse-search-input"
+              />
+              <button onClick={handleAddTransaction} className="warehouse-add-btn">
+                Tambah Barang
+              </button>
+            </div>
+            {filteredTransactions.length > 0 ? (
+              <>
+                <table className="warehouse-transaction-table">
+                  <thead>
+                    <tr>
+                      <th>ID Transaksi</th>
+                      <th>Nama Barang</th>
+                      <th>Jumlah</th>
+                      <th>Tanggal Mulai</th>
+                      <th>Tanggal Akhir</th>
+                      <th>Status</th>
+                      <th>Penitip</th>
+                      <th>Pegawai</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentTransactions.map((transaction) => {
+                      const detail = transaction.detail_transaksi_penitipans && transaction.detail_transaksi_penitipans.length > 0 ? transaction.detail_transaksi_penitipans[0] : null;
+                      return (
+                        <tr key={transaction.id_penitipan_transaksi || Math.random()}>
+                          <td>{transaction.id_penitipan_transaksi || "N/A"}</td>
+                          <td>{detail?.barang?.nama_barang || "Tidak Diketahui"}</td>
+                          <td>{detail?.jumlah_barang_penitip || 0}</td>
+                          <td>{transaction.tanggal_mulai_penitipan || "Tidak Diketahui"}</td>
+                          <td>{transaction.tanggal_akhir_penitipan || "Tidak Diketahui"}</td>
+                          <td>{transaction.status_penitipan || "Tidak Diketahui"}</td>
+                          <td>{transaction.penitip?.nama_penitip || "Tidak Diketahui"}</td>
+                          <td>{transaction.pegawai?.nama_pegawai || "Tidak Diketahui"}</td>
+                          <td>
+                            <button
+                              onClick={() => handleEditTransaction(transaction)}
+                              className="warehouse-edit-btn"
+                              disabled={!transaction.id_penitipan_transaksi}
+                            >
+                              Edit
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div className="warehouse-pagination">
+                  <button
+                    className="warehouse-paginate-btn"
+                    onClick={prevItemsPage}
+                    disabled={currentItemsPage === 1}
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalItemsPages }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      className={`warehouse-paginate-btn ${currentItemsPage === number ? "warehouse-active" : ""}`}
+                      onClick={() => paginateItems(number)}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  <button
+                    className="warehouse-paginate-btn"
+                    onClick={nextItemsPage}
+                    disabled={currentItemsPage === totalItemsPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p>Tidak ada transaksi barang titipan yang ditemukan.</p>
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="pegawai-gudang-dashboard-page">
-      {/* Navbar */}
-      <nav className="navbar">
-        <div className="logo">
-          <span>REUSEMART GUDANG</span>
-        </div>
-        <ul className="nav-links">
-          <li>
-            <Link to="/pegawaiGudang/dashboard">Dashboard</Link>
-          </li>
-          <li>
-            <button onClick={handleLogout}>Logout</button>
-          </li>
-        </ul>
-      </nav>
+    <div className="warehouse-dashboard">
+      <aside className="warehouse-sidebar">
+        <div className="warehouse-sidebar-logo">REUSEMART GUDANG</div>
+        <nav className="warehouse-sidebar-nav">
+          <ul>
+            <li
+              className={activeMenu === "dashboard" ? "warehouse-active" : ""}
+              onClick={() => setActiveMenu("dashboard")}
+            >
+              Dashboard
+            </li>
+            <li
+              className={activeMenu === "items" ? "warehouse-active" : ""}
+              onClick={() => setActiveMenu("items")}
+            >
+              Daftar Transaksi Barang Titipan
+            </li>
+            <li onClick={handleLogout} className="warehouse-logout-btn">
+              Logout
+            </li>
+          </ul>
+        </nav>
+      </aside>
 
-      {/* Konten Dashboard */}
-      <div className="dashboard-container">
-        <h2>Dashboard Pegawai Gudang</h2>
+      <main className="warehouse-dashboard-container">
+        <h2>
+          {activeMenu === "dashboard"
+            ? "Dashboard Pegawai Gudang"
+            : "Daftar Transaksi Barang Titipan"}
+        </h2>
+        <p className="warehouse-welcome-text">
+          Selamat datang, {employeeProfile?.nama_pegawai || "Pegawai Gudang"}
+        </p>
+        {renderContent()}
 
-        {/* Bagian Profil Pegawai Gudang */}
-        <div className="dashboard-section">
-          <h3>Profil Anda</h3>
-
-          {pegawaiProfile ? (
-            <div className="profile-details">
-              <p>
-                <strong>ID:</strong> {pegawaiProfile.id_pegawai}
-              </p>
-              <p>
-                <strong>Nama:</strong> {pegawaiProfile.nama_pegawai}
-              </p>
-              <p>
-                <strong>Email:</strong> {pegawaiProfile.email_pegawai}
-              </p>
-              <p>
-                <strong>Nomor Telepon:</strong> {pegawaiProfile.no_telepon_pegawai}
-              </p>
-              <p>
-                <strong>Tanggal Lahir:</strong> {pegawaiProfile.tgl_lahir_pegawai}
-              </p>
-              <p>
-                <strong>Jabatan:</strong>{" "}
-                {pegawaiProfile.jabatan?.nama_jabatan || "Tidak Ada"}
-              </p>
+        {showAddModal && (
+          <div className="warehouse-modal">
+            <div className="warehouse-modal-content">
+              <div className="warehouse-modal-header">
+                <h3>Tambah Barang Baru</h3>
+                <button className="warehouse-close-btn" onClick={handleCloseAddModal}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <form onSubmit={handleAddSubmit}>
+                <div className="warehouse-form-group">
+                  <label htmlFor="nama_barang">Nama Barang:</label>
+                  <input
+                    type="text"
+                    id="nama_barang"
+                    value={addData.nama_barang}
+                    onChange={(e) => setAddData({ ...addData, nama_barang: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="deskripsi_barang">Deskripsi Barang:</label>
+                  <textarea
+                    id="deskripsi_barang"
+                    value={addData.deskripsi_barang}
+                    onChange={(e) => setAddData({ ...addData, deskripsi_barang: e.target.value })}
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="harga_barang">Harga Barang (Rp):</label>
+                  <input
+                    type="number"
+                    id="harga_barang"
+                    value={addData.harga_barang}
+                    onChange={(e) => setAddData({ ...addData, harga_barang: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="berat_barang">Berat Barang (kg):</label>
+                  <input
+                    type="number"
+                    id="berat_barang"
+                    value={addData.berat_barang}
+                    onChange={(e) => setAddData({ ...addData, berat_barang: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="status_barang">Status Barang:</label>
+                  <select
+                    id="status_barang"
+                    value={addData.status_barang}
+                    onChange={(e) => setAddData({ ...addData, status_barang: e.target.value })}
+                    required
+                  >
+                    <option value="tersedia">Tersedia</option>
+                    <option value="tidak tersedia">Tidak Tersedia</option>
+                  </select>
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="tanggal_garansi">Tanggal Garansi:</label>
+                  <input
+                    type="date"
+                    id="tanggal_garansi"
+                    value={addData.tanggal_garansi}
+                    onChange={(e) => setAddData({ ...addData, tanggal_garansi: e.target.value })}
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="id_kategoribarang">Kategori Barang:</label>
+                  <select
+                    id="id_kategoribarang"
+                    value={addData.id_kategoribarang}
+                    onChange={(e) => setAddData({ ...addData, id_kategoribarang: e.target.value })}
+                    required
+                  >
+                    <option value="">Pilih Kategori</option>
+                    {dropdownData.kategoriBarangs.map((kategori) => (
+                      <option key={kategori.id_kategori} value={kategori.id_kategori}>
+                        {kategori.nama_kategori}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="jumlah_barang">Jumlah Barang:</label>
+                  <input
+                    type="number"
+                    id="jumlah_barang"
+                    value={addData.jumlah_barang}
+                    onChange={(e) => setAddData({ ...addData, jumlah_barang: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="penitip_id">Penitip:</label>
+                  <select
+                    id="penitip_id"
+                    value={addData.penitip_id}
+                    onChange={(e) => setAddData({ ...addData, penitip_id: e.target.value })}
+                    required
+                  >
+                    <option value="">Pilih Penitip</option>
+                    {dropdownData.penitips.map((penitip) => (
+                      <option key={penitip.id_penitip} value={penitip.id_penitip}>
+                        {penitip.nama_penitip}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="pegawai_id">Pegawai:</label>
+                  <select
+                    id="pegawai_id"
+                    value={addData.pegawai_id}
+                    onChange={(e) => setAddData({ ...addData, pegawai_id: e.target.value })}
+                    required
+                  >
+                    <option value="">Pilih Pegawai</option>
+                    {dropdownData.pegawais.map((pegawai) => (
+                      <option key={pegawai.id_pegawai} value={pegawai.id_pegawai}>
+                        {pegawai.nama_pegawai}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="tanggal_mulai">Tanggal Mulai:</label>
+                  <input
+                    type="date"
+                    id="tanggal_mulai"
+                    value={addData.tanggal_mulai}
+                    onChange={(e) => setAddData({ ...addData, tanggal_mulai: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="tanggal_akhir">Tanggal Akhir:</label>
+                  <input
+                    type="date"
+                    id="tanggal_akhir"
+                    value={addData.tanggal_akhir}
+                    onChange={(e) => setAddData({ ...addData, tanggal_akhir: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="tanggal_batas">Tanggal Batas:</label>
+                  <input
+                    type="date"
+                    id="tanggal_batas"
+                    value={addData.tanggal_batas}
+                    onChange={(e) => setAddData({ ...addData, tanggal_batas: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="image">Gambar 1:</label>
+                  <input
+                    type="file"
+                    id="image"
+                    accept="image/*"
+                    onChange={(e) => setAddData({ ...addData, image: e.target.files[0] })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="image2">Gambar 2:</label>
+                  <input
+                    type="file"
+                    id="image2"
+                    accept="image/*"
+                    onChange={(e) => setAddData({ ...addData, image2: e.target.files[0] })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-modal-actions">
+                  <button type="submit" className="warehouse-submit-btn">
+                    <i className="fas fa-save"></i> Tambah
+                  </button>
+                  <button type="button" className="warehouse-cancel-btn" onClick={handleCloseAddModal}>
+                    <i className="fas fa-times"></i> Tutup
+                  </button>
+                </div>
+              </form>
             </div>
-          ) : (
-            <p>Profil tidak dapat dimuat.</p>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Bagian tambahan bisa ditambahkan di sini */}
-        {/* <div className="dashboard-section"> ... </div> */}
-      </div>
+        {showEditModal && selectedTransaction && (
+          <div className="warehouse-modal">
+            <div className="warehouse-modal-content">
+              <div className="warehouse-modal-header">
+                <h3>Edit Transaksi Barang Titipan (ID: {selectedTransaction.id_penitipan_transaksi})</h3>
+                <button className="warehouse-close-btn" onClick={handleCloseEditModal}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <form onSubmit={handleEditSubmit}>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_tanggal_mulai_penitipan">Tanggal Mulai:</label>
+                  <input
+                    type="date"
+                    id="edit_tanggal_mulai_penitipan"
+                    value={editData.tanggal_mulai_penitipan}
+                    onChange={(e) => setEditData({ ...editData, tanggal_mulai_penitipan: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_tanggal_akhir_penitipan">Tanggal Akhir:</label>
+                  <input
+                    type="date"
+                    id="edit_tanggal_akhir_penitipan"
+                    value={editData.tanggal_akhir_penitipan}
+                    onChange={(e) => setEditData({ ...editData, tanggal_akhir_penitipan: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_tanggal_diperpanjang">Tanggal Diperpanjang:</label>
+                  <input
+                    type="date"
+                    id="edit_tanggal_diperpanjang"
+                    value={editData.tanggal_diperpanjang}
+                    onChange={(e) => setEditData({ ...editData, tanggal_diperpanjang: e.target.value })}
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_status_penitipan">Status:</label>
+                  <select
+                    id="edit_status_penitipan"
+                    value={editData.status_penitipan}
+                    onChange={(e) => setEditData({ ...editData, status_penitipan: e.target.value })}
+                    required
+                  >
+                    <option value="aktif">Aktif</option>
+                    <option value="diambil_kembali">Diambil Kembali</option>
+                    <option value="didonasikan">Didonasikan</option>
+                    <option value="kadaluarsa">Kadaluarsa</option>
+                    <option value="terjual">Terjual</option>
+                  </select>
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_tanggal_batas_penitipan">Tanggal Batas:</label>
+                  <input
+                    type="date"
+                    id="edit_tanggal_batas_penitipan"
+                    value={editData.tanggal_batas_penitipan}
+                    onChange={(e) => setEditData({ ...editData, tanggal_batas_penitipan: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_penitip_id_penitipan">Penitip:</label>
+                  <select
+                    id="edit_penitip_id_penitipan"
+                    value={editData.penitip_id_penitipan}
+                    onChange={(e) => setEditData({ ...editData, penitip_id_penitipan: e.target.value })}
+                    required
+                  >
+                    <option value="">Pilih Penitip</option>
+                    {dropdownData.penitips.map((penitip) => (
+                      <option key={penitip.id_penitip} value={penitip.id_penitip}>
+                        {penitip.nama_penitip}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_pegawai_id_penitipan">Pegawai:</label>
+                  <select
+                    id="edit_pegawai_id_penitipan"
+                    value={editData.pegawai_id_penitipan}
+                    onChange={(e) => setEditData({ ...editData, pegawai_id_penitipan: e.target.value })}
+                    required
+                  >
+                    <option value="">Pilih Pegawai</option>
+                    {dropdownData.pegawais.map((pegawai) => (
+                      <option key={pegawai.id_pegawai} value={pegawai.id_pegawai}>
+                        {pegawai.nama_pegawai}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="warehouse-modal-actions">
+                  <button type="submit" className="warehouse-submit-btn">
+                    <i className="fas fa-save"></i> Simpan
+                  </button>
+                  <button type="button" className="warehouse-cancel-btn" onClick={handleCloseEditModal}>
+                    <i className="fas fa-times"></i> Tutup
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
