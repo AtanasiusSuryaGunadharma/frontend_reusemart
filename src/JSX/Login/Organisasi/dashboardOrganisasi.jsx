@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import "./dashboardOrganisasi.css";
 import axios from "axios";
@@ -13,6 +15,9 @@ const DashboardOrganisasi = () => {
   const [editIndex, setEditIndex] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [orgProfile, setOrgProfile] = useState(null);
+  const [activeMenu, setActiveMenu] = useState("dashboard"); // State untuk menu aktif
+  const [currentPage, setCurrentPage] = useState(1); // State untuk halaman saat ini
+  const itemsPerPage = 7; // Jumlah item per halaman
 
   const [newRequest, setNewRequest] = useState({
     alamat_req_donasi: "",
@@ -54,7 +59,7 @@ const DashboardOrganisasi = () => {
   useEffect(() => {
     const role = localStorage.getItem("userRole");
     if (role !== "organisasi") {
-      navigate("/organisasi/login");
+      navigate("/generalLogin");
     } else {
       fetchData();
     }
@@ -62,11 +67,12 @@ const DashboardOrganisasi = () => {
 
   const handleLogout = () => {
     localStorage.clear();
-    navigate("/organisasi/login");
+    navigate("/generalLogin");
+    toast.info("Anda telah logout.");
   };
 
   const handleEdit = (index) => {
-    const item = requests[index];
+    const item = filteredRequests[index];
     if (!item || !item.id_request_donasi) {
       toast.error("Data tidak valid untuk diedit.");
       return;
@@ -101,7 +107,7 @@ const DashboardOrganisasi = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("authToken");
-    const id = editIndex !== null ? requests[editIndex]?.id_request_donasi : null;
+    const id = editIndex !== null ? filteredRequests[editIndex]?.id_request_donasi : null;
     const url = editIndex !== null
       ? `http://127.0.0.1:8000/api/request-donasi/${id}`
       : `http://127.0.0.1:8000/api/request-donasi`;
@@ -137,92 +143,110 @@ const DashboardOrganisasi = () => {
         organisasi_id: localStorage.getItem("id_organisasi") || "",
       });
       setEditIndex(null);
+      setCurrentPage(1); // Reset ke halaman 1 setelah submit
       toast.success(editIndex !== null ? "Request berhasil diperbarui." : "Request berhasil ditambahkan.");
     } catch (err) {
       toast.error("Gagal menyimpan data: " + (err.response?.data?.message || err.message));
     }
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset ke halaman 1 saat pencarian berubah
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setCurrentPage(1); // Reset ke halaman 1 saat pencarian dihapus
+  };
+
   const filteredRequests = requests.filter((r) =>
     r.request_barang_donasi?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  return (
-    <div className="cs-dashboard">
-      <nav className="navbar">
-        <div className="logo">
-          <span>ReUseMart</span>
-        </div>
-        <ul className="nav-links">
-          <li>
-            <button onClick={handleLogout} className="logout-btn">
-              <i className="fas fa-sign-out-alt"></i> Keluar
-            </button>
-          </li>
-        </ul>
-      </nav>
+  // Logika paginasi
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredRequests.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
 
-      <div className="dashboard-container">
-        <div className="dashboard-header">
-          <h2>Dashboard Organisasi</h2>
-          <p className="welcome-text">
-            Selamat datang, {orgProfile?.nama_organisasi || "Organisasi"}
-          </p>
-        </div>
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const nextPage = () => {
+    if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+  };
+  const prevPage = () => {
+    if (currentPage > 1) setCurrentPage(currentPage - 1);
+  };
 
-        <div className="dashboard-grid">
-          <div className="dashboard-panel">
-            <div className="panel-header">
-              <h3>Profil Organisasi</h3>
-            </div>
-            {orgProfile && (
-              <div className="profile-card">
-                <div className="profile-info">
-                  <div className="info-item">
-                    <span className="info-label">ID</span>
-                    <span className="info-value">{orgProfile.id_organisasi}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Nama</span>
-                    <span className="info-value">{orgProfile.nama_organisasi}</span>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Email</span>
-                    <span className="info-value">{orgProfile.email_organisasi}</span>
-                  </div>
-                </div>
+  // Render konten utama berdasarkan menu aktif
+  const renderContent = () => {
+    switch (activeMenu) {
+      case "dashboard":
+        return (
+          <div className="org-dashboard-section">
+            <h3>Profil Organisasi</h3>
+            {orgProfile ? (
+              <div className="org-profile-details">
+                <p>
+                  <strong>ID:</strong> {orgProfile.id_organisasi}
+                </p>
+                <p>
+                  <strong>Nama:</strong> {orgProfile.nama_organisasi}
+                </p>
+                <p>
+                  <strong>Email:</strong> {orgProfile.email_organisasi}
+                </p>
               </div>
+            ) : (
+              <p>Memuat profil...</p>
             )}
           </div>
-
-          <div className="dashboard-panel penitip-panel">
-            <div className="panel-header">
+        );
+      case "requests":
+        return (
+          <div className="org-dashboard-section">
+            <div className="org-section-header">
               <h3>Request Donasi Barang</h3>
-              <button className="add-btn" onClick={() => setShowModal(true)}>
+              <button className="org-add-btn" onClick={() => setShowModal(true)}>
                 <i className="fas fa-plus"></i> Tambah Request
               </button>
             </div>
 
-            <div className="search-container">
+            <div className="org-search-container">
+              <i className="fas fa-search org-search-icon"></i>
               <input
                 type="text"
-                className="search-input"
+                className="org-search-input"
                 placeholder="Cari berdasarkan request barang..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={handleSearchChange}
               />
+              {searchTerm && (
+                <button className="org-clear-search" onClick={clearSearch}>
+                  <i className="fas fa-times"></i>
+                </button>
+              )}
             </div>
 
+            {searchTerm && (
+              <div className="org-search-results-info">
+                Menampilkan {filteredRequests.length} dari {requests.length} request
+              </div>
+            )}
+
             {loading ? (
-              <div className="loading-container">
-                <div className="loading-spinner"></div>
+              <div className="org-loading-container">
+                <div className="org-loading-spinner"></div>
                 <p>Memuat data...</p>
               </div>
             ) : error ? (
-              <div className="error-message">{error}</div>
-            ) : filteredRequests.length > 0 ? (
-              <div className="penitip-table-container">
-                <table className="penitip-table">
+              <div className="org-error-message">
+                <i className="fas fa-exclamation-circle"></i>
+                <p>{error}</p>
+              </div>
+            ) : currentItems.length > 0 ? (
+              <div className="org-request-table-container">
+                <table className="org-request-table">
                   <thead>
                     <tr>
                       <th>Alamat</th>
@@ -232,17 +256,20 @@ const DashboardOrganisasi = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredRequests.map((item, index) => (
+                    {currentItems.map((item, index) => (
                       <tr key={item.id_request_donasi || index}>
                         <td>{item.alamat_req_donasi}</td>
                         <td>{item.request_barang_donasi}</td>
                         <td>{item.organisasi_id}</td>
-                        <td className="action-buttons">
-                          <button className="edit-btn" onClick={() => handleEdit(index)}>
+                        <td className="org-action-buttons">
+                          <button
+                            className="org-edit-btn"
+                            onClick={() => handleEdit(index)}
+                          >
                             <i className="fas fa-edit"></i> Edit
                           </button>
                           <button
-                            className="delete-btn"
+                            className="org-delete-btn"
                             onClick={() => handleDelete(item.id_request_donasi)}
                           >
                             <i className="fas fa-trash-alt"></i> Hapus
@@ -252,75 +279,166 @@ const DashboardOrganisasi = () => {
                     ))}
                   </tbody>
                 </table>
+
+                {/* Paginasi */}
+                <div className="org-pagination">
+                  <button
+                    className="org-paginate-btn"
+                    onClick={prevPage}
+                    disabled={currentPage === 1}
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      className={`org-paginate-btn ${currentPage === number ? "org-active" : ""}`}
+                      onClick={() => paginate(number)}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  <button
+                    className="org-paginate-btn"
+                    onClick={nextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="no-data-container">
+              <div className="org-no-data-container">
+                <div className="org-no-data-icon">
+                  <i className="fas fa-box-open"></i>
+                </div>
                 <p>Belum ada permintaan donasi barang.</p>
+                <button className="org-add-btn-empty" onClick={() => setShowModal(true)}>
+                  <i className="fas fa-plus"></i> Tambah Request Pertama
+                </button>
               </div>
             )}
           </div>
-        </div>
-      </div>
+        );
+      default:
+        return null;
+    }
+  };
 
-      {showModal && (
-        <div className="modal">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h3>{editIndex !== null ? "Edit Request" : "Tambah Request"}</h3>
-              <button className="close-btn" onClick={() => setShowModal(false)}>
-                <i className="fas fa-times"></i>
-              </button>
+  if (loading) return <div className="org-loading-container">Memuat Dashboard...</div>;
+  if (error) return <div className="org-error-state">Error: {error}</div>;
+
+  return (
+    <div className="org-dashboard">
+      {/* Sidebar kiri */}
+      <aside className="org-sidebar">
+        <div className="org-sidebar-logo">REUSEMART ORG</div>
+        <nav className="org-sidebar-nav">
+          <ul>
+            <li
+              className={activeMenu === "dashboard" ? "org-active" : ""}
+              onClick={() => setActiveMenu("dashboard")}
+            >
+              Dashboard
+            </li>
+            <li
+              className={activeMenu === "requests" ? "org-active" : ""}
+              onClick={() => setActiveMenu("requests")}
+            >
+              Request Donasi Barang
+            </li>
+            <li onClick={handleLogout} className="org-logout-btn">
+              Logout
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      {/* Konten utama */}
+      <main className="org-dashboard-container">
+        <h2>
+          {activeMenu === "dashboard"
+            ? "Dashboard Organisasi"
+            : "Request Donasi Barang"}
+        </h2>
+        <p className="org-welcome-text">
+          Selamat datang, {orgProfile?.nama_organisasi || "Organisasi"}
+        </p>
+        {renderContent()}
+
+        {/* Modal */}
+        {showModal && (
+          <div className="org-modal">
+            <div className="org-modal-content">
+              <div className="org-modal-header">
+                <h3>{editIndex !== null ? "Edit Request" : "Tambah Request"}</h3>
+                <button className="org-close-btn" onClick={() => setShowModal(false)}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <div className="org-form-grid">
+                  <div className="org-form-group">
+                    <label>
+                      <i className="fas fa-map-marker-alt"></i> Alamat Request Donasi
+                    </label>
+                    <input
+                      type="text"
+                      value={newRequest.alamat_req_donasi}
+                      onChange={(e) =>
+                        setNewRequest({ ...newRequest, alamat_req_donasi: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="org-form-group">
+                    <label>
+                      <i className="fas fa-box"></i> Request Barang Donasi
+                    </label>
+                    <input
+                      type="text"
+                      value={newRequest.request_barang_donasi}
+                      onChange={(e) =>
+                        setNewRequest({ ...newRequest, request_barang_donasi: e.target.value })
+                      }
+                      required
+                    />
+                  </div>
+                  <div className="org-form-group">
+                    <label>
+                      <i className="fas fa-building"></i> Organisasi ID
+                    </label>
+                    <input
+                      type="text"
+                      value={newRequest.organisasi_id}
+                      onChange={(e) =>
+                        setNewRequest({ ...newRequest, organisasi_id: e.target.value })
+                      }
+                      required
+                      disabled
+                    />
+                  </div>
+                </div>
+                <div className="org-modal-actions">
+                  <button
+                    type="button"
+                    className="org-cancel-btn"
+                    onClick={() => setShowModal(false)}
+                  >
+                    <i className="fas fa-times"></i> Batal
+                  </button>
+                  <button type="submit" className="org-submit-btn">
+                    <i className="fas fa-save"></i>{" "}
+                    {editIndex !== null ? "Perbarui" : "Simpan"}
+                  </button>
+                </div>
+              </form>
             </div>
-
-            <form onSubmit={handleSubmit}>
-              <div className="form-grid">
-                <div className="form-group">
-                  <label>Alamat Request Donasi</label>
-                  <input
-                    type="text"
-                    value={newRequest.alamat_req_donasi}
-                    onChange={(e) =>
-                      setNewRequest({ ...newRequest, alamat_req_donasi: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Request Barang Donasi</label>
-                  <input
-                    type="text"
-                    value={newRequest.request_barang_donasi}
-                    onChange={(e) =>
-                      setNewRequest({ ...newRequest, request_barang_donasi: e.target.value })
-                    }
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Organisasi ID</label>
-                  <input
-                    type="text"
-                    value={newRequest.organisasi_id}
-                    onChange={(e) =>
-                      setNewRequest({ ...newRequest, organisasi_id: e.target.value })
-                    }
-                    required
-                    disabled
-                  />
-                </div>
-              </div>
-              <div className="modal-actions">
-                <button type="button" className="cancel-btn" onClick={() => setShowModal(false)}>
-                  Batal
-                </button>
-                <button type="submit" className="submit-btn">
-                  {editIndex !== null ? "Perbarui" : "Simpan"}
-                </button>
-              </div>
-            </form>
           </div>
-        </div>
-      )}
+        )}
+      </main>
+
+      <ToastContainer />
     </div>
   );
 };

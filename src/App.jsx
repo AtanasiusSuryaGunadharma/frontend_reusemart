@@ -24,6 +24,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
+import ErrorBoundary from "./ErrorBoundary";
 
 
 function App() {
@@ -46,8 +47,10 @@ function App() {
           <Route path="penitip/login" element={<LoginPenitip />} />
           <Route path="pembeli/registrasi" element={<RegistrasiPembeli />} />
           <Route path="organisasi/registrasi" element={<RegistrasiOrganisasi />} />
-          <Route path="/owner/dashboard" element={<DashboardOwner />} />
-          <Route path="/pegawaiGudang/dashboard" element={<DashboardPegawaiGudang />} />
+          <Route path="/owner/dashboard" element={<ErrorBoundary>
+              <DashboardOwner />
+            </ErrorBoundary>} />
+          <Route path="/pegawaiGudang/dashboard" element={<ErrorBoundary><DashboardPegawaiGudang /></ErrorBoundary>} />
           <Route path="/organisasi/dashboard" element={<DashboardOrganisasi />} />
           <Route path="/livecode/organisasi" element={<LiveCodeOrganisasi />} />
         </Routes>

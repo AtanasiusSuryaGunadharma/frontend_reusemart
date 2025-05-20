@@ -2,21 +2,19 @@ import React, { useState, useEffect } from "react";
 import "./dashboardPenitip.css";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 const PenitipDashboard = () => {
-  // State untuk profil Penitip (sama seperti sebelumnya)
   const [penitipProfile, setPenitipProfile] = useState(null);
-  // State BARU untuk menyimpan histori transaksi penitipan
   const [consignmentHistory, setConsignmentHistory] = useState([]);
-
-  // State indikator loading dan error
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeMenu, setActiveMenu] = useState("dashboard"); // State untuk menu aktif
+  const [currentHistoryPage, setCurrentHistoryPage] = useState(1); // State untuk halaman history
+  const itemsPerPage = 7; // Jumlah item per halaman
 
   const navigate = useNavigate();
 
-  // Handler Logout
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("authToken");
@@ -43,12 +41,12 @@ const PenitipDashboard = () => {
     toast.info("Anda telah logout.");
   };
 
-  // Fetch profil Penitip
   const fetchPenitipProfile = async (token, penitipId) => {
     try {
       const response = await axios.get(`http://127.0.0.1:8000/api/penitip/${penitipId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("Profile:", response.data); // Log data profil
       setPenitipProfile(response.data);
     } catch (err) {
       console.error("Error fetching penitip profile:", err);
@@ -56,13 +54,12 @@ const PenitipDashboard = () => {
     }
   };
 
-  // Fetch histori transaksi penitipan
   const fetchConsignmentHistory = async (token) => {
     try {
       const response = await axios.get(`http://127.0.0.1:8000/api/transaksi-penitipan/my-history`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Fetched Consignment History:", response.data);
+      console.log("Fetched Consignment History:", response.data); // Log data history
       setConsignmentHistory(response.data);
     } catch (err) {
       console.error("Error fetching consignment history:", err.response?.data || err.message);
@@ -71,13 +68,12 @@ const PenitipDashboard = () => {
     }
   };
 
-  // useEffect untuk memuat data saat komponen mount
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const penitipId = localStorage.getItem("id_penitip");
     const userRole = localStorage.getItem("userRole");
 
-    if (!token || !penitipId || userRole !== 'penitip') {
+    if (!token || !penitipId || userRole !== "penitip") {
       navigate("/generalLogin");
       toast.error("Anda tidak memiliki akses ke halaman ini atau sesi berakhir.");
       return;
@@ -96,28 +92,31 @@ const PenitipDashboard = () => {
     fetchData();
   }, [navigate]);
 
-  if (loading) return <div className="loading-state">Memuat Dashboard...</div>;
-  if (error) return <div className="error-state">Error: {error}</div>;
+  if (loading) return <div className="penitip-loading-state">Memuat Dashboard...</div>;
+  if (error) return <div className="penitip-error-state">Error: {error}</div>;
 
-  return (
-      <div className="penitip-dashboard-page">
-        <nav className="navbar">
-          <div className="logo">
-            <span>REUSEMART PENITIP</span>
-          </div>
-          <ul className="nav-links">
-            <li><Link to="/penitip/dashboard">Dashboard</Link></li>
-            <li><button onClick={handleLogout}>Logout</button></li>
-          </ul>
-        </nav>
+  // Logika paginasi untuk history transaksi
+  const indexOfLastHistory = currentHistoryPage * itemsPerPage;
+  const indexOfFirstHistory = indexOfLastHistory - itemsPerPage;
+  const currentHistory = consignmentHistory.slice(indexOfFirstHistory, indexOfLastHistory);
+  const totalHistoryPages = Math.ceil(consignmentHistory.length / itemsPerPage);
 
-        <div className="dashboard-container">
-          <h2>Dashboard Penitip</h2>
+  const paginateHistory = (pageNumber) => setCurrentHistoryPage(pageNumber);
+  const nextHistoryPage = () => {
+    if (currentHistoryPage < totalHistoryPages) setCurrentHistoryPage(currentHistoryPage + 1);
+  };
+  const prevHistoryPage = () => {
+    if (currentHistoryPage > 1) setCurrentHistoryPage(currentHistoryPage - 1);
+  };
 
-          <div className="dashboard-section">
+  const renderContent = () => {
+    switch (activeMenu) {
+      case "dashboard":
+        return (
+          <div className="penitip-dashboard-section">
             <h3>Profil Anda</h3>
             {penitipProfile ? (
-              <table className="profile-table">
+              <table className="penitip-profile-table">
                 <tbody>
                   <tr><td><strong>ID</strong></td><td>{penitipProfile.id_penitip}</td></tr>
                   <tr><td><strong>Nama</strong></td><td>{penitipProfile.nama_penitip}</td></tr>
@@ -134,70 +133,138 @@ const PenitipDashboard = () => {
               <p>Profil tidak dapat dimuat.</p>
             )}
           </div>
-
-
-          <div className="dashboard-section">
+        );
+      case "history":
+        return (
+          <div className="penitip-dashboard-section">
             <h3>History Transaksi Penitipan</h3>
-
             {consignmentHistory.length > 0 ? (
-              consignmentHistory.map(transaction => (
-                <div key={transaction.id_penitipan_transaksi} className="transaction-table-wrapper">
-                  <h4>ID Transaksi: {transaction.id_penitipan_transaksi}</h4>
-                  <table className="transaction-table">
-                    <thead>
-                      <tr>
-                        <th>Tanggal Mulai</th>
-                        <th>Tanggal Akhir</th>
-                        <th>Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>{transaction.tanggal_mulai_penitipan}</td>
-                        <td>{transaction.tanggal_akhir_penitipan}</td>
-                        <td>{transaction.status_penitipan}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-
-                  <h5>Detail Barang</h5>
-                  <table className="transaction-detail-table">
-                    <thead>
-                      <tr>
-                        <th>Nama Barang</th>
-                        <th>Jumlah Titip</th>
-                        <th>Terjual</th>
-                        <th>Gagal Terjual</th>
-                        <th>Bonus</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {transaction.detail_transaksi_penitipans?.length > 0 ? (
-                        transaction.detail_transaksi_penitipans.map(detail => (
-                          <tr key={detail.id_penitipan_detail_transaksi}>
-                            <td>{detail.barang?.nama_barang || 'N/A'}</td>
-                            <td>{detail.jumlah_barang_penitip}</td>
-                            <td>{detail.jumlah_item_terjual}</td>
-                            <td>{detail.jumlah_item_gagal_terjual}</td>
-                            <td>Rp. {detail.bonus_terjual_cepat}</td>
-                          </tr>
-                        ))
-                      ) : (
+              <>
+                {currentHistory.map((transaction) => (
+                  <div key={transaction.id_penitipan_transaksi || Math.random()} className="penitip-transaction-table-wrapper">
+                    <h4>ID Transaksi: {transaction.id_penitipan_transaksi}</h4>
+                    <table className="penitip-transaction-table">
+                      <thead>
                         <tr>
-                          <td colSpan="5">Tidak ada detail barang.</td>
+                          <th>Tanggal Mulai</th>
+                          <th>Tanggal Akhir</th>
+                          <th>Status</th>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td>{transaction.tanggal_mulai_penitipan || "Tidak Diketahui"}</td>
+                          <td>{transaction.tanggal_akhir_penitipan || "Tidak Diketahui"}</td>
+                          <td>{transaction.status_penitipan || "Tidak Diketahui"}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <h5>Detail Barang</h5>
+                    <table className="penitip-transaction-detail-table">
+                      <thead>
+                        <tr>
+                          <th>Nama Barang</th>
+                          <th>Jumlah Titip</th>
+                          <th>Terjual</th>
+                          <th>Gagal Terjual</th>
+                          <th>Bonus</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {transaction.detail_transaksi_penitipans?.length > 0 ? (
+                          transaction.detail_transaksi_penitipans.map((detail) => (
+                            <tr key={detail.id_penitipan_detail_transaksi || Math.random()}>
+                              <td>{detail.barang?.nama_barang || "N/A"}</td>
+                              <td>{detail.jumlah_barang_penitip || 0}</td>
+                              <td>{detail.jumlah_item_terjual || 0}</td>
+                              <td>{detail.jumlah_item_gagal_terjual || 0}</td>
+                              <td>Rp. {detail.bonus_terjual_cepat || 0}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="5">Tidak ada detail barang.</td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+                <div className="penitip-pagination">
+                  <button
+                    className="penitip-paginate-btn"
+                    onClick={prevHistoryPage}
+                    disabled={currentHistoryPage === 1}
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalHistoryPages }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      className={`penitip-paginate-btn ${currentHistoryPage === number ? "penitip-active" : ""}`}
+                      onClick={() => paginateHistory(number)}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  <button
+                    className="penitip-paginate-btn"
+                    onClick={nextHistoryPage}
+                    disabled={currentHistoryPage === totalHistoryPages}
+                  >
+                    Next
+                  </button>
                 </div>
-              ))
+              </>
             ) : (
               <p>Belum ada histori transaksi penitipan.</p>
             )}
           </div>
-        </div>
-      </div>
-    );
+        );
+      default:
+        return null;
+    }
   };
+
+  return (
+    <div className="penitip-dashboard">
+      <aside className="penitip-sidebar">
+        <div className="penitip-sidebar-logo">REUSEMART PENITIP</div>
+        <nav className="penitip-sidebar-nav">
+          <ul>
+            <li
+              className={activeMenu === "dashboard" ? "penitip-active" : ""}
+              onClick={() => setActiveMenu("dashboard")}
+            >
+              Dashboard
+            </li>
+            <li
+              className={activeMenu === "history" ? "penitip-active" : ""}
+              onClick={() => setActiveMenu("history")}
+            >
+              History Transaksi
+            </li>
+            <li onClick={handleLogout} className="penitip-logout-btn">
+              Logout
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <main className="penitip-dashboard-container">
+        <h2>
+          {activeMenu === "dashboard"
+            ? "Dashboard Penitip"
+            : "History Transaksi Penitipan"}
+        </h2>
+        <p className="penitip-welcome-text">
+          Selamat datang, {penitipProfile?.nama_penitip || "Penitip"}
+        </p>
+        {renderContent()}
+      </main>
+    </div>
+  );
+};
 
 export default PenitipDashboard;

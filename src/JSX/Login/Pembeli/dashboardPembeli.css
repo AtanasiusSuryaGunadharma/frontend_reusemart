@@ -9,7 +9,7 @@
     background: #f9f9f9; /* Sesuaikan background */
     min-height: 100vh;
     width: 100vw;
-    overflow-x: hidden; /* Pastikan tidak ada scrollbar horizontal pada body */
+     /* Pastikan tidak ada scrollbar horizontal pada body */
     font-family: sans-serif; /* Atur font dasar */
     color: #333; /* Atur warna teks dasar */
 }
