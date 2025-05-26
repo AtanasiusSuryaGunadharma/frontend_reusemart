@@ -384,9 +384,9 @@ const PembeliDashboard = () => {
           <span>REUSEMART PEMBELI</span>
         </div>
         <ul className="nav-links">
-          <li><Link to="/pembeli/dashboard">Dashboard</Link></li>
-          {/* Link ke halaman shop bisa ditambahkan */}
-          {/* <li><Link to="/shop">Shop</Link></li> */}
+          <li><Link to="/shop-pembeli">Shop</Link></li> {/* Link ke halaman ini */}
+          <li><Link to="/pembeli/dashboard">Profil</Link></li> {/* Link ke dashboard (sekarang profil) */}
+          <li><Link to="/cart">Keranjang</Link></li> {/* Link ke halaman keranjang */}
           <li><button onClick={handleLogout} className="logout-btn">Logout</button></li>
         </ul>
       </nav>

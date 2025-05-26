@@ -5,8 +5,6 @@
   box-sizing: border-box;
 }
 
-
-
 /* Penitip Dashboard */
 .penitip-dashboard {
   display: flex;
@@ -18,7 +16,7 @@
 /* Sidebar kiri */
 .penitip-sidebar {
   width: 250px;
-  background-color: #1976d2; /* Warna hijau utama */
+  background-color: #1976d2; /* Warna utama */
   color: white;
   display: flex;
   flex-direction: column;
@@ -54,7 +52,7 @@
 }
 
 .penitip-sidebar-nav ul li:hover {
-  background-color: #004d91; /* Variasi hijau saat hover */
+  background-color: #004d91; /* Variasi warna saat hover */
 }
 
 .penitip-sidebar-nav ul li.penitip-active {
@@ -106,6 +104,26 @@
   max-width: 1200px;
 }
 
+/* Search Container */
+.penitip-search-container {
+  margin-bottom: 1.5rem;
+}
+
+.penitip-search-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.penitip-search-input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
 /* Profil dan tabel */
 .penitip-profile-table {
   width: 100%;
@@ -122,6 +140,67 @@
 .penitip-profile-table td:first-child {
   font-weight: 600;
   width: 30%;
+}
+
+/* Daftar Barang Table */
+.penitip-daftar-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.penitip-daftar-table th {
+  background-color: #f4f4f4;
+  padding: 0.75rem;
+  border-bottom: 2px solid #ddd;
+  font-weight: 600;
+}
+
+.penitip-daftar-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.95rem;
+}
+
+.penitip-daftar-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Action Buttons */
+.penitip-detail-btn {
+  padding: 0.5rem 1rem;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.penitip-detail-btn:hover {
+  background-color: #1565c0;
+}
+
+.penitip-extend-btn {
+  padding: 0.5rem 1rem;
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.penitip-extend-btn:hover:not(:disabled) {
+  background-color: #1b5e20;
+}
+
+.penitip-extend-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
 }
 
 /* Transaction tables */
@@ -150,6 +229,82 @@
   padding: 0.75rem;
   border-bottom: 1px solid #ddd;
   font-size: 0.95rem;
+}
+
+/* Modal Styles */
+.penitip-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.penitip-modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.penitip-modal-content h3 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+.penitip-modal-details p {
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.penitip-images-container {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.penitip-image-wrapper {
+  flex: 1;
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.penitip-item-photo {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.penitip-close-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.penitip-close-btn:hover {
+  background-color: #b71c1c;
 }
 
 /* Paginasi */
@@ -214,6 +369,20 @@
     padding: 0.4rem 0.8rem;
     font-size: 0.9rem;
   }
+
+  .penitip-modal-content {
+    width: 95%;
+    padding: 1.5rem;
+  }
+
+  .penitip-daftar-table {
+    font-size: 0.9rem;
+  }
+
+  .penitip-daftar-table th,
+  .penitip-daftar-table td {
+    padding: 0.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -256,5 +425,56 @@
   .penitip-paginate-btn {
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
+  }
+
+  .penitip-modal-content {
+    width: 95%;
+    height: 90vh;
+    padding: 1rem;
+  }
+
+  .penitip-daftar-table {
+    font-size: 0.8rem;
+  }
+
+  .penitip-daftar-table th,
+  .penitip-daftar-table td {
+    padding: 0.4rem;
+  }
+
+  .penitip-detail-btn,
+  .penitip-extend-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .penitip-search-input {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+
+  .penitip-images-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .penitip-image-wrapper {
+    max-width: 100%;
+  }
+}
+
+/* Additional styles for better mobile experience */
+@media (max-width: 600px) {
+  .penitip-daftar-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .penitip-transaction-table,
+  .penitip-transaction-detail-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 }

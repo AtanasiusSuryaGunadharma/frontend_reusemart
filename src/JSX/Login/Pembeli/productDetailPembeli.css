@@ -1,0 +1,111 @@
+/* src\JSX\Login\Pembeli\productDetailPembeli.css */
+/* Salin seluruh isi dari src\JSX\NoLogin\productDetail.css */
+
+/* --- Bagian yang perlu disesuaikan dari productDetail.css --- */
+
+/* Navbar (Sesuaikan dengan shopPembeli.css) */
+.navbar {
+    background-color: #0056a3; /* Warna navbar berbeda dari guest */
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    flex-wrap: wrap; /* Izinkan item wrap */
+    gap: 1rem;
+}
+
+.navbar .logo img { /* Gaya logo gambar */
+    height: 40px;
+}
+
+.navbar .logo span { /* Gaya teks logo */
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white; /* Sesuaikan warna teks logo di navbar */
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    flex-grow: 1;
+    justify-content: flex-end; /* Dorong link ke kanan */
+    flex-wrap: wrap;
+}
+
+.nav-links li a,
+.nav-links button { /* Terapkan gaya ke Link dan Button Logout */
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-links li a:hover,
+.nav-links button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.logout-btn {
+    background-color: #dc3545; /* Warna tombol logout */
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.nav-icons { /* Jika Anda punya icon di navbar */
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  color: white;
+}
+.nav-icons i {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+
+/* Gaya Tombol Add to Cart (sesuaikan dengan shopPembeli.css) */
+.add-to-cart-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #28a745; /* Hijau */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+    width: 100%; /* Ambil seluruh lebar */
+    max-width: 200px; /* Maksimum lebar tombol */
+}
+
+.add-to-cart-btn:hover:not(:disabled) {
+    background-color: #218838;
+}
+
+.add-to-cart-btn:disabled {
+    background-color: #cccccc; /* Warna abu-abu saat disabled */
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+/* Sesuaikan juga gaya lain jika ada di productDetail.css */
+/* Contoh: product-detail-page, product-detail-container, product-detail, product-images, main-image, thumbnail-images, product-info, price, description, rating, details */
+/* ... (salin gaya lain dari productDetail.css di sini) ... */
+
+/* Responsivitas (salin dari productDetail.css) */
+@media (max-width: 768px) {
+  /* ... (gaya responsif lainnya) ... */
+}
