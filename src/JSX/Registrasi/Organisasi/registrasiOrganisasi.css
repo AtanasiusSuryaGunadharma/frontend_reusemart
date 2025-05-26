@@ -9,7 +9,6 @@
   background: #f9f9f9; /* Sesuaikan background */
   min-height: 100vh;
   width: 100vw;
-  overflow-x: hidden;
 }
 
 /* Re-use gaya navbar jika ada */

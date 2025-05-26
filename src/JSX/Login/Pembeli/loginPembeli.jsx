@@ -48,7 +48,7 @@ const LoginPembeli = () => { // <-- Ganti nama komponen menjadi LoginPembeli
         localStorage.setItem("poin_loyalitas", user.poin_loyalitas); // Simpan poin
         localStorage.setItem("tgl_lahir_pembeli", user.tgl_lahir_pembeli); // Simpan tanggal lahir
 
-        navigate("/pembeli/dashboard"); // <-- Ganti dengan rute halaman tujuan pembeli Anda (misal: /shop, /home, atau /pembeli/dashboard)
+        navigate("/shop-pembeli"); // <-- Ganti dengan rute halaman tujuan pembeli Anda (misal: /shop, /home, atau /pembeli/dashboard)
 
       } else {
         // Tangani kasus sukses tapi format response tidak sesuai harapan (kurang token/user)

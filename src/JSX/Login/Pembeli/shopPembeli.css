@@ -15,12 +15,8 @@ body, html {
 
 /* Navbar */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
-  background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #0056a3; /* Warna navbar berbeda dari guest */
+    color: white;
 }
 
 .navbar .logo img {
@@ -44,6 +40,30 @@ body, html {
   font-size: 18px;
   cursor: pointer;
   color: #333;
+}
+
+.navbar .nav-links li a {
+    color: white;
+}
+.navbar .nav-links li a:hover {
+    color: #e0e0e0;
+}
+
+.navbar .login-link { /* Ini adalah link login guest, mungkin tidak lagi relevan di shopPembeli */
+    display: none; /* Sembunyikan jika tidak ingin ada link login di navbar pembeli yang sudah login */
+}
+
+/* Add to cart button style is already defined in shop.css, but ensure it applies */
+.product-card .add-to-cart-btn {
+    margin-top: 1rem; /* Adjust margin if needed after putting outside Link */
+}
+
+.product-card .product-link {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Biarkan link mengambil ruang yang tersedia */
 }
 
 /* Shop Container */
@@ -164,3 +184,4 @@ body, html {
   border-radius: 5px;
   width: 45%;
 }
+
