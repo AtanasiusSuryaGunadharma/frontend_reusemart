@@ -187,6 +187,7 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
                     <li><Link to="/shop-pembeli">Shop</Link></li>
                     <li><Link to="/pembeli/dashboard">Profil</Link></li> {/* Link ke dashboard (sekarang profil) */}
                     <li><Link to="/cart">Keranjang</Link></li>
+                    <li><Link to="/pembeli/history">History</Link></li>
                     <li><button onClick={handleLogout} className="logout-btn">Logout</button></li>
                 </ul>
                 <div className="nav-icons">
@@ -224,6 +225,19 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
                         <p className="description">Garansi: {formatDate(product.tanggal_garansi)}</p>
                         <div className="rating">
                             <span>{product.berat_barang || 0} kg</span>
+                        </div>
+                        <div className="penitip-info">
+                            <p><strong>Penitip:</strong> {product.penitip?.nama_penitip || "N/A"}</p>
+                            <p>
+                                <strong>Rating Penitip:</strong>{" "}
+                                {product.average_penitip_rating ? (
+                                    <>
+                                        {product.average_penitip_rating} ★
+                                    </>
+                                ) : (
+                                    "Belum ada rating"
+                                )}
+                            </p>
                         </div>
                         <div className="details">
                            <p>

@@ -55,7 +55,7 @@ const RegistrasiPembeli = () => {
         no_telepon_pembeli: "",
       });
 
-      navigate("/pembeli/login");
+      navigate("/generalLogin");
 
     } catch (err) {
       console.error("Registration error:", err.response ? err.response.data : err.message);

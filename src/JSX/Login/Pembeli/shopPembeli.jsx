@@ -195,6 +195,7 @@ const ShopPembeli = () => {
                     <li><Link to="/shop-pembeli">Shop</Link></li>
                     <li><Link to="/pembeli/dashboard">Profil</Link></li>
                     <li><Link to="/cart">Keranjang</Link></li>
+                    <li><Link to="/pembeli/history">History</Link></li>
                     <li><button onClick={handleLogout} className="logout-btn">Logout</button></li>
                 </ul>
                 <div className="nav-icons">

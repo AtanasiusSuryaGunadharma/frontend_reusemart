@@ -1,4 +1,3 @@
-// src\App.jsx (Modified)
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
@@ -15,6 +14,7 @@ import GeneralLogin from "./JSX/Login/generalLogin.jsx"; // Halaman pilihan Logi
 import LoginOrganisasi from './JSX/Login/Organisasi/loginOrganisasi.jsx';
 import LoginPembeli from './JSX/Login/pembeli/loginPembeli.jsx'; // Login Pembeli
 import LoginPenitip from './JSX/Login/Penitip/loginPenitip.jsx';
+import PaymentVerification from './JSX/Login/CS/PaymentVerification.jsx';
 
 import GeneralRegistrasi from "./JSX/Registrasi/generalRegistrasi.jsx";
 import RegistrasiPembeli from './JSX/Registrasi/Pembeli/registrasiPembeli.jsx';
@@ -29,6 +29,9 @@ import DashboardOrganisasi from './JSX/Login/Organisasi/dashboardOrganisasi.jsx'
 import ShopPembeli from './JSX/Login/Pembeli/shopPembeli.jsx'; // <-- BARU
 import Cart from './JSX/Login/Pembeli/Cart.jsx'; // <-- BARU
 import ProductDetailPembeli from './JSX/Login/Pembeli/productDetailPembeli.jsx'; // <-- BARU: Import ProductDetailPembeli
+import Checkout from './JSX/Login/Pembeli/Checkout.jsx'; 
+import PaymentPage from './JSX/Login/Pembeli/PaymentPage.jsx';
+import TransactionHistory from './JSX/Login/Pembeli/transaksiHistory.jsx';
 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -75,6 +78,14 @@ function App() {
 
           {/* Rute BARU untuk DETAIL PRODUK versi Pembeli yang sudah login */}
           <Route path="/pembeli/barang/:id" element={<ProductDetailPembeli />} /> {/* <-- BARU */}
+
+          <Route path="/checkout" element={<Checkout />} /> {/* <-- BARU: Rute Checkout */}
+
+          <Route path="/payment" element={<PaymentPage />} />
+
+          <Route path="/payment-verification" element={<PaymentVerification />} />
+
+          <Route path="/pembeli/history" element={<TransactionHistory />} />
         </Routes>
       </Router>
       <ToastContainer /> {/* ToastContainer di sini */}
