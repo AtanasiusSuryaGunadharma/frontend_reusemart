@@ -53,7 +53,7 @@ const GeneralLogin = () => {
           case 'cs':
             navigate("/cs/dashboard");
             break;
-          case 'warehouse':
+          case 'pegawaiGudang':
             navigate("/pegawaiGudang/dashboard");
             break;
           case 'hunter':

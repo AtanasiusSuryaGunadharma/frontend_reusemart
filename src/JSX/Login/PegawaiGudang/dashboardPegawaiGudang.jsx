@@ -27,7 +27,7 @@ const DashboardPegawaiGudang = () => {
     deskripsi_barang: "",
     harga_barang: "",
     berat_barang: "",
-    status_barang: "tersedia",
+    status_barang: "aktif",
     tanggal_garansi: "",
     id_kategoribarang: "",
     jumlah_barang: "",
@@ -181,7 +181,7 @@ const DashboardPegawaiGudang = () => {
         deskripsi_barang: "",
         harga_barang: "",
         berat_barang: "",
-        status_barang: "tersedia",
+        status_barang: "aktif",
         tanggal_garansi: "",
         id_kategoribarang: "",
         jumlah_barang: "",
@@ -258,7 +258,7 @@ const DashboardPegawaiGudang = () => {
       deskripsi_barang: "",
       harga_barang: "",
       berat_barang: "",
-      status_barang: "tersedia",
+      status_barang: "aktif",
       tanggal_garansi: "",
       id_kategoribarang: "",
       jumlah_barang: "",
@@ -561,8 +561,8 @@ const DashboardPegawaiGudang = () => {
                     onChange={(e) => setAddData({ ...addData, status_barang: e.target.value })}
                     required
                   >
-                    <option value="tersedia">Tersedia</option>
-                    <option value="tidak tersedia">Tidak Tersedia</option>
+                    <option value="aktif">aktif</option>
+                    <option value="tidak aktif">Tidak aktif</option>
                   </select>
                 </div>
                 <div className="warehouse-form-group">

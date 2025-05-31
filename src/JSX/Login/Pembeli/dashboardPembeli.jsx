@@ -387,6 +387,7 @@ const PembeliDashboard = () => {
           <li><Link to="/shop-pembeli">Shop</Link></li> {/* Link ke halaman ini */}
           <li><Link to="/pembeli/dashboard">Profil</Link></li> {/* Link ke dashboard (sekarang profil) */}
           <li><Link to="/cart">Keranjang</Link></li> {/* Link ke halaman keranjang */}
+          <li><Link to="/pembeli/history">History</Link></li>
           <li><button onClick={handleLogout} className="logout-btn">Logout</button></li>
         </ul>
       </nav>

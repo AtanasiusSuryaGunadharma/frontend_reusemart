@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-escape */
 import React, { useState, useEffect } from "react";
 import "./cs.css";
 import { useNavigate } from "react-router-dom";

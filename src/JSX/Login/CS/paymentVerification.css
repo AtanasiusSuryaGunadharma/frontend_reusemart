@@ -1,0 +1,306 @@
+/* src\JSX\Login\CS\paymentVerification.css */
+/* General Page Layout */
+.payment-verification-page {
+    display: flex;
+    flex-direction: column;
+    background: #f9f9f9;
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+    font-family: sans-serif;
+    color: #333;
+}
+
+/* Navbar (copy from checkout.css/shopPembeli.css for consistency) */
+.payment-verification-navbar {
+    background-color: #0056a3;
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.payment-verification-logo img { height: 40px; margin-right: 0.5rem; }
+.payment-verification-logo span { font-size: 1.5rem; font-weight: bold; }
+
+.payment-verification-nav-links {
+    list-style: none; margin: 0; padding: 0; display: flex; gap: 1.5rem; align-items: center; flex-grow: 1; justify-content: flex-end; flex-wrap: wrap;
+}
+.payment-verification-nav-links li a,
+.payment-verification-nav-links button {
+    color: white; text-decoration: none; font-size: 1rem; padding: 0.5rem 1rem; border-radius: 5px; background: transparent; border: none; cursor: pointer; transition: all 0.3s ease;
+}
+.payment-verification-nav-links li a:hover,
+.payment-verification-nav-links button:hover { background-color: rgba(255, 255, 255, 0.1); }
+.payment-verification-logout-btn { background-color: #dc3545; }
+.payment-verification-logout-btn:hover { background-color: #c82333; }
+
+
+/* Main Payment Container */
+.payment-verification-container {
+    padding: 2rem;
+    max-width: 1000px;
+    width: 95%;
+    margin: 20px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+    /* text-align: center; */ /* Hapus jika tidak ingin konten di tengah */
+}
+
+.payment-verification-container h2 {
+    text-align: center;
+    color: #0056a3;
+    margin-bottom: 2rem;
+    font-size: 2em;
+}
+
+/* Search Bar */
+.payment-verification-search-bar {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+.payment-verification-search-bar input {
+    width: 100%;
+    max-width: 400px;
+    padding: 0.8rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+/* Transaction List & Card */
+.payment-verification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.transaction-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fefefe;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    padding: 1.5rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.card-header h4 {
+    margin: 0;
+    color: #0056a3;
+    font-size: 1.1rem;
+}
+
+.card-header span {
+    font-size: 0.95rem;
+    color: #666;
+}
+
+.card-body p {
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    text-align: left; /* Teks rata kiri */
+}
+.card-body p strong {
+    color: #333;
+}
+
+.payment-status {
+    font-weight: bold;
+    padding: 0.3em 0.6em;
+    border-radius: 4px;
+    color: white;
+}
+
+.payment-status.menunggu_pembayaran { background-color: #ffc107; color: #333;}
+.payment-status.dibayar { background-color: #17a2b8; }
+.payment-status.valid { background-color: #28a745; }
+.payment-status.tidak_valid, .payment-status.dibatalkan { background-color: #dc3545; }
+
+.payment-proof-section {
+    margin-top: 1.5rem;
+    border-top: 1px dashed #eee;
+    padding-top: 1.5rem;
+    text-align: left; /* Teks rata kiri */
+}
+.payment-proof-section p {
+    font-weight: bold;
+    margin-bottom: 0.8rem;
+}
+.payment-proof-section img.proof-image {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-top: 0.5rem;
+}
+.payment-proof-section a {
+    display: block;
+    text-align: center;
+    margin-top: 0.5rem;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+.payment-proof-section a:hover {
+    text-decoration: underline;
+}
+.no-proof {
+    font-style: italic;
+    color: #999;
+}
+
+.item-list-preview {
+    margin-top: 1.5rem;
+    border-top: 1px dashed #eee;
+    padding-top: 1.5rem;
+    text-align: left; /* Teks rata kiri */
+}
+.item-list-preview h5 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-size: 1rem;
+}
+.item-list-preview ul {
+    list-style: disc inside;
+    padding-left: 1rem;
+    margin: 0;
+}
+.item-list-preview li {
+    font-size: 0.95rem;
+    color: #666;
+    margin-bottom: 0.2rem;
+}
+
+.card-actions {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end; /* Tombol ke kanan */
+    gap: 1rem;
+}
+
+.verify-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.verify-btn.success { background-color: #28a745; color: white; }
+.verify-btn.success:hover { background-color: #218838; }
+.verify-btn.danger { background-color: #dc3545; color: white; }
+.verify-btn.danger:hover { background-color: #c82333; }
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    gap: 0.5rem;
+}
+.pagination button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.pagination button:hover:not(:disabled) {
+    background-color: #f0f0f0;
+}
+.pagination button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+.pagination button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Loading and Error States */
+.payment-verification-loading-state,
+.payment-verification-error-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px); /* Adjust for navbar height */
+    font-size: 1.5em;
+    color: #0056a3;
+    text-align: center;
+}
+.payment-verification-error-state {
+    color: #dc3545;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .payment-verification-navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+    }
+    .payment-verification-nav-links {
+        justify-content: center;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    .payment-verification-nav-links li {
+        width: 100%;
+        text-align: center;
+    }
+    .payment-verification-container {
+        padding: 1rem;
+        width: 98%;
+    }
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .card-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    .verify-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-verification-container h2 {
+        font-size: 1.5em;
+    }
+    .payment-verification-search-bar input {
+        padding: 0.6rem;
+        font-size: 0.9em;
+    }
+    .transaction-card {
+        padding: 1rem;
+    }
+    .card-header h4 {
+        font-size: 1em;
+    }
+    .card-body p, .item-list-preview li {
+        font-size: 0.9em;
+    }
+}
