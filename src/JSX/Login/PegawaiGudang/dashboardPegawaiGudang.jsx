@@ -7,6 +7,9 @@ import { toast } from "react-toastify";
 const DashboardPegawaiGudang = () => {
   const [employeeProfile, setEmployeeProfile] = useState(null);
   const [consignmentTransactions, setConsignmentTransactions] = useState([]);
+  const [barangList, setBarangList] = useState([]); // State untuk daftar barang
+  const [selectedBarang, setSelectedBarang] = useState(null); // State untuk barang yang dipilih
+  const [showDetailModal, setShowDetailModal] = useState(false); // State untuk modal detail barang
   const [dropdownData, setDropdownData] = useState({
     kategoriBarangs: [],
     penitips: [],
@@ -16,6 +19,7 @@ const DashboardPegawaiGudang = () => {
   const [error, setError] = useState(null);
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [currentItemsPage, setCurrentItemsPage] = useState(1);
+  const [currentBarangPage, setCurrentBarangPage] = useState(1); // Pagination untuk daftar barang
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -27,10 +31,10 @@ const DashboardPegawaiGudang = () => {
     deskripsi_barang: "",
     harga_barang: "",
     berat_barang: "",
-    status_barang: "aktif",
+    status_barang: "tersedia",
     tanggal_garansi: "",
     id_kategoribarang: "",
-    jumlah_barang: "",
+    jumlah_barang: "1",
     penitip_id: "",
     pegawai_id: "",
     tanggal_mulai: "",
@@ -48,6 +52,8 @@ const DashboardPegawaiGudang = () => {
     tanggal_batas_penitipan: "",
     penitip_id_penitipan: "",
     pegawai_id_penitipan: "",
+    image: null,
+    image2: null,
   });
 
   const navigate = useNavigate();
@@ -93,13 +99,47 @@ const DashboardPegawaiGudang = () => {
       const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Consignment Transactions:", response.data);
+      console.log("API Response - Consignment Transactions:", response.data);
       setConsignmentTransactions(Array.isArray(response.data) ? response.data : []);
     } catch (err) {
       console.error("Error fetching consignment transactions:", err.response?.data || err.message);
-      setError("Gagal memuat daftar transaksi penitipan.");
-      if (err.response?.status === 401) handleLogout();
+      if (err.response?.status === 404) {
+        console.warn("Endpoint search belum tersedia. Menggunakan data yang sudah dimuat.");
+      } else {
+        setError("Gagal memuat daftar transaksi penitipan.");
+        if (err.response?.status === 401) handleLogout();
+      }
       setConsignmentTransactions([]);
+    }
+  };
+
+  const fetchBarangList = async (token) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/barang/all`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("API Response - Barang List:", response.data);
+      setBarangList(Array.isArray(response.data) ? response.data : []);
+    } catch (err) {
+      console.error("Error fetching barang list:", err.response?.data || err.message);
+      setError("Gagal memuat daftar barang titipan.");
+      if (err.response?.status === 401) handleLogout();
+      setBarangList([]);
+    }
+  };
+
+  const fetchBarangDetail = async (token, id) => {
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/api/barang/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log("API Response - Barang Detail:", response.data);
+      setSelectedBarang(response.data);
+      setShowDetailModal(true);
+    } catch (err) {
+      console.error("Error fetching barang detail:", err.response?.data || err.message);
+      toast.error("Gagal memuat detail barang.");
+      if (err.response?.status === 401) handleLogout();
     }
   };
 
@@ -181,10 +221,10 @@ const DashboardPegawaiGudang = () => {
         deskripsi_barang: "",
         harga_barang: "",
         berat_barang: "",
-        status_barang: "aktif",
+        status_barang: "tersedia",
         tanggal_garansi: "",
         id_kategoribarang: "",
-        jumlah_barang: "",
+        jumlah_barang: "1",
         penitip_id: "",
         pegawai_id: "",
         tanggal_mulai: "",
@@ -210,7 +250,7 @@ const DashboardPegawaiGudang = () => {
       !editData.pegawai_id_penitipan ||
       !editData.status_penitipan
     ) {
-      toast.error("Semua field wajib diisi kecuali tanggal diperpanjang.");
+      toast.error("Semua field wajib diisi kecuali tanggal diperpanjang dan gambar.");
       return;
     }
 
@@ -225,26 +265,43 @@ const DashboardPegawaiGudang = () => {
     }
 
     const token = localStorage.getItem("authToken");
+    const formData = new FormData();
+    formData.append("tanggal_mulai_penitipan", editData.tanggal_mulai_penitipan);
+    formData.append("tanggal_akhir_penitipan", editData.tanggal_akhir_penitipan);
+    formData.append("tanggal_diperpanjang", editData.tanggal_diperpanjang || "");
+    formData.append("status_penitipan", editData.status_penitipan);
+    formData.append("tanggal_batas_penitipan", editData.tanggal_batas_penitipan);
+    formData.append("penitip_id_penitipan", editData.penitip_id_penitipan);
+    formData.append("pegawai_id_penitipan", editData.pegawai_id_penitipan);
+    if (editData.image) formData.append("image", editData.image);
+    if (editData.image2) formData.append("image2", editData.image2);
 
     try {
-      const payload = {
-        tanggal_mulai_penitipan: editData.tanggal_mulai_penitipan,
-        tanggal_akhir_penitipan: editData.tanggal_akhir_penitipan,
-        tanggal_diperpanjang: editData.tanggal_diperpanjang || null,
-        status_penitipan: editData.status_penitipan,
-        tanggal_batas_penitipan: editData.tanggal_batas_penitipan,
-        penitip_id_penitipan: editData.penitip_id_penitipan,
-        pegawai_id_penitipan: editData.pegawai_id_penitipan,
-      };
-
-      await axios.put(`http://127.0.0.1:8000/api/transaksi-penitipan/${selectedTransaction.id_penitipan_transaksi}`, payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
+      const response = await axios.post(
+        `http://127.0.0.1:8000/api/transaksi-penitipan/${selectedTransaction.id_penitipan_transaksi}/update`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       await fetchConsignmentTransactions(token, searchQuery);
-      toast.success("Transaksi barang titipan berhasil diperbarui.");
+      toast.success(response.data.message || "Transaksi dan gambar barang titipan berhasil diperbarui.");
       setShowEditModal(false);
       setSelectedTransaction(null);
+      setEditData({
+        tanggal_mulai_penitipan: "",
+        tanggal_akhir_penitipan: "",
+        tanggal_diperpanjang: "",
+        status_penitipan: "",
+        tanggal_batas_penitipan: "",
+        penitip_id_penitipan: "",
+        pegawai_id_penitipan: "",
+        image: null,
+        image2: null,
+      });
     } catch (err) {
       console.error("Error updating transaction:", err.response?.data || err.message);
       toast.error(err.response?.data?.message || "Gagal memperbarui transaksi.");
@@ -258,10 +315,10 @@ const DashboardPegawaiGudang = () => {
       deskripsi_barang: "",
       harga_barang: "",
       berat_barang: "",
-      status_barang: "aktif",
+      status_barang: "tersedia",
       tanggal_garansi: "",
       id_kategoribarang: "",
-      jumlah_barang: "",
+      jumlah_barang: "1",
       penitip_id: "",
       pegawai_id: "",
       tanggal_mulai: "",
@@ -283,7 +340,14 @@ const DashboardPegawaiGudang = () => {
       tanggal_batas_penitipan: "",
       penitip_id_penitipan: "",
       pegawai_id_penitipan: "",
+      image: null,
+      image2: null,
     });
+  };
+
+  const handleCloseDetailModal = () => {
+    setShowDetailModal(false);
+    setSelectedBarang(null);
   };
 
   useEffect(() => {
@@ -297,11 +361,33 @@ const DashboardPegawaiGudang = () => {
       return;
     }
 
+    const today = new Date();
+    const tanggalMulai = today.toISOString().split("T")[0];
+
+    const tanggalAkhirDate = new Date(today);
+    tanggalAkhirDate.setDate(today.getDate() + 30);
+    const tanggalAkhir = tanggalAkhirDate.toISOString().split("T")[0];
+
+    const tanggalBatasDate = new Date(tanggalAkhirDate);
+    tanggalBatasDate.setDate(tanggalAkhirDate.getDate() + 7);
+    const tanggalBatas = tanggalBatasDate.toISOString().split("T")[0];
+
+    setAddData((prev) => ({
+      ...prev,
+      status_barang: "tersedia",
+      jumlah_barang: "1",
+      pegawai_id: employeeId,
+      tanggal_mulai: tanggalMulai,
+      tanggal_akhir: tanggalAkhir,
+      tanggal_batas: tanggalBatas,
+    }));
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
       await fetchEmployeeProfile(token, employeeId);
       await fetchConsignmentTransactions(token);
+      await fetchBarangList(token); // Fetch daftar barang saat inisialisasi
       await fetchDropdownData(token);
       setLoading(false);
     };
@@ -314,13 +400,34 @@ const DashboardPegawaiGudang = () => {
 
   const indexOfLastItem = currentItemsPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const filteredTransactions = consignmentTransactions.filter((transaction) =>
-    transaction &&
-    transaction.id_penitipan_transaksi &&
-    transaction.id_penitipan_transaksi.toString().includes(searchQuery)
-  );
+
+  const filteredTransactions = consignmentTransactions.filter((transaction) => {
+    if (!transaction) return false;
+
+    const searchLower = searchQuery.toLowerCase();
+    const detail = transaction.detail_transaksi_penitipans?.[0];
+    const namaBarang = detail?.barang?.nama_barang?.toLowerCase() || '';
+    const jumlahBarang = detail?.jumlah_barang_penitip?.toString() || '';
+
+    return (
+      transaction.id_penitipan_transaksi?.toString().includes(searchQuery) ||
+      namaBarang.includes(searchLower) ||
+      jumlahBarang.includes(searchQuery) ||
+      transaction.tanggal_mulai_penitipan?.includes(searchQuery) ||
+      transaction.tanggal_akhir_penitipan?.includes(searchQuery) ||
+      transaction.status_penitipan?.toLowerCase().includes(searchLower) ||
+      transaction.penitip?.nama_penitip?.toLowerCase().includes(searchLower) ||
+      transaction.pegawai?.nama_pegawai?.toLowerCase().includes(searchLower)
+    );
+  });
+
   const currentTransactions = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
   const totalItemsPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+
+  const indexOfLastBarang = currentBarangPage * itemsPerPage;
+  const indexOfFirstBarang = indexOfLastBarang - itemsPerPage;
+  const currentBarang = barangList.slice(indexOfFirstBarang, indexOfLastBarang);
+  const totalBarangPages = Math.ceil(barangList.length / itemsPerPage);
 
   const paginateItems = (pageNumber) => setCurrentItemsPage(pageNumber);
   const nextItemsPage = () => {
@@ -330,10 +437,18 @@ const DashboardPegawaiGudang = () => {
     if (currentItemsPage > 1) setCurrentItemsPage(currentItemsPage - 1);
   };
 
+  const paginateBarang = (pageNumber) => setCurrentBarangPage(pageNumber);
+  const nextBarangPage = () => {
+    if (currentBarangPage < totalBarangPages) setCurrentBarangPage(currentBarangPage + 1);
+  };
+  const prevBarangPage = () => {
+    if (currentBarangPage > 1) setCurrentBarangPage(currentBarangPage - 1);
+  };
+
   const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
+    const query = e.target.value;
+    setSearchQuery(query);
     setCurrentItemsPage(1);
-    fetchConsignmentTransactions(localStorage.getItem("authToken"), e.target.value);
   };
 
   const handleAddTransaction = () => {
@@ -350,8 +465,15 @@ const DashboardPegawaiGudang = () => {
       tanggal_batas_penitipan: transaction.tanggal_batas_penitipan || "",
       penitip_id_penitipan: transaction.penitip_id_penitipan || "",
       pegawai_id_penitipan: transaction.pegawai_id_penitipan || "",
+      image: null,
+      image2: null,
     });
     setShowEditModal(true);
+  };
+
+  const handleViewBarangDetail = (id) => {
+    const token = localStorage.getItem("authToken");
+    fetchBarangDetail(token, id);
   };
 
   const renderContent = () => {
@@ -375,92 +497,169 @@ const DashboardPegawaiGudang = () => {
           </div>
         );
       case "items":
-        return (
-          <div className="warehouse-dashboard-section">
-            <h3>Daftar Transaksi Barang Titipan</h3>
-            <div className="warehouse-search-bar">
-              <input
-                type="text"
-                placeholder="Cari berdasarkan ID transaksi..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="warehouse-search-input"
-              />
-              <button onClick={handleAddTransaction} className="warehouse-add-btn">
-                Tambah Barang
+    return (
+      <div className="warehouse-dashboard-section">
+        <h3>Daftar Transaksi Barang Titipan</h3>
+        <div className="warehouse-search-bar">
+          <input
+            type="text"
+            placeholder="Cari berdasarkan ID transaksi..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="warehouse-search-input"
+          />
+          <button onClick={handleAddTransaction} className="warehouse-add-btn">
+            Tambah Barang
+          </button>
+        </div>
+        {filteredTransactions.length > 0 ? (
+          <>
+            <table className="warehouse-transaction-table">
+              <thead>
+                <tr>
+                  <th>ID Transaksi</th>
+                  <th>Nama Barang</th>
+                  <th>Jumlah</th>
+                  <th>Tanggal Mulai</th>
+                  <th>Tanggal Akhir</th>
+                  <th>Status</th>
+                  <th>Penitip</th>
+                  <th>Pegawai</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentTransactions.map((transaction) => {
+                  const detail = transaction.detail_transaksi_penitipans && transaction.detail_transaksi_penitipans.length > 0 ? transaction.detail_transaksi_penitipans[0] : null;
+                  return (
+                    <tr key={transaction.id_penitipan_transaksi || Math.random()}>
+                      <td>{transaction.id_penitipan_transaksi || "N/A"}</td>
+                      <td>{detail?.barang?.nama_barang || "Tidak Diketahui"}</td>
+                      <td>{detail?.jumlah_barang_penitip || 0}</td>
+                      <td>{transaction.tanggal_mulai_penitipan || "Tidak Diketahui"}</td>
+                      <td>{transaction.tanggal_akhir_penitipan || "Tidak Diketahui"}</td>
+                      <td>{transaction.status_penitipan || "Tidak Diketahui"}</td>
+                      <td>{transaction.penitip?.nama_penitip || "Tidak Diketahui"}</td>
+                      <td>{transaction.pegawai?.nama_pegawai || "Tidak Diketahui"}</td>
+                      <td>
+                        <button
+                          onClick={() => handleEditTransaction(transaction)}
+                          className="warehouse-edit-btn"
+                          disabled={!transaction.id_penitipan_transaksi}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => window.open(`/print-nota/${transaction.id_penitipan_transaksi}`, "_blank")}
+                          className="warehouse-print-btn"
+                          style={{ marginLeft: "10px" }}
+                        >
+                          Cetak Nota
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <div className="warehouse-pagination">
+              <button
+                className="warehouse-paginate-btn"
+                onClick={prevItemsPage}
+                disabled={currentItemsPage === 1}
+              >
+                Previous
+              </button>
+              {Array.from({ length: totalItemsPages }, (_, i) => i + 1).map((number) => (
+                <button
+                  key={number}
+                  className={`warehouse-paginate-btn ${currentItemsPage === number ? "warehouse-active" : ""}`}
+                  onClick={() => paginateItems(number)}
+                >
+                  {number}
+                </button>
+              ))}
+              <button
+                className="warehouse-paginate-btn"
+                onClick={nextItemsPage}
+                disabled={currentItemsPage === totalItemsPages}
+              >
+                Next
               </button>
             </div>
-            {filteredTransactions.length > 0 ? (
+          </>
+        ) : (
+          <p>Tidak ada transaksi barang titipan yang ditemukan.</p>
+        )}
+      </div>
+    );
+      case "barang":
+        return (
+          <div className="warehouse-dashboard-section">
+            <h3>Daftar Barang Titipan</h3>
+            {barangList.length > 0 ? (
               <>
                 <table className="warehouse-transaction-table">
                   <thead>
                     <tr>
-                      <th>ID Transaksi</th>
+                      <th>ID Barang</th>
                       <th>Nama Barang</th>
-                      <th>Jumlah</th>
-                      <th>Tanggal Mulai</th>
-                      <th>Tanggal Akhir</th>
+                      <th>Kategori</th>
+                      <th>Harga (Rp)</th>
+                      <th>Berat (kg)</th>
                       <th>Status</th>
-                      <th>Penitip</th>
-                      <th>Pegawai</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {currentTransactions.map((transaction) => {
-                      const detail = transaction.detail_transaksi_penitipans && transaction.detail_transaksi_penitipans.length > 0 ? transaction.detail_transaksi_penitipans[0] : null;
-                      return (
-                        <tr key={transaction.id_penitipan_transaksi || Math.random()}>
-                          <td>{transaction.id_penitipan_transaksi || "N/A"}</td>
-                          <td>{detail?.barang?.nama_barang || "Tidak Diketahui"}</td>
-                          <td>{detail?.jumlah_barang_penitip || 0}</td>
-                          <td>{transaction.tanggal_mulai_penitipan || "Tidak Diketahui"}</td>
-                          <td>{transaction.tanggal_akhir_penitipan || "Tidak Diketahui"}</td>
-                          <td>{transaction.status_penitipan || "Tidak Diketahui"}</td>
-                          <td>{transaction.penitip?.nama_penitip || "Tidak Diketahui"}</td>
-                          <td>{transaction.pegawai?.nama_pegawai || "Tidak Diketahui"}</td>
-                          <td>
-                            <button
-                              onClick={() => handleEditTransaction(transaction)}
-                              className="warehouse-edit-btn"
-                              disabled={!transaction.id_penitipan_transaksi}
-                            >
-                              Edit
-                            </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {currentBarang.map((barang) => (
+                      <tr key={barang.id_barang || Math.random()}>
+                        <td>{barang.id_barang || "N/A"}</td>
+                        <td>{barang.nama_barang || "Tidak Diketahui"}</td>
+                        <td>{barang.kategori_barang?.nama_kategori || "Tidak Diketahui"}</td>
+                        <td>{barang.harga_barang || 0}</td>
+                        <td>{barang.berat_barang || 0}</td>
+                        <td>{barang.status_barang || "Tidak Diketahui"}</td>
+                        <td>
+                          <button
+                            onClick={() => handleViewBarangDetail(barang.id_barang)}
+                            className="warehouse-detail-btn"
+                          >
+                            Detail
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
                 <div className="warehouse-pagination">
                   <button
                     className="warehouse-paginate-btn"
-                    onClick={prevItemsPage}
-                    disabled={currentItemsPage === 1}
+                    onClick={prevBarangPage}
+                    disabled={currentBarangPage === 1}
                   >
                     Previous
                   </button>
-                  {Array.from({ length: totalItemsPages }, (_, i) => i + 1).map((number) => (
+                  {Array.from({ length: totalBarangPages }, (_, i) => i + 1).map((number) => (
                     <button
                       key={number}
-                      className={`warehouse-paginate-btn ${currentItemsPage === number ? "warehouse-active" : ""}`}
-                      onClick={() => paginateItems(number)}
+                      className={`warehouse-paginate-btn ${currentBarangPage === number ? "warehouse-active" : ""}`}
+                      onClick={() => paginateBarang(number)}
                     >
                       {number}
                     </button>
                   ))}
                   <button
                     className="warehouse-paginate-btn"
-                    onClick={nextItemsPage}
-                    disabled={currentItemsPage === totalItemsPages}
+                    onClick={nextBarangPage}
+                    disabled={currentBarangPage === totalBarangPages}
                   >
                     Next
                   </button>
                 </div>
               </>
             ) : (
-              <p>Tidak ada transaksi barang titipan yang ditemukan.</p>
+              <p>Tidak ada barang titipan yang ditemukan.</p>
             )}
           </div>
         );
@@ -487,6 +686,12 @@ const DashboardPegawaiGudang = () => {
             >
               Daftar Transaksi Barang Titipan
             </li>
+            <li
+              className={activeMenu === "barang" ? "warehouse-active" : ""}
+              onClick={() => setActiveMenu("barang")}
+            >
+              Daftar Barang Titipan
+            </li>
             <li onClick={handleLogout} className="warehouse-logout-btn">
               Logout
             </li>
@@ -498,7 +703,9 @@ const DashboardPegawaiGudang = () => {
         <h2>
           {activeMenu === "dashboard"
             ? "Dashboard Pegawai Gudang"
-            : "Daftar Transaksi Barang Titipan"}
+            : activeMenu === "items"
+            ? "Daftar Transaksi Barang Titipan"
+            : "Daftar Barang Titipan"}
         </h2>
         <p className="warehouse-welcome-text">
           Selamat datang, {employeeProfile?.nama_pegawai || "Pegawai Gudang"}
@@ -555,15 +762,12 @@ const DashboardPegawaiGudang = () => {
                 </div>
                 <div className="warehouse-form-group">
                   <label htmlFor="status_barang">Status Barang:</label>
-                  <select
+                  <input
+                    type="text"
                     id="status_barang"
                     value={addData.status_barang}
-                    onChange={(e) => setAddData({ ...addData, status_barang: e.target.value })}
-                    required
-                  >
-                    <option value="aktif">aktif</option>
-                    <option value="tidak aktif">Tidak aktif</option>
-                  </select>
+                    readOnly
+                  />
                 </div>
                 <div className="warehouse-form-group">
                   <label htmlFor="tanggal_garansi">Tanggal Garansi:</label>
@@ -596,8 +800,7 @@ const DashboardPegawaiGudang = () => {
                     type="number"
                     id="jumlah_barang"
                     value={addData.jumlah_barang}
-                    onChange={(e) => setAddData({ ...addData, jumlah_barang: e.target.value })}
-                    required
+                    readOnly
                   />
                 </div>
                 <div className="warehouse-form-group">
@@ -618,19 +821,12 @@ const DashboardPegawaiGudang = () => {
                 </div>
                 <div className="warehouse-form-group">
                   <label htmlFor="pegawai_id">Pegawai:</label>
-                  <select
+                  <input
+                    type="text"
                     id="pegawai_id"
-                    value={addData.pegawai_id}
-                    onChange={(e) => setAddData({ ...addData, pegawai_id: e.target.value })}
-                    required
-                  >
-                    <option value="">Pilih Pegawai</option>
-                    {dropdownData.pegawais.map((pegawai) => (
-                      <option key={pegawai.id_pegawai} value={pegawai.id_pegawai}>
-                        {pegawai.nama_pegawai}
-                      </option>
-                    ))}
-                  </select>
+                    value={employeeProfile?.nama_pegawai || "Memuat..."}
+                    readOnly
+                  />
                 </div>
                 <div className="warehouse-form-group">
                   <label htmlFor="tanggal_mulai">Tanggal Mulai:</label>
@@ -638,8 +834,7 @@ const DashboardPegawaiGudang = () => {
                     type="date"
                     id="tanggal_mulai"
                     value={addData.tanggal_mulai}
-                    onChange={(e) => setAddData({ ...addData, tanggal_mulai: e.target.value })}
-                    required
+                    readOnly
                   />
                 </div>
                 <div className="warehouse-form-group">
@@ -648,8 +843,7 @@ const DashboardPegawaiGudang = () => {
                     type="date"
                     id="tanggal_akhir"
                     value={addData.tanggal_akhir}
-                    onChange={(e) => setAddData({ ...addData, tanggal_akhir: e.target.value })}
-                    required
+                    readOnly
                   />
                 </div>
                 <div className="warehouse-form-group">
@@ -658,8 +852,7 @@ const DashboardPegawaiGudang = () => {
                     type="date"
                     id="tanggal_batas"
                     value={addData.tanggal_batas}
-                    onChange={(e) => setAddData({ ...addData, tanggal_batas: e.target.value })}
-                    required
+                    readOnly
                   />
                 </div>
                 <div className="warehouse-form-group">
@@ -791,6 +984,64 @@ const DashboardPegawaiGudang = () => {
                     ))}
                   </select>
                 </div>
+                <div className="warehouse-form-group">
+                  <label>Gambar 1 Saat Ini:</label>
+                  {selectedTransaction.detail_transaksi_penitipans && selectedTransaction.detail_transaksi_penitipans.length > 0 ? (
+                    <div>
+                      {selectedTransaction.detail_transaksi_penitipans[0].barang?.image ? (
+                        <img
+                          src={`http://127.0.0.1:8000/images/${selectedTransaction.detail_transaksi_penitipans[0].barang.image}`}
+                          alt="Gambar 1 Saat Ini"
+                          className="warehouse-image-preview"
+                          style={{ maxWidth: "200px", maxHeight: "200px" }}
+                          onError={(e) => console.log("Error loading image:", e)}
+                        />
+                      ) : (
+                        <p>Tidak ada gambar.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p>Tidak ada detail transaksi.</p>
+                  )}
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_image">Gambar 1 Baru (opsional):</label>
+                  <input
+                    type="file"
+                    id="edit_image"
+                    accept="image/*"
+                    onChange={(e) => setEditData({ ...editData, image: e.target.files[0] })}
+                  />
+                </div>
+                <div className="warehouse-form-group">
+                  <label>Gambar 2 Saat Ini:</label>
+                  {selectedTransaction.detail_transaksi_penitipans && selectedTransaction.detail_transaksi_penitipans.length > 0 ? (
+                    <div>
+                      {selectedTransaction.detail_transaksi_penitipans[0].barang?.image2 ? (
+                        <img
+                          src={`http://127.0.0.1:8000/images/${selectedTransaction.detail_transaksi_penitipans[0].barang.image2}`}
+                          alt="Gambar 2 Saat Ini"
+                          className="warehouse-image-preview"
+                          style={{ maxWidth: "200px", maxHeight: "200px" }}
+                          onError={(e) => console.log("Error loading image:", e)}
+                        />
+                      ) : (
+                        <p>Tidak ada gambar.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p>Tidak ada detail transaksi.</p>
+                  )}
+                </div>
+                <div className="warehouse-form-group">
+                  <label htmlFor="edit_image2">Gambar 2 Baru (opsional):</label>
+                  <input
+                    type="file"
+                    id="edit_image2"
+                    accept="image/*"
+                    onChange={(e) => setEditData({ ...editData, image2: e.target.files[0] })}
+                  />
+                </div>
                 <div className="warehouse-modal-actions">
                   <button type="submit" className="warehouse-submit-btn">
                     <i className="fas fa-save"></i> Simpan
@@ -800,6 +1051,94 @@ const DashboardPegawaiGudang = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {showDetailModal && selectedBarang && (
+          <div className="warehouse-modal">
+            <div className="warehouse-modal-content">
+              <div className="warehouse-modal-header">
+                <h3>Detail Barang Titipan (ID: {selectedBarang.id_barang})</h3>
+                <button className="warehouse-close-btn" onClick={handleCloseDetailModal}>
+                  <i className="fas fa-times"></i>
+                </button>
+              </div>
+              <div className="warehouse-modal-body">
+                <div className="warehouse-form-group">
+                  <label><strong>Nama Barang:</strong></label>
+                  <p>{selectedBarang.nama_barang || "Tidak Diketahui"}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Deskripsi:</strong></label>
+                  <p>{selectedBarang.deskripsi_barang || "Tidak Ada Deskripsi"}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Harga (Rp):</strong></label>
+                  <p>{selectedBarang.harga_barang || 0}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Berat (kg):</strong></label>
+                  <p>{selectedBarang.berat_barang || 0}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Status:</strong></label>
+                  <p>{selectedBarang.status_barang || "Tidak Diketahui"}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Masa Penitipan Tenggat (Hari):</strong></label>
+                  <p>{selectedBarang.masa_penitipan_tenggat || "Tidak Diketahui"}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Tanggal Garansi:</strong></label>
+                  <p>{selectedBarang.tanggal_garansi || "Tidak Ada Garansi"}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Kategori:</strong></label>
+                  <p>{selectedBarang.kategori_barang?.nama_kategori || "Tidak Diketahui"}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Penitip:</strong></label>
+                  <p>{selectedBarang.penitip?.nama_penitip || "Tidak Diketahui"}</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Rating Penitip:</strong></label>
+                  <p>{selectedBarang.average_penitip_rating || 0} / 5</p>
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Gambar 1:</strong></label>
+                  {selectedBarang.image ? (
+                    <img
+                      src={`http://127.0.0.1:8000/images/${selectedBarang.image}`}
+                      alt="Gambar 1"
+                      className="warehouse-image-preview"
+                      style={{ maxWidth: "200px", maxHeight: "200px" }}
+                      onError={(e) => console.log("Error loading image 1:", e)}
+                    />
+                  ) : (
+                    <p>Tidak ada gambar.</p>
+                  )}
+                </div>
+                <div className="warehouse-form-group">
+                  <label><strong>Gambar 2:</strong></label>
+                  {selectedBarang.image2 ? (
+                    <img
+                      src={`http://127.0.0.1:8000/images/${selectedBarang.image2}`}
+                      alt="Gambar 2"
+                      className="warehouse-image-preview"
+                      style={{ maxWidth: "200px", maxHeight: "200px" }}
+                      onError={(e) => console.log("Error loading image 2:", e)}
+                    />
+                  ) : (
+                    <p>Tidak ada gambar.</p>
+                  )}
+                </div>
+              </div>
+              <div className="warehouse-modal-actions">
+                <button type="button" className="warehouse-cancel-btn" onClick={handleCloseDetailModal}>
+                  <i className="fas fa-times"></i> Tutup
+                </button>
+              </div>
             </div>
           </div>
         )}

@@ -14,7 +14,7 @@ import GeneralLogin from "./JSX/Login/generalLogin.jsx"; // Halaman pilihan Logi
 import LoginOrganisasi from './JSX/Login/Organisasi/loginOrganisasi.jsx';
 import LoginPembeli from './JSX/Login/pembeli/loginPembeli.jsx'; // Login Pembeli
 import LoginPenitip from './JSX/Login/Penitip/loginPenitip.jsx';
-import PaymentVerification from './JSX/Login/CS/PaymentVerification.jsx';
+
 
 import GeneralRegistrasi from "./JSX/Registrasi/generalRegistrasi.jsx";
 import RegistrasiPembeli from './JSX/Registrasi/Pembeli/registrasiPembeli.jsx';
@@ -22,8 +22,10 @@ import RegistrasiOrganisasi from './JSX/Registrasi/Organisasi/registrasiOrganisa
 
 import DashboardOwner from './JSX/Login/Owner/dashboardOwner.jsx';
 import DashboardPegawaiGudang from './JSX/Login/PegawaiGudang/dashboardPegawaiGudang.jsx';
+import PrintNotaPage from './JSX/Login/PegawaiGudang/printNota.jsx';
 import LiveCodeOrganisasi from './JSX/Login/Owner/liveCodeOrganisasi.jsx';
 import DashboardOrganisasi from './JSX/Login/Organisasi/dashboardOrganisasi.jsx';
+
 
 // Import komponen baru untuk Pembeli setelah login
 import ShopPembeli from './JSX/Login/Pembeli/shopPembeli.jsx'; // <-- BARU
@@ -63,6 +65,7 @@ function App() {
           <Route path="/cs/dashboard" element={<CSDashboard />} />
           <Route path="/owner/dashboard" element={<ErrorBoundary><DashboardOwner /></ErrorBoundary>} />
           <Route path="/pegawaiGudang/dashboard" element={<ErrorBoundary><DashboardPegawaiGudang /></ErrorBoundary>} />
+          <Route path="/print-nota/:id" element={<PrintNotaPage />} />
           <Route path="/organisasi/dashboard" element={<DashboardOrganisasi />} />
           <Route path="/livecode/organisasi" element={<LiveCodeOrganisasi />} />
 
@@ -82,8 +85,6 @@ function App() {
           <Route path="/checkout" element={<Checkout />} /> {/* <-- BARU: Rute Checkout */}
 
           <Route path="/payment" element={<PaymentPage />} />
-
-          <Route path="/payment-verification" element={<PaymentVerification />} />
 
           <Route path="/pembeli/history" element={<TransactionHistory />} />
         </Routes>

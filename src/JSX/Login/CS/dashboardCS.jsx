@@ -405,6 +405,7 @@ const CSDashboard = () => {
             tgl_lahir_penitip: "",
             no_telepon_penitip: "",
             nik_penitip: "",
+            id_kategoribarang: "", // Added this to reflect common fields
             foto_ktp_penitip: null,
             rating_penitip: 0,
             pendapatan_penitip: 0,
@@ -883,6 +884,8 @@ const CSDashboard = () => {
                                             <th>No. Transaksi</th>
                                             <th>Pembeli</th>
                                             <th>Total Bayar</th>
+                                            {/* BARU: Kolom untuk Detail Barang */}
+                                            {/* <th>Barang Diverifikasi</th>  */}
                                             <th>Bukti Pembayaran</th>
                                             <th>Status Pembayaran</th>
                                             <th>Aksi</th>
@@ -894,6 +897,30 @@ const CSDashboard = () => {
                                                 <td>{transaction.nomor_transaksi_nota}</td>
                                                 <td>{transaction.pembeli?.nama_pembeli || 'N/A'}</td>
                                                 <td>Rp {Number(transaction.total_bayar).toLocaleString('id-ID')}</td>
+                                                {/* BARU: Tampilkan detail barang di tabel verifikasi */}
+                                                {/* <td className="cs-product-cell">
+                                                    {transaction.detailTransaksiPembelian && transaction.detailTransaksiPembelian.length > 0 ? (
+                                                        transaction.detailTransaksiPembelian.map((item, itemIndex) => (
+                                                            <div key={itemIndex} className="cs-product-info-cell cs-table-item-detail">
+                                                                {item.barang?.image && (
+                                                                    <img
+                                                                        src={`http://127.0.0.1:8000/images/${item.barang.image}`}
+                                                                        alt={item.barang.nama_barang || 'Barang'}
+                                                                        className="cs-product-image-small"
+                                                                    />
+                                                                )}
+                                                                <div>
+                                                                    <span>{item.barang?.nama_barang || 'N/A'}</span>
+                                                                    <br />
+                                                                    <small>x{item.jumlah_barang_pembelian}</small>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <span>N/A</span> // Jika tidak ada detail barang
+                                                    )}
+                                                </td> */}
+                                                {/* END BARU */}
                                                 <td>
                                                     {transaction.bukti_pembayaran ? (
                                                         <a
@@ -1005,6 +1032,8 @@ const CSDashboard = () => {
                                             <th>No. Transaksi</th>
                                             <th>Pembeli</th>
                                             <th>Total Bayar</th>
+                                            {/* BARU: Kolom untuk Detail Barang */}
+                                            {/* <th>Barang</th> */}
                                             <th>Status Pembayaran</th>
                                             <th>Tanggal Pembayaran</th>
                                             <th>Aksi</th>
@@ -1016,6 +1045,7 @@ const CSDashboard = () => {
                                                 <td>{transaction.nomor_transaksi_nota}</td>
                                                 <td>{transaction.pembeli?.nama_pembeli || 'N/A'}</td>
                                                 <td>Rp {Number(transaction.total_bayar).toLocaleString('id-ID')}</td>
+                                                {/* END BARU */}
                                                 <td>
                                                     <span className={`cs-payment-status status-${transaction.status_pembayaran}`}>
                                                         {transaction.status_pembayaran.replace('_', ' ').toUpperCase()}
@@ -1075,412 +1105,411 @@ const CSDashboard = () => {
     if (error) return <div className="cs-error-state">Error: {error}</div>;
 
     return (
-    <div className="cs-dashboard">
-        {/* Sidebar kiri */}
-        <aside className="cs-sidebar">
-            <div className="cs-sidebar-logo">REUSEMART CS</div>
-            <nav className="cs-sidebar-nav">
-                <ul>
-                    <li
-                        className={activeMenu === "dashboard" ? "cs-active" : ""}
-                        onClick={() => setActiveMenu("dashboard")}
-                    >
-                        Dashboard
-                    </li>
-                    <li
-                        className={activeMenu === "penitip" ? "cs-active" : ""}
-                        onClick={() => setActiveMenu("penitip")}
-                    >
-                        Manajemen Penitip
-                    </li>
-                    <li
-                        className={activeMenu === "diskusi" ? "cs-active" : ""}
-                        onClick={() => setActiveMenu("diskusi")}
-                    >
-                        Diskusi Produk
-                    </li>
-                    {/* BARU: Menu Verifikasi Pembayaran */}
-                    <li
-                        className={activeMenu === "verifikasi" ? "cs-active" : ""}
-                        onClick={() => setActiveMenu("verifikasi")}
-                    >
-                        Verifikasi Pembayaran
-                    </li>
-                    {/* BARU: Menu Riwayat Verifikasi Pembayaran */}
-                    <li
-                        className={activeMenu === "riwayat-verifikasi" ? "cs-active" : ""}
-                        onClick={() => setActiveMenu("riwayat-verifikasi")}
-                    >
-                        Riwayat Verifikasi
-                    </li>
-                    <li onClick={handleLogout} className="cs-logout-btn">
-                        Logout
-                    </li>
-                </ul>
-            </nav>
-        </aside>
+        <div className="cs-dashboard">
+            {/* Sidebar kiri */}
+            <aside className="cs-sidebar">
+                <div className="cs-sidebar-logo">REUSEMART CS</div>
+                <nav className="cs-sidebar-nav">
+                    <ul>
+                        <li
+                            className={activeMenu === "dashboard" ? "cs-active" : ""}
+                            onClick={() => setActiveMenu("dashboard")}
+                        >
+                            Dashboard
+                        </li>
+                        <li
+                            className={activeMenu === "penitip" ? "cs-active" : ""}
+                            onClick={() => setActiveMenu("penitip")}
+                        >
+                            Manajemen Penitip
+                        </li>
+                        <li
+                            className={activeMenu === "diskusi" ? "cs-active" : ""}
+                            onClick={() => setActiveMenu("diskusi")}
+                        >
+                            Diskusi Produk
+                        </li>
+                        {/* BARU: Menu Verifikasi Pembayaran */}
+                        <li
+                            className={activeMenu === "verifikasi" ? "cs-active" : ""}
+                            onClick={() => setActiveMenu("verifikasi")}
+                        >
+                            Verifikasi Pembayaran
+                        </li>
+                        {/* BARU: Menu Riwayat Verifikasi Pembayaran */}
+                        <li
+                            className={activeMenu === "riwayat-verifikasi" ? "cs-active" : ""}
+                            onClick={() => setActiveMenu("riwayat-verifikasi")}
+                        >
+                            Riwayat Verifikasi
+                        </li>
+                        <li onClick={handleLogout} className="cs-logout-btn">
+                            Logout
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
 
 
-        {/* Konten utama */}
-        <main className="cs-dashboard-container">
-            <h2>
-                {activeMenu === "dashboard"
-                    ? "Dashboard Customer Service"
-                    : activeMenu === "penitip"
-                    ? "Manajemen Penitip"
-                    : activeMenu === "diskusi"
-                    ? "Diskusi Produk"
-                    : activeMenu === "verifikasi"
-                    ? "Verifikasi Pembayaran"
-                    : "Riwayat Verifikasi Pembayaran" // BARU: Judul untuk riwayat verifikasi
-                }
-            </h2>
-            {renderContent()}
+            {/* Konten utama */}
+            <main className="cs-dashboard-container">
+                <h2>
+                    {activeMenu === "dashboard"
+                        ? "Dashboard Customer Service"
+                        : activeMenu === "penitip"
+                        ? "Manajemen Penitip"
+                        : activeMenu === "diskusi"
+                        ? "Diskusi Produk"
+                        : activeMenu === "verifikasi"
+                        ? "Verifikasi Pembayaran"
+                        : "Riwayat Verifikasi Pembayaran" // BARU: Judul untuk riwayat verifikasi
+                    }
+                </h2>
+                {renderContent()}
 
-            {/* Modal Penitip */}
-            {showModal && (
-                <div className="cs-modal">
-                    <div className="cs-modal-content">
-                        <div className="cs-modal-header">
-                            <h3>{editId !== null ? "Edit Data Penitip" : "Tambah Penitip"}</h3>
-                            <button className="cs-close-btn" onClick={handleCloseModal}>
-                                <i className="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <form onSubmit={handleAddOrUpdatePenitip}>
-                            <div className="cs-form-grid">
-                                <div className="cs-form-group">
-                                    <label htmlFor="nama_penitip">
-                                        <i className="fas fa-user"></i> Nama Lengkap
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="nama_penitip"
-                                        placeholder="Masukkan nama lengkap"
-                                        value={newPenitip.nama_penitip}
-                                        onChange={(e) =>
-                                            setNewPenitip({ ...newPenitip, nama_penitip: e.target.value })
-                                        }
-                                        required={editId === null}
-                                    />
-                                </div>
-                                <div className="cs-form-group">
-                                    <label htmlFor="email_penitip">
-                                        <i className="fas fa-envelope"></i> Email
-                                    </label>
-                                    <input
-                                        type="email"
-                                        id="email_penitip"
-                                        placeholder="Masukkan alamat email"
-                                        value={newPenitip.email_penitip}
-                                        onChange={(e) =>
-                                            setNewPenitip({ ...newPenitip, email_penitip: e.target.value })
-                                        }
-                                        required={editId === null}
-                                    />
-                                </div>
-                                <div className="cs-form-group">
-                                    <label htmlFor="password_penitip">
-                                        <i className="fas fa-lock"></i>{" "}
-                                        {editId !== null ? "Password (Kosongkan jika tidak diubah)" : "Password"}
-                                    </label>
-                                    <input
-                                        type="password"
-                                        id="password_penitip"
-                                        placeholder={
-                                            editId !== null ? "Kosongkan jika tidak diubah" : "Masukkan password"
-                                        }
-                                        value={newPenitip.password_penitip}
-                                        onChange={(e) =>
-                                            setNewPenitip({ ...newPenitip, password_penitip: e.target.value })
-                                        }
-                                        required={editId === null}
-                                    />
-                                </div>
-                                <div className="cs-form-group">
-                                    <label htmlFor="no_telepon_penitip">
-                                        <i className="fas fa-phone"></i> Nomor Telepon
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="no_telepon_penitip"
-                                        placeholder="Masukkan nomor telepon (contoh: +6281234567890)"
-                                        value={newPenitip.no_telepon_penitip}
-                                        onChange={(e) =>
-                                            setNewPenitip({ ...newPenitip, no_telepon_penitip: e.target.value })
-                                        }
-                                        required={editId === null}
-                                        pattern="[0-9\+-]+"
-                                        title="Nomor telepon hanya boleh berisi angka, tanda +, atau tanda -"
-                                    />
-                                </div>
-                                <div className="cs-form-group">
-                                    <label htmlFor="tgl_lahir_penitip">
-                                        <i className="fas fa-calendar-alt"></i> Tanggal Lahir
-                                    </label>
-                                    <input
-                                        type="date"
-                                        id="tgl_lahir_penitip"
-                                        value={newPenitip.tgl_lahir_penitip}
-                                        onChange={(e) =>
-                                            setNewPenitip({ ...newPenitip, tgl_lahir_penitip: e.target.value })
-                                        }
-                                        required={editId === null}
-                                    />
-                                </div>
-                                <div className="cs-form-group">
-                                    <label htmlFor="nik_penitip">
-                                        <i className="fas fa-id-card"></i> NIK
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="nik_penitip"
-                                        placeholder="Masukkan Nomor Induk Kependudukan (16 digit)"
-                                        value={newPenitip.nik_penitip}
-                                        onChange={(e) =>
-                                            setNewPenitip({ ...newPenitip, nik_penitip: e.target.value })
-                                        }
-                                        required={editId === null}
-                                        pattern="[0-9]{16}"
-                                        title="NIK harus terdiri dari 16 digit angka"
-                                    />
-                                </div>
+                {/* Modal Penitip */}
+                {showModal && (
+                    <div className="cs-modal">
+                        <div className="cs-modal-content">
+                            <div className="cs-modal-header">
+                                <h3>{editId !== null ? "Edit Data Penitip" : "Tambah Penitip"}</h3>
+                                <button className="cs-close-btn" onClick={handleCloseModal}>
+                                    <i className="fas fa-times"></i>
+                                </button>
                             </div>
-                            <div className="cs-form-group cs-foto-ktp-container">
-                                <label htmlFor="foto_ktp_penitip">
-                                    <i className="fas fa-image"></i> Foto KTP
-                                </label>
-                                <div className="cs-foto-ktp-input">
-                                    <input
-                                        type="file"
-                                        id="foto_ktp_penitip"
-                                        onChange={handleFileChange}
-                                        accept="image/*"
-                                        className="cs-file-input"
-                                        required={false}
-                                    />
-                                    <label htmlFor="foto_ktp_penitip" className="cs-file-label">
-                                        <i className="fas fa-upload"></i>
-                                        <span>
-                                            {newPenitip.foto_ktp_penitip
-                                                ? newPenitip.foto_ktp_penitip.name
-                                                : editId !== null && previewImage
-                                                ? "Foto KTP sudah ada"
-                                                : "Pilih file foto KTP (opsional)"}
-                                        </span>
-                                    </label>
+                            <form onSubmit={handleAddOrUpdatePenitip}>
+                                <div className="cs-form-grid">
+                                    <div className="cs-form-group">
+                                        <label htmlFor="nama_penitip">
+                                            <i className="fas fa-user"></i> Nama Lengkap
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="nama_penitip"
+                                            placeholder="Masukkan nama lengkap"
+                                            value={newPenitip.nama_penitip}
+                                            onChange={(e) =>
+                                                setNewPenitip({ ...newPenitip, nama_penitip: e.target.value })
+                                            }
+                                            required={editId === null}
+                                        />
+                                    </div>
+                                    <div className="cs-form-group">
+                                        <label htmlFor="email_penitip">
+                                            <i className="fas fa-envelope"></i> Email
+                                        </label>
+                                        <input
+                                            type="email"
+                                            id="email_penitip"
+                                            placeholder="Masukkan alamat email"
+                                            value={newPenitip.email_penitip}
+                                            onChange={(e) =>
+                                                setNewPenitip({ ...newPenitip, email_penitip: e.target.value })
+                                            }
+                                            required={editId === null}
+                                        />
+                                    </div>
+                                    <div className="cs-form-group">
+                                        <label htmlFor="password_penitip">
+                                            <i className="fas fa-lock"></i>{" "}
+                                            {editId !== null ? "Password (Kosongkan jika tidak diubah)" : "Password"}
+                                        </label>
+                                        <input
+                                            type="password"
+                                            id="password_penitip"
+                                            placeholder={
+                                                editId !== null ? "Kosongkan jika tidak diubah" : "Masukkan password"
+                                            }
+                                            value={newPenitip.password_penitip}
+                                            onChange={(e) =>
+                                                setNewPenitip({ ...newPenitip, password_penitip: e.target.value })
+                                            }
+                                            required={editId === null}
+                                        />
+                                    </div>
+                                    <div className="cs-form-group">
+                                        <label htmlFor="no_telepon_penitip">
+                                            <i className="fas fa-phone"></i> Nomor Telepon
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="no_telepon_penitip"
+                                            placeholder="Masukkan nomor telepon (contoh: +6281234567890)"
+                                            value={newPenitip.no_telepon_penitip}
+                                            onChange={(e) =>
+                                                setNewPenitip({ ...newPenitip, no_telepon_penitip: e.target.value })
+                                            }
+                                            required={editId === null}
+                                            pattern="[0-9\+-]+"
+                                            title="Nomor telepon hanya boleh berisi angka, tanda +, atau tanda -"
+                                        />
+                                    </div>
+                                    <div className="cs-form-group">
+                                        <label htmlFor="tgl_lahir_penitip">
+                                            <i className="fas fa-calendar-alt"></i> Tanggal Lahir
+                                        </label>
+                                        <input
+                                            type="date"
+                                            id="tgl_lahir_penitip"
+                                            value={newPenitip.tgl_lahir_penitip}
+                                            onChange={(e) =>
+                                                setNewPenitip({ ...newPenitip, tgl_lahir_penitip: e.target.value })
+                                            }
+                                            required={editId === null}
+                                        />
+                                    </div>
+                                    <div className="cs-form-group">
+                                        <label htmlFor="nik_penitip">
+                                            <i className="fas fa-id-card"></i> NIK
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="nik_penitip"
+                                            placeholder="Masukkan Nomor Induk Kependudukan (16 digit)"
+                                            value={newPenitip.nik_penitip}
+                                            onChange={(e) =>
+                                                setNewPenitip({ ...newPenitip, nik_penitip: e.target.value })
+                                            }
+                                            required={editId === null}
+                                            pattern="[0-9]{16}"
+                                            title="NIK harus terdiri dari 16 digit angka"
+                                        />
+                                    </div>
                                 </div>
-                                {previewImage && (
-                                    <div className="cs-image-preview">
-                                        <img src={previewImage} alt="Preview KTP" />
+                                <div className="cs-form-group cs-foto-ktp-container">
+                                    <label htmlFor="foto_ktp_penitip">
+                                        <i className="fas fa-image"></i> Foto KTP
+                                    </label>
+                                    <div className="cs-foto-ktp-input">
+                                        <input
+                                            type="file"
+                                            id="foto_ktp_penitip"
+                                            onChange={handleFileChange}
+                                            accept="image/*"
+                                            className="cs-file-input"
+                                            required={false}
+                                        />
+                                        <label htmlFor="foto_ktp_penitip" className="cs-file-label">
+                                            <i className="fas fa-upload"></i>
+                                            <span>
+                                                {newPenitip.foto_ktp_penitip
+                                                    ? newPenitip.foto_ktp_penitip.name
+                                                    : editId !== null && previewImage
+                                                    ? "Foto KTP sudah ada"
+                                                    : "Pilih file foto KTP (opsional)"}
+                                            </span>
+                                        </label>
+                                    </div>
+                                    {previewImage && (
+                                        <div className="cs-image-preview">
+                                            <img src={previewImage} alt="Preview KTP" />
+                                        </div>
+                                    )}
+                                    {editId !== null && (
+                                        <p className="cs-file-note">
+                                            <i className="fas fa-info-circle"></i> Biarkan kosong jika tidak ingin
+                                            mengubah foto KTP
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="cs-modal-actions">
+                                    <button
+                                        type="button"
+                                        className="cs-cancel-btn"
+                                        onClick={handleCloseModal}
+                                    >
+                                        <i className="fas fa-times"></i> Batal
+                                    </button>
+                                    <button type="submit" className="cs-submit-btn">
+                                        <i className="fas fa-save"></i>{" "}
+                                        {editId !== null ? "Perbarui Data" : "Simpan Data"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modal Reply Diskusi */}
+                {showReplyModal && replyingDiscussion && (
+                    <div className="cs-modal">
+                        <div className="cs-modal-content">
+                            <div className="cs-modal-header">
+                                <h3>Balas Diskusi Produk</h3>
+                                <button className="cs-close-btn" onClick={handleCloseReplyModal}>
+                                    <i className="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <form onSubmit={handleReplySubmit}>
+                                <div className="cs-form-grid">
+                                    <div
+                                        className="cs-form-group"
+                                        style={{
+                                            gridColumn: "1 / -1",
+                                            border: "1px solid #eee",
+                                            padding: "1rem",
+                                            borderRadius: "8px",
+                                        }}
+                                    >
+                                        <h4>Diskusi:</h4>
+                                        <p>
+                                            <strong>Barang:</strong>{" "}
+                                            {replyingDiscussion.barang?.nama_barang || "N/A"}
+                                        </p>
+                                        <p>
+                                            <strong>Pembeli:</strong>{" "}
+                                            {replyingDiscussion.pembeli?.nama_pembeli || "N/A"}
+                                        </p>
+                                        <p>
+                                            <strong>Komentar:</strong> {replyingDiscussion.komentar_pembeli}
+                                        </p>
+                                        {replyingDiscussion.barang?.image && (
+                                            <img
+                                                src={`http://127.0.0.1:8000/images/${replyingDiscussion.barang.image}`}
+                                                alt={replyingDiscussion.barang.nama_barang || "Barang"}
+                                                style={{
+                                                    width: "80px",
+                                                    height: "80px",
+                                                    objectFit: "cover",
+                                                    borderRadius: "4px",
+                                                    marginTop: "0.5rem",
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                    <div className="cs-form-group" style={{ gridColumn: "1 / -1" }}>
+                                        <label htmlFor="komentar_pegawai">Balasan Anda:</label>
+                                        <textarea
+                                            id="komentar_pegawai"
+                                            placeholder="Tulis balasan Anda di sini..."
+                                            value={replyFormData.komentar_pegawai}
+                                            onChange={(e) =>
+                                                setReplyFormData({
+                                                    ...replyFormData,
+                                                    komentar_pegawai: e.target.value,
+                                                })
+                                            }
+                                            required
+                                            rows="4"
+                                            style={{
+                                                width: "100%",
+                                                padding: "0.75rem",
+                                                border: "1px solid #ddd",
+                                                borderRadius: "5px",
+                                                fontSize: "0.95rem",
+                                                color: "#000000",
+                                            }}
+                                        ></textarea>
+                                    </div>
+                                </div>
+                                <div className="cs-modal-actions">
+                                    <button
+                                        type="button"
+                                        className="cs-cancel-btn"
+                                        onClick={handleCloseReplyModal}
+                                    >
+                                        Batal
+                                    </button>
+                                    <button type="submit" className="cs-submit-btn">
+                                        Kirim Balasan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* BARU: Modal Detail Transaksi yang Sudah Diproses */}
+                {showProcessedDetailModal && selectedProcessedTransaction && (
+                    <div className="cs-modal">
+                        <div className="cs-modal-content">
+                            <div className="cs-modal-header">
+                                <h3>Detail Transaksi #{selectedProcessedTransaction.nomor_transaksi_nota}</h3>
+                                <button className="cs-close-btn" onClick={handleCloseProcessedDetailModal}>×</button>
+                            </div>
+                            <div className="cs-transaction-details">
+                                <p><strong>Pembeli:</strong> {selectedProcessedTransaction.pembeli?.nama_pembeli || 'N/A'}</p>
+                                <p><strong>Email Pembeli:</strong> {selectedProcessedTransaction.pembeli?.email_pembeli || 'N/A'}</p>
+                                <p><strong>Total Bayar:</strong> Rp {Number(selectedProcessedTransaction.total_bayar).toLocaleString('id-ID')}</p>
+                                <p><strong>Status Pembayaran:</strong> <span className={`cs-payment-status status-${selectedProcessedTransaction.status_pembayaran}`}>
+                                    {selectedProcessedTransaction.status_pembayaran.replace('_', ' ').toUpperCase()}
+                                </span></p>
+                                <p><strong>Tanggal Pembelian:</strong> {new Date(selectedProcessedTransaction.tanggal_pembelian).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                <p><strong>Tanggal Pembayaran:</strong> {selectedProcessedTransaction.tanggal_pembayaran ? new Date(selectedProcessedTransaction.tanggal_pembayaran).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Belum Dibayar'}</p>
+                                <p><strong>Jenis Pengiriman:</strong> {selectedProcessedTransaction.jenis_pengiriman === 'kurir' ? `Kurir (${selectedProcessedTransaction.alamat_pembeli})` : 'Ambil Sendiri'}</p>
+                                <p><strong>Biaya Ongkir:</strong> Rp {Number(selectedProcessedTransaction.biaya_ongkir).toLocaleString('id-ID')}</p>
+                                <p><strong>Poin Dipakai:</strong> {selectedProcessedTransaction.tukar_poin_potongan}</p>
+                                <p><strong>Poin Didapat:</strong> {selectedProcessedTransaction.poin_pembelian}</p>
+                                
+                                {selectedProcessedTransaction.bukti_pembayaran && (
+                                    <div className="cs-proof-section">
+                                        <strong>Bukti Pembayaran:</strong>
+                                        <a
+                                            href={`http://127.0.0.1:8000/bukti_pembayaran/${selectedProcessedTransaction.bukti_pembayaran}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="cs-link-button cs-proof-link"
+                                        >
+                                            Lihat Gambar Bukti Pembayaran
+                                        </a>
+                                        {selectedProcessedTransaction.bukti_pembayaran && (
+                                            <img
+                                                src={`http://127.0.0.1:8000/bukti_pembayaran/${selectedProcessedTransaction.bukti_pembayaran}`}
+                                                alt="Bukti Pembayaran"
+                                                className="cs-bukti-pembayaran-img"
+                                            />
+                                        )}
                                     </div>
                                 )}
-                                {editId !== null && (
-                                    <p className="cs-file-note">
-                                        <i className="fas fa-info-circle"></i> Biarkan kosong jika tidak ingin
-                                        mengubah foto KTP
-                                    </p>
-                                )}
-                            </div>
-                            <div className="cs-modal-actions">
-                                <button
-                                    type="button"
-                                    className="cs-cancel-btn"
-                                    onClick={handleCloseModal}
-                                >
-                                    <i className="fas fa-times"></i> Batal
-                                </button>
-                                <button type="submit" className="cs-submit-btn">
-                                    <i className="fas fa-save"></i>{" "}
-                                    {editId !== null ? "Perbarui Data" : "Simpan Data"}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
-            {/* Modal Reply Diskusi */}
-            {showReplyModal && replyingDiscussion && (
-                <div className="cs-modal">
-                    <div className="cs-modal-content">
-                        <div className="cs-modal-header">
-                            <h3>Balas Diskusi Produk</h3>
-                            <button className="cs-close-btn" onClick={handleCloseReplyModal}>
-                                <i className="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <form onSubmit={handleReplySubmit}>
-                            <div className="cs-form-grid">
-                                <div
-                                    className="cs-form-group"
-                                    style={{
-                                        gridColumn: "1 / -1",
-                                        border: "1px solid #eee",
-                                        padding: "1rem",
-                                        borderRadius: "8px",
-                                    }}
-                                >
-                                    <h4>Diskusi:</h4>
-                                    <p>
-                                        <strong>Barang:</strong>{" "}
-                                        {replyingDiscussion.barang?.nama_barang || "N/A"}
-                                    </p>
-                                    <p>
-                                        <strong>Pembeli:</strong>{" "}
-                                        {replyingDiscussion.pembeli?.nama_pembeli || "N/A"}
-                                    </p>
-                                    <p>
-                                        <strong>Komentar:</strong> {replyingDiscussion.komentar_pembeli}
-                                    </p>
-                                    {replyingDiscussion.barang?.image && (
-                                        <img
-                                            src={`http://127.0.0.1:8000/images/${replyingDiscussion.barang.image}`}
-                                            alt={replyingDiscussion.barang.nama_barang || "Barang"}
-                                            style={{
-                                                width: "80px",
-                                                height: "80px",
-                                                objectFit: "cover",
-                                                borderRadius: "4px",
-                                                marginTop: "0.5rem",
-                                            }}
-                                        />
-                                    )}
-                                </div>
-                                <div className="cs-form-group" style={{ gridColumn: "1 / -1" }}>
-                                    <label htmlFor="komentar_pegawai">Balasan Anda:</label>
-                                    <textarea
-                                        id="komentar_pegawai"
-                                        placeholder="Tulis balasan Anda di sini..."
-                                        value={replyFormData.komentar_pegawai}
-                                        onChange={(e) =>
-                                            setReplyFormData({
-                                                ...replyFormData,
-                                                komentar_pegawai: e.target.value,
-                                            })
-                                        }
-                                        required
-                                        rows="4"
-                                        style={{
-                                            width: "100%",
-                                            padding: "0.75rem",
-                                            border: "1px solid #ddd",
-                                            borderRadius: "5px",
-                                            fontSize: "0.95rem",
-                                        }}
-                                    ></textarea>
-                                </div>
-                            </div>
-                            <div className="cs-modal-actions">
-                                <button
-                                    type="button"
-                                    className="cs-cancel-btn"
-                                    onClick={handleCloseReplyModal}
-                                >
-                                    Batal
-                                </button>
-                                <button type="submit" className="cs-submit-btn">
-                                    Kirim Balasan
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* BARU: Modal Detail Transaksi yang Sudah Diproses */}
-            {showProcessedDetailModal && selectedProcessedTransaction && (
-                <div className="cs-modal">
-                    <div className="cs-modal-content">
-                        <div className="cs-modal-header">
-                            <h3>Detail Transaksi #{selectedProcessedTransaction.nomor_transaksi_nota}</h3>
-                            <button className="cs-close-btn" onClick={handleCloseProcessedDetailModal}>×</button>
-                        </div>
-                        <div className="cs-transaction-details">
-                            <p><strong>Pembeli:</strong> {selectedProcessedTransaction.pembeli?.nama_pembeli || 'N/A'}</p>
-                            <p><strong>Email Pembeli:</strong> {selectedProcessedTransaction.pembeli?.email_pembeli || 'N/A'}</p>
-                            <p><strong>Total Bayar:</strong> Rp {Number(selectedProcessedTransaction.total_bayar).toLocaleString('id-ID')}</p>
-                            <p><strong>Status Pembayaran:</strong> <span className={`cs-payment-status status-${selectedProcessedTransaction.status_pembayaran}`}>
-                                {selectedProcessedTransaction.status_pembayaran.replace('_', ' ').toUpperCase()}
-                            </span></p>
-                            <p><strong>Tanggal Pembelian:</strong> {new Date(selectedProcessedTransaction.tanggal_pembelian).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                            <p><strong>Tanggal Pembayaran:</strong> {selectedProcessedTransaction.tanggal_pembayaran ? new Date(selectedProcessedTransaction.tanggal_pembayaran).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Belum Dibayar'}</p>
-                            <p><strong>Jenis Pengiriman:</strong> {selectedProcessedTransaction.jenis_pengiriman === 'kurir' ? `Kurir (${selectedProcessedTransaction.alamat_pembeli})` : 'Ambil Sendiri'}</p>
-                            <p><strong>Biaya Ongkir:</strong> Rp {Number(selectedProcessedTransaction.biaya_ongkir).toLocaleString('id-ID')}</p>
-                            <p><strong>Poin Dipakai:</strong> {selectedProcessedTransaction.tukar_poin_potongan}</p>
-                            <p><strong>Poin Didapat:</strong> {selectedProcessedTransaction.poin_pembelian}</p>
-                            
-                            {selectedProcessedTransaction.bukti_pembayaran && (
-                                <div className="cs-proof-section">
-                                    <strong>Bukti Pembayaran:</strong>
-                                    <a
-                                        href={`http://127.0.0.1:8000/bukti_pembayaran/${selectedProcessedTransaction.bukti_pembayaran}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="cs-link-button cs-proof-link"
-                                    >
-                                        Lihat Gambar Bukti Pembayaran
-                                    </a>
-                                    {/* Perbaikan: Kondisional render gambar agar tidak error jika bukti_pembayaran tidak ada */}
-                                    {selectedProcessedTransaction.bukti_pembayaran && (
-                                        <img
-                                            src={`http://127.0.0.1:8000/bukti_pembayaran/${selectedProcessedTransaction.bukti_pembayaran}`}
-                                            alt="Bukti Pembayaran"
-                                            className="cs-bukti-pembayaran-img"
-                                        />
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="cs-detail-items">
-                                <h4>Detail Barang:</h4>
-                                {/* Perbaikan: Tambahkan pemeriksaan apakah detailTransaksiPembelian ada dan merupakan array */}
-                                {selectedProcessedTransaction.detailTransaksiPembelian && Array.isArray(selectedProcessedTransaction.detailTransaksiPembelian) && selectedProcessedTransaction.detailTransaksiPembelian.length > 0 ? (
-                                    <table className="cs-detail-items-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Barang</th>
-                                                <th>Kuantitas</th>
-                                                <th>Harga Satuan</th>
-                                                <th>Subtotal</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {selectedProcessedTransaction.detailTransaksiPembelian.map((item, index) => (
-                                                <tr key={index}>
-                                                    <td>
-                                                        <div className="cs-product-info-cell">
-                                                            {item.barang?.image && (
-                                                                <img
-                                                                    src={`http://127.0.0.1:8000/images/${item.barang.image}`}
-                                                                    alt={item.barang.nama_barang}
-                                                                    className="cs-product-image-small"
-                                                                />
-                                                            )}
-                                                            <span>{item.barang?.nama_barang || 'N/A'}</span>
-                                                        </div>
-                                                    </td>
-                                                    <td>{item.jumlah_barang_pembelian}</td>
-                                                    <td>Rp {Number(item.barang?.harga_barang || 0).toLocaleString('id-ID')}</td>
-                                                    <td>Rp {(item.jumlah_barang_pembelian * (item.barang?.harga_barang || 0)).toLocaleString('id-ID')}</td>
+                                <div className="cs-detail-items">
+                                    <h4>Detail Barang:</h4>
+                                    {selectedProcessedTransaction.detailTransaksiPembelian && Array.isArray(selectedProcessedTransaction.detailTransaksiPembelian) && selectedProcessedTransaction.detailTransaksiPembelian.length > 0 ? (
+                                        <table className="cs-detail-items-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Barang</th>
+                                                    <th>Kuantitas</th>
+                                                    <th>Harga Satuan</th>
+                                                    <th>Subtotal</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                ) : (
-                                    <p>Tidak ada detail barang untuk transaksi ini.</p>
-                                )}
+                                            </thead>
+                                            <tbody>
+                                                {selectedProcessedTransaction.detailTransaksiPembelian.map((item, index) => (
+                                                    <tr key={index}>
+                                                        <td>
+                                                            <div className="cs-product-info-cell">
+                                                                {item.barang?.image && (
+                                                                    <img
+                                                                        src={`http://127.0.0.1:8000/images/${item.barang.image}`}
+                                                                        alt={item.barang?.nama_barang || 'Barang'}
+                                                                        className="cs-product-image-small"
+                                                                    />
+                                                                )}
+                                                                <span>{item.barang?.nama_barang || 'N/A'}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td>{item.jumlah_barang_pembelian}</td>
+                                                        <td>Rp {Number(item.barang?.harga_barang || 0).toLocaleString('id-ID')}</td>
+                                                        <td>Rp {(item.jumlah_barang_pembelian * Number(item.barang?.harga_barang || 0)).toLocaleString('id-ID')}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    ) : (
+                                        <p>Tidak ada detail barang untuk transaksi ini.</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="cs-modal-actions">
+                                <button className="cs-cancel-btn" onClick={handleCloseProcessedDetailModal}>Tutup</button>
                             </div>
                         </div>
-                        <div className="cs-modal-actions">
-                            <button className="cs-cancel-btn" onClick={handleCloseProcessedDetailModal}>Tutup</button>
-                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-        </main>
-    </div>
+            </main>
+        </div>
     );
 };
 
