@@ -1,6 +1,3 @@
-/* src\JSX\Login\CS\dashboardCS.css */
-
-/* Reset & Base */
 * {
     margin: 0;
     padding: 0;
@@ -231,7 +228,6 @@
     box-shadow: 0 0 0 0.2rem rgba(0, 86, 163, 0.25); /* Focus ring */
 }
 
-
 /* Table Containers */
 .cs-penitip-table-container,
 .cs-discussion-table-container,
@@ -382,26 +378,29 @@
     background-color: #ffc107; /* warning yellow */
     color: #343a40; /* Dark text for contrast */
 }
+
 .cs-payment-status.status-dibayar {
     background-color: #17a2b8; /* info blue */
     color: white;
 }
+
 .cs-payment-status.status-valid {
     background-color: #28a745; /* success green */
     color: white;
 }
-.cs-payment-status.status-tidak_valid, .cs-payment-status.status-dibatalkan {
+
+.cs-payment-status.status-tidak_valid, 
+.cs-payment-status.status-dibatalkan {
     background-color: #dc3545; /* danger red */
     color: white;
 }
-
 
 .cs-no-proof {
     color: #6c757d;
     font-style: italic;
 }
 
-.cs-link-button { /* Gaya untuk link "Lihat Bukti" */
+.cs-link-button {
     display: inline-block;
     padding: 0.5rem 1rem;
     background-color: #007bff;
@@ -418,8 +417,7 @@
     background-color: #0056b3;
 }
 
-
-.cs-verify-btn { /* Gaya tombol verifikasi */
+.cs-verify-btn {
     padding: 0.6rem 1.1rem;
     border: none;
     border-radius: 5px;
@@ -454,7 +452,7 @@
 .cs-verify-btn:disabled {
     background-color: #cccccc;
     cursor: not-allowed;
-    opacity: 0.7; /* Make disabled buttons look faded */
+    opacity: 0.7;
     box-shadow: none;
     transform: none;
 }
@@ -464,12 +462,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    margin-top: 1.5rem; /* More space */
+    margin-top: 1.5rem;
     gap: 0.5rem;
 }
 
 .cs-paginate-btn {
-    padding: 0.6rem 1.1rem; /* More padding */
+    padding: 0.6rem 1.1rem;
     background-color: #0056a3;
     color: white;
     border: none;
@@ -485,7 +483,7 @@
 }
 
 .cs-paginate-btn:disabled {
-    background-color: #cccccc; /* Lighter grey for disabled */
+    background-color: #cccccc;
     color: #888;
     cursor: not-allowed;
 }
@@ -503,52 +501,51 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
+    background-color: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
     padding: 1rem;
-    overflow-y: auto; /* Allow scrolling for tall modals */
 }
 
 .cs-modal-content {
     background: white;
-    padding: 2rem; /* More padding */
-    border-radius: 10px; /* More rounded */
+    padding: 2rem;
+    border-radius: 10px;
     width: 95%;
-    max-width: 700px; /* Wider modal */
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25); /* Stronger shadow */
+    max-width: 700px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.25);
     position: relative;
-    transform: translateY(0); /* Initial state for animation */
-    transition: transform 0.3s ease-out; /* Smooth transition */
+    transform: translateY(0);
+    transition: transform 0.3s ease-out;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
-/* Example of adding a small animation for modal appearance */
 .cs-modal.show .cs-modal-content {
     transform: translateY(0);
 }
-
 
 .cs-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.8rem; /* More space */
+    margin-bottom: 1.8rem;
     border-bottom: 1px solid #eee;
     padding-bottom: 1rem;
 }
 
 .cs-modal-header h3 {
     margin: 0;
-    font-size: 1.5rem; /* Larger title */
+    font-size: 1.5rem;
     color: #0056a3;
 }
 
 .cs-close-btn {
     background: none;
     border: none;
-    font-size: 1.5rem; /* Larger icon */
+    font-size: 1.5rem;
     cursor: pointer;
     color: #6c757d;
     transition: color 0.2s ease;
@@ -560,8 +557,8 @@
 
 .cs-form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Larger min-width for inputs */
-    gap: 1.5rem; /* More space between fields */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
     margin-bottom: 1.5rem;
 }
 
@@ -572,7 +569,7 @@
 
 .cs-form-group label {
     font-weight: 600;
-    margin-bottom: 0.6rem; /* More space */
+    margin-bottom: 0.6rem;
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -582,13 +579,13 @@
 
 .cs-form-group input,
 .cs-form-group textarea,
-.cs-form-group select { /* Add select for consistency */
-    padding: 0.85rem; /* More padding */
-    border: 1px solid #ced4da; /* Lighter border */
+.cs-form-group select {
+    padding: 0.85rem;
+    border: 1px solid #ced4da;
     border-radius: 5px;
-    font-size: 1rem; /* Slightly larger font */
+    font-size: 1rem;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    background-color: white; /* Ensure background is white */
+    background-color: white;
 }
 
 .cs-form-group input:focus,
@@ -596,19 +593,19 @@
 .cs-form-group select:focus {
     outline: none;
     border-color: #0056a3;
-    box-shadow: 0 0 0 0.2rem rgba(0, 86, 163, 0.25); /* Focus ring */
+    box-shadow: 0 0 0 0.2rem rgba(0, 86, 163, 0.25);
 }
 
 .cs-foto-ktp-container {
     margin-top: 1rem;
-    grid-column: 1 / -1; /* Span full width in grid */
+    grid-column: 1 / -1;
 }
 
 .cs-foto-ktp-input {
     display: flex;
     align-items: center;
     gap: 0.8rem;
-    flex-wrap: wrap; /* Allow wrapping on small screens */
+    flex-wrap: wrap;
 }
 
 .cs-file-input {
@@ -625,8 +622,8 @@
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, border-color 0.3s ease;
-    flex-grow: 1; /* Allow label to take available space */
-    justify-content: center; /* Center content within label */
+    flex-grow: 1;
+    justify-content: center;
 }
 
 .cs-file-label:hover {
@@ -636,14 +633,14 @@
 
 .cs-image-preview {
     margin-top: 1.5rem;
-    text-align: center; /* Center preview image */
+    text-align: center;
 }
 
 .cs-image-preview img {
     max-width: 100%;
-    max-height: 250px; /* Slightly larger preview */
+    max-height: 250px;
     object-fit: contain;
-    border-radius: 8px; /* More rounded */
+    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
@@ -666,17 +663,12 @@
 
 .cs-cancel-btn,
 .cs-submit-btn {
-    padding: 0.9rem 1.8rem; /* Larger buttons */
+    padding: 0.9rem 1.8rem;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     font-weight: 600;
-}
-
-.cs-cancel-btn {
-    background-color: #6c757d;
-    color: white;
 }
 
 .cs-cancel-btn:hover {
@@ -696,7 +688,6 @@
     box-shadow: 0 2px 5px rgba(0,0,0,0.15);
 }
 
-
 /* Loading and Error States */
 .cs-loading-container {
     display: flex;
@@ -705,7 +696,7 @@
     justify-content: center;
     height: 100%;
     color: #666;
-    padding: 2rem; /* Add padding for better spacing */
+    padding: 2rem;
 }
 
 .cs-loading-spinner {
@@ -736,7 +727,7 @@
 }
 
 .cs-error-message i {
-    font-size: 2.2rem; /* Slightly larger icon */
+    font-size: 2.2rem;
     margin-bottom: 0.8rem;
 }
 
@@ -752,7 +743,7 @@
 }
 
 .cs-no-data-icon i {
-    font-size: 3.5rem; /* Larger icon */
+    font-size: 3.5rem;
     color: #999;
     margin-bottom: 1.5rem;
 }
@@ -774,7 +765,7 @@
 /* Specific styling for view detail button in processed table */
 .cs-view-detail-btn {
     padding: 0.6rem 1.1rem;
-    background-color: #007bff; /* Blue for view details */
+    background-color: #007bff;
     color: white;
     border: none;
     border-radius: 5px;
@@ -808,11 +799,11 @@
     margin-top: 1.5rem;
     padding-top: 1rem;
     border-top: 1px solid #eee;
-    text-align: center; /* Center the proof image and link */
+    text-align: center;
 }
 
 .cs-proof-link {
-    display: block; /* Make link a block element */
+    display: block;
     margin-bottom: 1rem;
     font-size: 1.05em;
     font-weight: 600;
@@ -829,8 +820,8 @@
 .cs-bukti-pembayaran-img {
     max-width: 100%;
     height: auto;
-    max-height: 300px; /* Limit height to prevent overly large images */
-    object-fit: contain; /* Ensure image fits without cropping */
+    max-height: 300px;
+    object-fit: contain;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     margin-top: 0.5rem;
@@ -853,9 +844,9 @@
     width: 100%;
     border-collapse: collapse;
     margin-bottom: 1rem;
-    background-color: #f8f9fa; /* Light background for inner table */
+    background-color: #f8f9fa;
     border-radius: 5px;
-    overflow: hidden; /* For rounded corners to apply to content */
+    overflow: hidden;
 }
 
 .cs-detail-items-table th,
@@ -874,20 +865,19 @@
 }
 
 .cs-detail-items-table tbody tr:nth-child(even) {
-    background-color: #ffffff; /* Alternate white rows */
+    background-color: #ffffff;
 }
-
 
 /* --- Responsive Adjustments --- */
 @media (max-width: 1024px) {
     .cs-dashboard-section {
-        max-width: 100%; /* Allow sections to take full width */
+        max-width: 100%;
     }
 }
 
 @media (max-width: 768px) {
     .cs-sidebar {
-        width: 180px; /* Slightly smaller sidebar */
+        width: 180px;
     }
 
     .cs-dashboard-container {
@@ -901,7 +891,7 @@
     }
 
     .cs-form-grid {
-        grid-template-columns: 1fr; /* Stack form fields vertically */
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
 
@@ -938,7 +928,7 @@
     }
 
     .cs-filter-select {
-        width: 100%; /* Make select full width */
+        width: 100%;
     }
 
     .cs-proof-link {
@@ -946,26 +936,26 @@
     }
 
     .cs-bukti-pembayaran-img {
-        max-height: 200px; /* Smaller image preview on mobile */
+        max-height: 200px;
     }
 }
 
 @media (max-width: 480px) {
     .cs-sidebar {
         width: 100%;
-        height: auto; /* Allow height to adjust */
-        position: relative; /* Not fixed anymore, part of normal flow */
+        height: auto;
+        position: relative;
         padding: 0.5rem;
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
-        flex-wrap: wrap; /* Allow nav items to wrap */
+        flex-wrap: wrap;
     }
 
     .cs-sidebar-logo {
         font-size: 1.1rem;
         margin-bottom: 0;
-        width: 100%; /* Full width for logo */
+        width: 100%;
         text-align: left;
     }
 
@@ -976,32 +966,32 @@
 
     .cs-sidebar-nav ul {
         flex-direction: row;
-        justify-content: space-around; /* Distribute items evenly */
-        flex-wrap: wrap; /* Allow items to wrap */
-        gap: 0.5rem; /* Smaller gap */
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
     .cs-sidebar-nav ul li {
         padding: 0.4rem 0.6rem;
         font-size: 0.85rem;
-        flex-basis: auto; /* Let items take natural width */
+        flex-basis: auto;
     }
 
     .cs-sidebar-nav ul li.cs-logout-btn {
         margin-top: 0.5rem;
-        width: 100%; /* Full width for logout button */
+        width: 100%;
     }
 
     .cs-dashboard-container {
         margin-left: 0;
-        margin-top: 0; /* Remove top margin if sidebar is not fixed */
+        margin-top: 0;
         padding: 0.5rem;
         width: 100vw;
     }
 
     .cs-modal-content {
         padding: 1rem;
-        max-width: 95%; /* Even wider modal for very small screens */
+        max-width: 95%;
     }
 
     .cs-modal-header h3 {
@@ -1016,11 +1006,12 @@
     }
 
     .cs-modal-actions {
-        flex-direction: column-reverse; /* Stack buttons */
+        flex-direction: column-reverse;
         gap: 0.8rem;
     }
 
-    .cs-cancel-btn, .cs-submit-btn {
+    .cs-cancel-btn,
+    .cs-submit-btn {
         width: 100%;
         padding: 0.7rem 1.2rem;
         font-size: 0.95rem;

@@ -169,6 +169,7 @@ const TransactionHistory = () => {
                                     <th>Jenis Pengiriman</th>
                                     <th>Total Bayar</th>
                                     <th>Status Pembayaran</th>
+                                    <th>Status Pengiriman</th>
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
@@ -180,6 +181,7 @@ const TransactionHistory = () => {
                                         <td>{transaction.jenis_pengiriman}</td>
                                         <td>{transaction.total_bayar.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' })}</td>
                                         <td>{transaction.status_pembayaran}</td>
+                                        <td>{transaction.status_pengiriman}</td>
                                         <td>
                                             <button
                                                 className="view-details-btn"
