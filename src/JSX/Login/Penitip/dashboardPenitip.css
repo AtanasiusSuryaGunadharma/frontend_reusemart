@@ -5,8 +5,6 @@
   box-sizing: border-box;
 }
 
-
-
 /* Penitip Dashboard */
 .penitip-dashboard {
   display: flex;
@@ -18,7 +16,7 @@
 /* Sidebar kiri */
 .penitip-sidebar {
   width: 250px;
-  background-color: #1976d2; /* Warna hijau utama */
+  background-color: #1976d2; /* Warna utama */
   color: white;
   display: flex;
   flex-direction: column;
@@ -51,10 +49,13 @@
   border-radius: 5px;
   transition: background-color 0.2s ease;
   font-weight: 600;
+  display: flex; /* Mengatur flex untuk badge */
+  align-items: center;
+  justify-content: space-between; /* Untuk menempatkan badge di kanan */
 }
 
 .penitip-sidebar-nav ul li:hover {
-  background-color: #004d91; /* Variasi hijau saat hover */
+  background-color: #004d91; /* Variasi warna saat hover */
 }
 
 .penitip-sidebar-nav ul li.penitip-active {
@@ -67,11 +68,26 @@
   background-color: #d32f2f;
   font-weight: 700;
   text-align: center;
+  justify-content: center; /* Center text for logout button */
 }
 
 .penitip-sidebar-nav ul li.penitip-logout-btn:hover {
   background-color: #b71c1c;
 }
+
+/* Notification Badge in Sidebar */
+.notification-badge {
+    background-color: #ffc107; /* Warna kuning untuk notifikasi */
+    color: #343a40;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 0.2em 0.6em;
+    border-radius: 50%;
+    margin-left: 0.5rem;
+    min-width: 20px; /* Minimal width for single digit */
+    text-align: center;
+}
+
 
 /* Konten utama di sebelah kanan */
 .penitip-dashboard-container {
@@ -106,6 +122,35 @@
   max-width: 1200px;
 }
 
+/* Search Container */
+.penitip-search-container {
+  margin-bottom: 1.5rem;
+  position: relative; /* Untuk ikon search */
+}
+.penitip-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #666;
+}
+
+.penitip-search-input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem; /* Tambah padding kiri untuk ikon */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.penitip-search-input:focus {
+  outline: none;
+  border-color: #1976d2;
+  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+}
+
 /* Profil dan tabel */
 .penitip-profile-table {
   width: 100%;
@@ -122,6 +167,67 @@
 .penitip-profile-table td:first-child {
   font-weight: 600;
   width: 30%;
+}
+
+/* Daftar Barang Table */
+.penitip-daftar-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  margin-top: 1rem;
+}
+
+.penitip-daftar-table th {
+  background-color: #f4f4f4;
+  padding: 0.75rem;
+  border-bottom: 2px solid #ddd;
+  font-weight: 600;
+}
+
+.penitip-daftar-table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.95rem;
+}
+
+.penitip-daftar-table tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Action Buttons */
+.penitip-detail-btn {
+  padding: 0.5rem 1rem;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.penitip-detail-btn:hover {
+  background-color: #1565c0;
+}
+
+.penitip-extend-btn {
+  padding: 0.5rem 1rem;
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.penitip-extend-btn:hover:not(:disabled) {
+  background-color: #1b5e20;
+}
+
+.penitip-extend-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
 }
 
 /* Transaction tables */
@@ -150,6 +256,82 @@
   padding: 0.75rem;
   border-bottom: 1px solid #ddd;
   font-size: 0.95rem;
+}
+
+/* Modal Styles */
+.penitip-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.penitip-modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  text-align: left;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.penitip-modal-content h3 {
+  margin-bottom: 1.5rem;
+  color: #333;
+  text-align: center;
+}
+
+.penitip-modal-details p {
+  margin-bottom: 0.75rem;
+  line-height: 1.5;
+}
+
+.penitip-images-container {
+  margin: 1.5rem 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.penitip-image-wrapper {
+  flex: 1;
+  min-width: 200px;
+  max-width: 250px;
+}
+
+.penitip-item-photo {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.penitip-close-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #d32f2f;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 1.5rem;
+  transition: background-color 0.3s ease;
+}
+
+.penitip-close-btn:hover {
+  background-color: #b71c1c;
 }
 
 /* Paginasi */
@@ -214,6 +396,20 @@
     padding: 0.4rem 0.8rem;
     font-size: 0.9rem;
   }
+
+  .penitip-modal-content {
+    width: 95%;
+    padding: 1.5rem;
+  }
+
+  .penitip-daftar-table {
+    font-size: 0.9rem;
+  }
+
+  .penitip-daftar-table th,
+  .penitip-daftar-table td {
+    padding: 0.5rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -228,6 +424,7 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
   }
 
   .penitip-sidebar-logo {
@@ -257,4 +454,150 @@
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
   }
+
+  .penitip-modal-content {
+    width: 95%;
+    height: 90vh;
+    padding: 1rem;
+  }
+
+  .penitip-daftar-table {
+    font-size: 0.8rem;
+  }
+
+  .penitip-daftar-table th,
+  .penitip-daftar-table td {
+    padding: 0.4rem;
+  }
+
+  .penitip-detail-btn,
+  .penitip-extend-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .penitip-search-input {
+    font-size: 0.9rem;
+    padding: 0.6rem;
+  }
+
+  .penitip-images-container {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .penitip-image-wrapper {
+    max-width: 100%;
+  }
+}
+
+/* Additional styles for better mobile experience */
+@media (max-width: 600px) {
+  .penitip-daftar-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .penitip-transaction-table,
+  .penitip-transaction-detail-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
+
+/* Notifikasi khusus untuk penitip */
+.penitip-notification-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
+}
+
+.penitip-notification-item {
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.penitip-notification-item.unread {
+    background-color: #e6f7ff; /* Warna latar belakang untuk notifikasi belum dibaca */
+    border-color: #a3c1e0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.penitip-notification-item:hover {
+    background-color: #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.penitip-notification-item.unread:hover {
+    background-color: #d1ecf1; /* Lebih terang saat hover jika belum dibaca */
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-grow: 1;
+}
+
+.notification-image {
+    width: 60px; /* Ukuran gambar notifikasi */
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    flex-shrink: 0; /* Pastikan gambar tidak menyusut */
+}
+
+.notification-content p {
+    margin: 0;
+    font-size: 1em;
+    color: #333;
+}
+
+.notification-date {
+    font-size: 0.85em;
+    color: #6c757d;
+    white-space: nowrap; /* Pastikan tanggal tidak terpotong */
+    flex-shrink: 0; /* Pastikan tanggal tidak menyusut */
+    margin-left: auto; /* Dorong ke kanan */
+}
+
+.notification-new-indicator {
+    background-color: #28a745; /* Green for new indicator */
+    color: white;
+    font-size: 0.7em;
+    font-weight: bold;
+    padding: 0.2em 0.5em;
+    border-radius: 5px;
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+
+.penitip-mark-all-read-btn {
+    display: block; /* Tombol jadi block agar di tengah */
+    width: fit-content; /* Sesuaikan lebar dengan konten */
+    margin: 1.5rem auto 0; /* Tengah dan beri margin atas */
+    padding: 0.75rem 1.5rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.penitip-mark-all-read-btn:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
 }

@@ -1,68 +1,4 @@
-// /* eslint-disable no-unused-vars */
-// import React from "react";
-// import { Link } from "react-router-dom"; // Import Link
-// import "./generalLogin.css";
-// import { FaUserTie, FaWarehouse, FaBuilding, FaShoppingCart } from 'react-icons/fa';
-// // Hapus import axios, useState, useNavigate jika tidak digunakan di sini lagi
-
-// const GeneralLogin = () => {
-//     // Hapus state untuk email, password, rememberMe, error
-//     // Hapus fungsi handleSubmit
-//     // Hapus useEffect jika ada yang berkaitan dengan form login
-
-//     // Data untuk setiap role login
-//     const roles = [
-//         { name: "Pegawai", description: "Masuk sebagai pegawai", link: "/admin/login", IconComponent: FaUserTie }, // Link ke halaman login pegawai
-//         { name: "Penitip", description: "Masuk untuk menitipkan barang", link: "/penitip/login", IconComponent: FaWarehouse }, // Akan diarahkan ke halaman login penitip
-//         { name: "Organisasi", description: "Masuk sebagai perwakilan organisasi", link: "/organisasi/login", IconComponent: FaBuilding }, // Akan diarahkan ke halaman login organisasi
-//         { name: "Pembeli", description: "Masuk untuk berbelanja", link: "/pembeli/login", IconComponent: FaShoppingCart }, // Akan diarahkan ke halaman login pembeli
-//     ];
-
-//     return (
-//         <div className="login-page">
-//             {/* Navbar - Tetap sama */}
-//             <nav className="navbar">
-//                 <div className="logo">
-//                     <span>REUSEMART</span>
-//                 </div>
-//                 <ul className="nav-links">
-//                     <li><Link to="/">Home</Link></li>
-//                     <li><Link to="/shop">Shop</Link></li>
-//                     <li><Link to="/generalRegister">Register</Link></li>
-//                 </ul>
-                
-//                 <div className="nav-icons">
-//                      <i className="fas fa-search"></i> {/* Jika ikon search juga tidak muncul, Anda mungkin perlu mencari alternatif Font Awesome ini juga */}
-//                  </div>
-//             </nav>
-
-//             {/* Konten untuk pilihan role */}
-//             <div className="role-selection-container">
-//                 <div className="login-logo">
-//                     <img src="/Logo.png" alt="Reusemart Logo" />
-//                     <span>REUSEMART</span>
-//                 </div>
-//                 <h2>Pilih Role Login Anda</h2>
-//                 <p>Silakan pilih jenis akun Anda untuk melanjutkan.</p>
-
-//                 <div className="role-cards-grid">
-//                     {roles.map((role) => (
-//                         <Link to={role.link} key={role.name} className="role-card">
-//                             {/* Render komponen ikon di sini */}
-//                             {/* Anda bisa menambahkan class role-icon ke komponen ini jika ingin styling CSS yang sama */}
-//                             <role.IconComponent className="role-icon" />
-//                             <h3>{role.name}</h3>
-//                             <p>{role.description}</p>
-//                         </Link>
-//                     ))}
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default GeneralLogin;
-
+// src\JSX\Login\generalLogin.jsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -97,14 +33,45 @@ const GeneralLogin = () => {
         localStorage.setItem("authToken", token);
         localStorage.setItem("userRole", user.role);
         localStorage.setItem("userId", user.id);
-        localStorage.setItem("userName", user.name);
+        localStorage.setItem("userName", user.name); // Pastikan ini juga disimpan di login pembeli spesifik
         localStorage.setItem("id_pegawai", user.role === "admin" || user.role === "owner" || user.role === "cs" || user.role === "pegawaiGudang" || user.role === "kurir" || user.role === "hunter" ? user.id : "");
         localStorage.setItem("id_organisasi", user.role === "organisasi" ? user.id : "");
         localStorage.setItem("id_penitip", user.role === "penitip" ? user.id : "");
         localStorage.setItem("id_pembeli", user.role === "pembeli" ? user.id : "");
 
-        // Redirect ke dashboard sesuai role yang didapat
-        navigate(`/${user.role}/dashboard`);
+        // Redirect berdasarkan role
+        switch (user.role) {
+          case 'pembeli':
+            navigate("/shop-pembeli"); // <-- UBAH REDIRECT UNTUK PEMBELI KE SHOP PEMBELI
+            break;
+          case 'admin':
+            navigate("/admin/dashboard");
+            break;
+          case 'owner':
+            navigate("/owner/dashboard");
+            break;
+          case 'cs':
+            navigate("/cs/dashboard");
+            break;
+          case 'pegawaiGudang':
+            navigate("/pegawaiGudang/dashboard");
+            break;
+          case 'hunter':
+            navigate("/hunter/dashboard");
+            break;
+          case 'courier':
+            navigate("/courier/dashboard");
+            break;
+          case 'penitip': // Tambahkan case ini jika belum ada
+            navigate("/penitip/dashboard");
+            break;
+          case 'organisasi': // Tambahkan case ini jika belum ada
+            navigate("/organisasi/dashboard");
+            break;
+          default:
+            navigate("/shop"); // Default ke shop versi guest jika role tidak dikenali
+            break;
+        }
       } else {
         // Jika response gagal, tampilkan pesan error dari server
         setError(response.data.message || "Login gagal");
@@ -122,6 +89,9 @@ const GeneralLogin = () => {
         <ul className="nav-links">
           <li>
             <Link to="/">Home</Link>
+          </li>
+          <li>
+            <Link to="/shop">Shop</Link>
           </li>
           <li>
             <Link to="/generalRegister">Register</Link>

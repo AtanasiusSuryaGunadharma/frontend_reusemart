@@ -97,6 +97,9 @@ const ProductDetail = () => {
                     <li>
                         <Link to="/shop">Shop</Link>
                     </li>
+                    <li>
+                        <Link to="/generalLogin">Login</Link>
+                    </li>
                 </ul>
                 <div className="nav-icons">
                     <i className="fas fa-user"></i>

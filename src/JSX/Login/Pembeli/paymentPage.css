@@ -1,0 +1,546 @@
+/* General Page Layout */
+.payment-page {
+    display: flex;
+    flex-direction: column;
+    background: #f0f2f5; /* Light grey background for modern feel */
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+    color: #333;
+}
+
+/* Navbar */
+.payment-navbar {
+    background-color: #0056a3; /* Primary blue */
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Deeper shadow */
+    flex-wrap: wrap;
+    gap: 1rem;
+    z-index: 100; /* Ensure navbar is on top */
+}
+
+.payment-navbar .payment-logo img {
+    height: 40px;
+    margin-right: 10px; /* Space between logo and text */
+}
+
+.payment-navbar .payment-logo span {
+    font-size: 1.6rem; /* Slightly larger */
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+
+.payment-nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.8rem; /* Increased gap */
+    align-items: center;
+    flex-grow: 1;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+
+.payment-nav-links li a,
+.payment-nav-links button {
+    color: white;
+    text-decoration: none;
+    font-size: 1.05rem; /* Slightly larger */
+    padding: 0.6rem 1.2rem; /* More padding */
+    border-radius: 8px; /* Rounded corners */
+    background: transparent;
+    border: 1px solid transparent; /* Subtle border for hover effect */
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-nav-links li a:hover,
+.payment-nav-links button:hover {
+    background-color: rgba(255, 255, 255, 0.15); /* Lighter hover effect */
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.payment-logout-btn {
+    background-color: #dc3545; /* Red for danger */
+    border-color: #dc3545;
+}
+
+.payment-logout-btn:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+}
+
+
+/* Main Payment Container */
+.payment-container {
+    padding: 3rem 2rem; /* More vertical padding */
+    max-width: 800px; /* Wider container */
+    width: 95%;
+    margin: 40px auto; /* More margin from top */
+    background: #fff;
+    border-radius: 12px; /* More rounded corners */
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+    box-sizing: border-box;
+    text-align: center;
+    border: 1px solid #e0e0e0; /* Subtle border */
+}
+
+.payment-title {
+    color: #0056a3; /* Primary blue */
+    margin-bottom: 2.5rem; /* More space */
+    font-size: 2.5em; /* Larger title */
+    font-weight: 700;
+}
+
+.payment-card {
+    background-color: #fefefe;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.05); /* Inner shadow */
+    margin-bottom: 2rem;
+}
+
+.payment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #e9ecef; /* Light grey border */
+}
+
+.payment-header h3 {
+    color: #0056a3;
+    margin: 0;
+    font-size: 1.8em;
+}
+
+/* Status Badge Styling */
+.payment-status-badge {
+    font-weight: bold;
+    padding: 0.6em 1.2em; /* More padding */
+    border-radius: 20px; /* Pill shape */
+    color: white;
+    font-size: 0.95em;
+    min-width: 120px; /* Minimum width for consistency */
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.status-menunggu_pembayaran {
+    background-color: #ffc107; /* warning yellow */
+    color: #343a40; /* Dark text for contrast */
+}
+.status-dibayar {
+    background-color: #17a2b8; /* info blue */
+}
+.status-valid {
+    background-color: #28a745; /* success green */
+}
+.status-tidak_valid, .status-dibatalkan {
+    background-color: #dc3545; /* danger red */
+}
+
+/* Countdown Section */
+.payment-countdown-section {
+    margin-bottom: 2rem;
+    background-color: #f8f9fa; /* Lighter background */
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.payment-countdown-section h4 {
+    color: #495057; /* Darker grey */
+    font-size: 1.3em;
+    margin-bottom: 1rem;
+}
+
+.countdown-timer {
+    font-size: 3.5em; /* Large timer */
+    font-weight: 800;
+    color: #0056a3; /* Primary blue */
+    letter-spacing: 2px;
+    transition: color 0.3s ease;
+}
+
+.countdown-timer.warning {
+    color: #ffc107; /* Yellow when low */
+}
+
+.countdown-timer.critical {
+    color: #dc3545; /* Red when very low */
+    animation: pulse 1s infinite; /* Pulsing animation */
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Info Section */
+.payment-info-section {
+    text-align: left;
+    margin-bottom: 2.5rem;
+    padding: 0 1rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.8rem;
+    font-size: 1.1em;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed #e9ecef; /* Dashed border for subtle separation */
+}
+
+.info-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #555;
+    flex-basis: 40%; /* Adjust label width */
+}
+
+.info-value {
+    color: #333;
+    flex-basis: 60%; /* Adjust value width */
+    text-align: right;
+}
+
+.total-amount .info-value {
+    font-size: 1.4em; /* Larger for total */
+    color: #0056a3;
+    font-weight: bold;
+}
+
+/* Upload Section */
+.payment-upload-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+    text-align: left; /* Align text left within section */
+}
+
+.payment-upload-section h4 {
+    color: #0056a3;
+    font-size: 1.6em;
+    margin-bottom: 0.5rem;
+}
+
+.payment-upload-section .text-muted {
+    font-size: 0.95em;
+    color: #6c757d;
+    margin-bottom: 1.5rem;
+}
+
+.payment-form-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    align-items: center; /* Center form elements */
+}
+
+.form-group-file {
+    width: 100%;
+    position: relative; /* For custom file input */
+}
+
+.file-input-label {
+    display: block;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border: 2px dashed #007bff; /* Dashed border for file input */
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    color: #007bff;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.3s ease;
+    overflow: hidden; /* Hide overflow text */
+    white-space: nowrap; /* Prevent text wrap */
+    text-overflow: ellipsis; /* Add ellipsis for long file names */
+}
+
+.file-input-label:hover {
+    background-color: #e2f0ff;
+    border-color: #0056b3;
+}
+
+.hidden-file-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.button-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center; /* Center buttons */
+    width: 100%;
+}
+
+.btn-primary, .btn-secondary, .btn-link {
+    padding: 0.8rem 1.8rem;
+    border: none;
+    border-radius: 8px; /* Rounded buttons */
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Button shadow */
+}
+
+.btn-primary {
+    background-color: #28a745; /* Success green */
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: #218838;
+    transform: translateY(-2px); /* Lift effect */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-secondary {
+    background-color: #6c757d; /* Grey */
+    color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary:disabled, .btn-secondary:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    opacity: 0.8;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Status Messages */
+.payment-status-message {
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 2rem;
+    font-size: 1.1em;
+    font-weight: 500;
+    text-align: left;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.success-message {
+    background-color: #d4edda; /* Light green background */
+    color: #155724; /* Dark green text */
+    border: 1px solid #28a745;
+}
+
+.error-message {
+    background-color: #f8d7da; /* Light red background */
+    color: #721c24; /* Dark red text */
+    border: 1px solid #dc3545;
+}
+
+.payment-status-message p {
+    margin-bottom: 0.5rem;
+}
+
+.payment-status-message p:last-child {
+    margin-bottom: 0;
+}
+
+.payment-status-message a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.payment-status-message a:hover {
+    text-decoration: underline;
+}
+
+
+/* Back to Shop Section */
+.back-to-shop-section {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+    background: none; /* Override button styles */
+    border: none;
+    cursor: pointer;
+}
+
+.btn-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Loading State */
+.payment-loading-state, .payment-error-state {
+    display: flex;
+    flex-direction: column; /* Align spinner and text vertically */
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 80px);
+    font-size: 1.5em;
+    color: #0056a3;
+    text-align: center;
+    gap: 1rem; /* Space between spinner and text */
+}
+.payment-error-state {
+    color: #dc3545;
+}
+
+/* Spinner for loading state */
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #0056a3;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .payment-navbar {
+        padding: 0.8rem 1rem;
+    }
+    .payment-navbar .payment-logo span {
+        font-size: 1.3rem;
+    }
+    .payment-nav-links {
+        gap: 1rem;
+        justify-content: center;
+    }
+    .payment-nav-links li a,
+    .payment-nav-links button {
+        font-size: 0.95rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .payment-container {
+        padding: 1.5rem;
+        margin: 20px auto;
+    }
+    .payment-title {
+        font-size: 2em;
+    }
+    .payment-card {
+        padding: 1.5rem;
+    }
+    .payment-header h3 {
+        font-size: 1.5em;
+    }
+    .payment-status-badge {
+        font-size: 0.85em;
+        padding: 0.5em 1em;
+    }
+    .countdown-timer {
+        font-size: 2.8em;
+    }
+    .info-row {
+        flex-direction: column; /* Stack info rows vertically */
+        align-items: flex-start;
+        font-size: 1em;
+        margin-bottom: 1rem;
+    }
+    .info-value {
+        text-align: left;
+        margin-top: 0.2rem;
+    }
+    .total-amount .info-value {
+        font-size: 1.2em;
+    }
+    .button-group {
+        flex-direction: column;
+        gap: 0.8rem;
+    }
+    .btn-primary, .btn-secondary {
+        width: 100%;
+        font-size: 1em;
+        padding: 0.7rem 1.5rem;
+    }
+    .payment-status-message {
+        font-size: 1em;
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-navbar {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.5rem 1rem;
+    }
+    .payment-logo {
+        width: 100%;
+        text-align: center;
+        margin-bottom: 0.5rem;
+    }
+    .payment-nav-links {
+        justify-content: center;
+        width: 100%;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .payment-nav-links li {
+        width: auto;
+        margin-bottom: 0;
+    }
+    .payment-container {
+        padding: 1rem;
+        margin: 15px auto;
+    }
+    .payment-title {
+        font-size: 2em;
+    }
+    .payment-header h3 {
+        font-size: 1.3em;
+    }
+    .countdown-timer {
+        font-size: 2.5em;
+    }
+    .info-label, .info-value {
+        font-size: 0.95em;
+    }
+    .file-input-label {
+        padding: 0.8rem 1rem;
+        font-size: 0.9em;
+    }
+}
