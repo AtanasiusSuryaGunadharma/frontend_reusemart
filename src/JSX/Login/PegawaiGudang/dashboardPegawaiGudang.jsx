@@ -4,6 +4,12 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+// Helper function to format date
+const formatDate = (dateString) => {
+  if (!dateString) return "Tidak Diketahui";
+  return dateString.split("T")[0]; // Extracts YYYY-MM-DD
+};
+
 const DashboardPegawaiGudang = () => {
   const [employeeProfile, setEmployeeProfile] = useState(null);
   const [consignmentTransactions, setConsignmentTransactions] = useState([]);
@@ -497,102 +503,102 @@ const DashboardPegawaiGudang = () => {
           </div>
         );
       case "items":
-    return (
-      <div className="warehouse-dashboard-section">
-        <h3>Daftar Transaksi Barang Titipan</h3>
-        <div className="warehouse-search-bar">
-          <input
-            type="text"
-            placeholder="Cari berdasarkan ID transaksi..."
-            value={searchQuery}
-            onChange={handleSearch}
-            className="warehouse-search-input"
-          />
-          <button onClick={handleAddTransaction} className="warehouse-add-btn">
-            Tambah Barang
-          </button>
-        </div>
-        {filteredTransactions.length > 0 ? (
-          <>
-            <table className="warehouse-transaction-table">
-              <thead>
-                <tr>
-                  <th>ID Transaksi</th>
-                  <th>Nama Barang</th>
-                  <th>Jumlah</th>
-                  <th>Tanggal Mulai</th>
-                  <th>Tanggal Akhir</th>
-                  <th>Status</th>
-                  <th>Penitip</th>
-                  <th>Pegawai</th>
-                  <th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentTransactions.map((transaction) => {
-                  const detail = transaction.detail_transaksi_penitipans && transaction.detail_transaksi_penitipans.length > 0 ? transaction.detail_transaksi_penitipans[0] : null;
-                  return (
-                    <tr key={transaction.id_penitipan_transaksi || Math.random()}>
-                      <td>{transaction.id_penitipan_transaksi || "N/A"}</td>
-                      <td>{detail?.barang?.nama_barang || "Tidak Diketahui"}</td>
-                      <td>{detail?.jumlah_barang_penitip || 0}</td>
-                      <td>{transaction.tanggal_mulai_penitipan || "Tidak Diketahui"}</td>
-                      <td>{transaction.tanggal_akhir_penitipan || "Tidak Diketahui"}</td>
-                      <td>{transaction.status_penitipan || "Tidak Diketahui"}</td>
-                      <td>{transaction.penitip?.nama_penitip || "Tidak Diketahui"}</td>
-                      <td>{transaction.pegawai?.nama_pegawai || "Tidak Diketahui"}</td>
-                      <td>
-                        <button
-                          onClick={() => handleEditTransaction(transaction)}
-                          className="warehouse-edit-btn"
-                          disabled={!transaction.id_penitipan_transaksi}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => window.open(`/print-nota/${transaction.id_penitipan_transaksi}`, "_blank")}
-                          className="warehouse-print-btn"
-                          style={{ marginLeft: "10px" }}
-                        >
-                          Cetak Nota
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-            <div className="warehouse-pagination">
-              <button
-                className="warehouse-paginate-btn"
-                onClick={prevItemsPage}
-                disabled={currentItemsPage === 1}
-              >
-                Previous
-              </button>
-              {Array.from({ length: totalItemsPages }, (_, i) => i + 1).map((number) => (
-                <button
-                  key={number}
-                  className={`warehouse-paginate-btn ${currentItemsPage === number ? "warehouse-active" : ""}`}
-                  onClick={() => paginateItems(number)}
-                >
-                  {number}
-                </button>
-              ))}
-              <button
-                className="warehouse-paginate-btn"
-                onClick={nextItemsPage}
-                disabled={currentItemsPage === totalItemsPages}
-              >
-                Next
+        return (
+          <div className="warehouse-dashboard-section">
+            <h3>Daftar Transaksi Barang Titipan</h3>
+            <div className="warehouse-search-bar">
+              <input
+                type="text"
+                placeholder="Cari berdasarkan ID transaksi..."
+                value={searchQuery}
+                onChange={handleSearch}
+                className="warehouse-search-input"
+              />
+              <button onClick={handleAddTransaction} className="warehouse-add-btn">
+                Tambah Barang
               </button>
             </div>
-          </>
-        ) : (
-          <p>Tidak ada transaksi barang titipan yang ditemukan.</p>
-        )}
-      </div>
-    );
+            {filteredTransactions.length > 0 ? (
+              <>
+                <table className="warehouse-transaction-table">
+                  <thead>
+                    <tr>
+                      <th>ID Transaksi</th>
+                      <th>Nama Barang</th>
+                      <th>Jumlah</th>
+                      <th>Tanggal Mulai</th>
+                      <th>Tanggal Akhir</th>
+                      <th>Status</th>
+                      <th>Penitip</th>
+                      <th>Pegawai</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentTransactions.map((transaction) => {
+                      const detail = transaction.detail_transaksi_penitipans && transaction.detail_transaksi_penitipans.length > 0 ? transaction.detail_transaksi_penitipans[0] : null;
+                      return (
+                        <tr key={transaction.id_penitipan_transaksi || Math.random()}>
+                          <td>{transaction.id_penitipan_transaksi || "N/A"}</td>
+                          <td>{detail?.barang?.nama_barang || "Tidak Diketahui"}</td>
+                          <td>{detail?.jumlah_barang_penitip || 0}</td>
+                          <td>{formatDate(transaction.tanggal_mulai_penitipan)}</td>
+                          <td>{formatDate(transaction.tanggal_akhir_penitipan)}</td>
+                          <td>{transaction.status_penitipan || "Tidak Diketahui"}</td>
+                          <td>{transaction.penitip?.nama_penitip || "Tidak Diketahui"}</td>
+                          <td>{transaction.pegawai?.nama_pegawai || "Tidak Diketahui"}</td>
+                          <td>
+                            <button
+                              onClick={() => handleEditTransaction(transaction)}
+                              className="warehouse-edit-btn"
+                              disabled={!transaction.id_penitipan_transaksi}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => window.open(`/print-nota/${transaction.id_penitipan_transaksi}`, "_blank")}
+                              className="warehouse-print-btn"
+                              style={{ marginLeft: "10px" }}
+                            >
+                              Cetak Nota
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                <div className="warehouse-pagination">
+                  <button
+                    className="warehouse-paginate-btn"
+                    onClick={prevItemsPage}
+                    disabled={currentItemsPage === 1}
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalItemsPages }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      className={`warehouse-paginate-btn ${currentItemsPage === number ? "warehouse-active" : ""}`}
+                      onClick={() => paginateItems(number)}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  <button
+                    className="warehouse-paginate-btn"
+                    onClick={nextItemsPage}
+                    disabled={currentItemsPage === totalItemsPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p>Tidak ada transaksi barang titipan yang ditemukan.</p>
+            )}
+          </div>
+        );
       case "barang":
         return (
           <div className="warehouse-dashboard-section">
@@ -903,7 +909,7 @@ const DashboardPegawaiGudang = () => {
                   <input
                     type="date"
                     id="edit_tanggal_mulai_penitipan"
-                    value={editData.tanggal_mulai_penitipan}
+                    value={formatDate(editData.tanggal_mulai_penitipan)}
                     onChange={(e) => setEditData({ ...editData, tanggal_mulai_penitipan: e.target.value })}
                     required
                   />
@@ -913,7 +919,7 @@ const DashboardPegawaiGudang = () => {
                   <input
                     type="date"
                     id="edit_tanggal_akhir_penitipan"
-                    value={editData.tanggal_akhir_penitipan}
+                    value={formatDate(editData.tanggal_akhir_penitipan)}
                     onChange={(e) => setEditData({ ...editData, tanggal_akhir_penitipan: e.target.value })}
                     required
                   />
@@ -923,7 +929,7 @@ const DashboardPegawaiGudang = () => {
                   <input
                     type="date"
                     id="edit_tanggal_diperpanjang"
-                    value={editData.tanggal_diperpanjang}
+                    value={formatDate(editData.tanggal_diperpanjang)}
                     onChange={(e) => setEditData({ ...editData, tanggal_diperpanjang: e.target.value })}
                   />
                 </div>
@@ -947,7 +953,7 @@ const DashboardPegawaiGudang = () => {
                   <input
                     type="date"
                     id="edit_tanggal_batas_penitipan"
-                    value={editData.tanggal_batas_penitipan}
+                    value={formatDate(editData.tanggal_batas_penitipan)}
                     onChange={(e) => setEditData({ ...editData, tanggal_batas_penitipan: e.target.value })}
                     required
                   />
@@ -1091,7 +1097,7 @@ const DashboardPegawaiGudang = () => {
                 </div>
                 <div className="warehouse-form-group">
                   <label><strong>Tanggal Garansi:</strong></label>
-                  <p>{selectedBarang.tanggal_garansi || "Tidak Ada Garansi"}</p>
+                  <p>{formatDate(selectedBarang.tanggal_garansi) || "Tidak Ada Garansi"}</p>
                 </div>
                 <div className="warehouse-form-group">
                   <label><strong>Kategori:</strong></label>

@@ -80,7 +80,9 @@ const Checkout = () => {
     }, [navigate]);
 
     const totalItemsPrice = cart?.items.reduce((sum, item) => sum + (item.quantity * (item.barang?.harga_barang || 0)), 0) || 0;
-    const shippingCost = totalItemsPrice >= ONGKIR_GRATIS_THRESHOLD ? 0 : ONGKIR_HARGA;
+    // --- MODIFIKASI DIMULAI DI SINI ---
+    const shippingCost = deliveryMethod === 'ambil_sendiri' ? 0 : (totalItemsPrice >= ONGKIR_GRATIS_THRESHOLD ? 0 : ONGKIR_HARGA);
+    // --- MODIFIKASI BERAKHIR DI SINI ---
     const pointsDiscount = (Math.floor(pointsToRedeem / POIN_RATE_RUPIAH)) * 10000;
     const totalPayment = totalItemsPrice + shippingCost - pointsDiscount;
     const pointsEarned = Math.floor(totalItemsPrice / POIN_PER_RUPIAH);
@@ -132,7 +134,7 @@ const Checkout = () => {
             tanggal_pembelian: new Date().toISOString().split('T')[0],
             jenis_pengiriman: deliveryMethod,
             total_harga: totalItemsPrice,
-            biaya_ongkir: shippingCost,
+            biaya_ongkir: shippingCost, // shippingCost sudah diperbarui
             tukar_poin_potongan: pointsToRedeem,
             total_bayar: totalPayment,
             poin_pembelian: finalPointsEarned,
