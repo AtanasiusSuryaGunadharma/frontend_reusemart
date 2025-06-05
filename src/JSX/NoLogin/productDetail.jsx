@@ -149,6 +149,19 @@ const ProductDetail = () => {
                         <div className="rating">
                             <span>{product.berat_barang || 0} kg</span>
                         </div>
+                        <div className="penitip-info">
+                            <p><strong>Penitip:</strong> {product.penitip?.nama_penitip || "N/A"}</p>
+                            <p>
+                                <strong>Rating Penitip:</strong>{" "}
+                                {product.average_penitip_rating ? (
+                                    <>
+                                        {product.average_penitip_rating} ★
+                                    </>
+                                ) : (
+                                    "Belum ada rating"
+                                )}
+                            </p>
+                        </div>
                         <div className="add-to-cart">
                             <button className="add-to-cart-btn">Buy</button>
                         </div>

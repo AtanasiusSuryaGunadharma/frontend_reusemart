@@ -130,6 +130,47 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
         }
     };
 
+    // Handler BARU untuk Beli Sekarang
+    const handleBuyNow = async () => {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+            toast.error("Anda harus login untuk melanjutkan pembelian.");
+            navigate("/login/pembeli");
+            return;
+        }
+        if (!product) {
+            toast.error("Detail produk belum dimuat.");
+            return;
+        }
+
+        try {
+            // Coba tambahkan produk ke keranjang terlebih dahulu
+            const response = await axios.post("http://127.0.0.1:8000/api/cart/add", {
+                barang_id: product.id_barang,
+                quantity: 1,
+            }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            
+            toast.success(response.data.message || `${product.nama_barang} berhasil ditambahkan ke keranjang dan akan diarahkan ke checkout!`);
+            
+            // Perbarui daftar item keranjang di state
+            setCartItems(prevItems => [...prevItems, product.id_barang]);
+
+            // Langsung arahkan ke halaman checkout
+            navigate("/checkout");
+
+        } catch (err) {
+            console.error("Error during 'Buy Now':", err.response?.data || err.message);
+            // Jika produk sudah di keranjang, mungkin tidak perlu toast error, langsung redirect
+            if (err.response?.status === 409) { // Konflik, kemungkinan barang sudah ada di keranjang
+                toast.info(`${product.nama_barang} sudah ada di keranjang. Mengarahkan Anda ke checkout.`);
+                navigate("/checkout");
+            } else {
+                toast.error(err.response?.data?.message || `Gagal menambahkan ${product.nama_barang} ke keranjang untuk checkout.`);
+            }
+        }
+    };
 
     const getImageList = () => {
         const images = [];
@@ -240,12 +281,12 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
                             </p>
                         </div>
                         <div className="details">
-                           <p>
+                            <p>
                                 <strong>Category:</strong>{" "}
                                 {product.kategori_barang?.nama_kategori || "N/A"}
                             </p>
                         </div>
-                        <div className="add-to-cart">
+                        <div className="product-actions"> {/* Container untuk tombol */}
                             {/* Tombol Add to Cart: di-disable jika barang sudah ada di keranjang */}
                             <button
                                 className="add-to-cart-btn"
@@ -253,6 +294,13 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
                                 disabled={isProductInCart} // <-- Logika disable BARU
                             >
                                 {isProductInCart ? 'Sudah di Keranjang' : 'Add to Cart'} {/* <-- Teks tombol BARU */}
+                            </button>
+                            {/* Tombol Beli Sekarang */}
+                            <button
+                                className="buy-now-btn" // Gunakan class baru untuk styling
+                                onClick={handleBuyNow}
+                            >
+                                Beli Sekarang
                             </button>
                         </div>
                     </div>
