@@ -63,6 +63,14 @@ const CSDashboard = () => {
     // BARU: State paginasi untuk transaksi yang sudah diproses
     const [currentPageProcessed, setCurrentPageProcessed] = useState(1);
 
+    const [merchandiseClaims, setMerchandiseClaims] = useState([]);
+    const [currentPageMerchandise, setCurrentPageMerchandise] = useState(1);
+    const [searchTermMerchandise, setSearchTermMerchandise] = useState("");
+    const [filterStatusMerchandise, setFilterStatusMerchandise] = useState("all");
+    const [showMerchPickupModal, setShowMerchPickupModal] = useState(false);
+    const [selectedMerchClaim, setSelectedMerchClaim] = useState(null);
+    const [pickupDate, setPickupDate] = useState("");
+
 
     const itemsPerPage = 7;
     const navigate = useNavigate();
@@ -106,7 +114,8 @@ const CSDashboard = () => {
 
                 await fetchAllDiscussions(token);
                 await fetchTransactionsForVerification(token);
-                await fetchProcessedTransactions(token); // BARU: Memuat transaksi yang sudah diproses
+                await fetchProcessedTransactions(token);
+                await fetchMerchandiseClaims(token);
 
             } catch (err) {
                 console.error("Error fetching initial data:", err);
@@ -123,6 +132,20 @@ const CSDashboard = () => {
             fetchData();
         }
     }, [navigate]);
+
+    const fetchMerchandiseClaims = async (token, search = "", status = "all") => {
+        try {
+            const response = await axios.get(
+                "http://127.0.0.1:8000/api/merchandise",
+                { headers: { Authorization: `Bearer ${token}` }, params: { search, status } }
+            );
+            setMerchandiseClaims(response.data);
+        } catch (err) {
+            console.error("Error fetching merchandise claims:", err.response?.data || err.message);
+            toast.error("Gagal memuat daftar klaim merchandise.");
+            if (err.response?.status === 401) handleLogout();
+        }
+    };
 
     const fetchAllDiscussions = async (token, search = "") => {
         try {
@@ -557,6 +580,55 @@ const CSDashboard = () => {
         setReplyFormData({ komentar_pegawai: "", discussion_id: null });
     };
 
+    const handleSearchMerchandiseChange = (e) => {
+        setSearchTermMerchandise(e.target.value);
+        setCurrentPageMerchandise(1);
+        fetchMerchandiseClaims(localStorage.getItem("authToken"), e.target.value, filterStatusMerchandise);
+    };
+
+    const handleFilterStatusMerchandiseChange = (e) => {
+        setFilterStatusMerchandise(e.target.value);
+        setCurrentPageMerchandise(1);
+        fetchMerchandiseClaims(localStorage.getItem("authToken"), searchTermMerchandise, e.target.value);
+    };
+
+    // Tambahkan handler untuk update tanggal pengambilan merchandise
+    const handleMerchPickupClick = (claim) => {
+        setSelectedMerchClaim(claim);
+        setPickupDate(claim.tgl_pengambilan_merchandise || "");
+        setShowMerchPickupModal(true);
+    };
+
+    const handleMerchPickupSubmit = async (e) => {
+        e.preventDefault();
+        if (!pickupDate) {
+            toast.error("Tanggal pengambilan harus diisi.");
+            return;
+        }
+
+        const token = localStorage.getItem("authToken");
+        try {
+            const response = await axios.put(
+                `http://127.0.0.1:8000/api/merchandise/${selectedMerchClaim.id_klaim_merchandise}`,
+                { tgl_pengambilan_merchandise: pickupDate, status_pengajuan: "diambil" },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            toast.success(response.data.message || "Tanggal pengambilan berhasil diperbarui.");
+            await fetchMerchandiseClaims(token, searchTermMerchandise, filterStatusMerchandise);
+            handleCloseMerchPickupModal();
+        } catch (err) {
+            console.error("Error updating pickup date:", err.response?.data || err.message);
+            toast.error(err.response?.data?.message || "Gagal memperbarui tanggal pengambilan.");
+        }
+    };
+
+    const handleCloseMerchPickupModal = () => {
+        setShowMerchPickupModal(false);
+        setSelectedMerchClaim(null);
+        setPickupDate("");
+    };
+
     // === PAGINASI: PENITIP ===
     const filteredPenitip = penitip.filter((item) => {
         const search = searchTermPenitip.toLowerCase();
@@ -640,6 +712,22 @@ const CSDashboard = () => {
     const paginateProcessed = (page) => setCurrentPageProcessed(page);
     const nextPageProcessed = () => currentPageProcessed < totalPagesProcessed && setCurrentPageProcessed(currentPageProcessed + 1);
     const prevPageProcessed = () => currentPageProcessed > 1 && setCurrentPageProcessed(currentPageProcessed - 1);
+
+    const filteredMerchandiseClaims = merchandiseClaims.filter((claim) => {
+        const search = searchTermMerchandise.toLowerCase();
+        const statusMatch = filterStatusMerchandise === "all" || claim.status_pengajuan === filterStatusMerchandise;
+        return statusMatch && (
+            claim.pembeli?.nama_pembeli?.toLowerCase().includes(search) ||
+            claim.merchandise?.nama_merchandise?.toLowerCase().includes(search)
+        );
+    });
+    const indexOfLastItemMerchandise = currentPageMerchandise * itemsPerPage;
+    const indexOfFirstItemMerchandise = indexOfLastItemMerchandise - itemsPerPage;
+    const currentItemsMerchandise = filteredMerchandiseClaims.slice(indexOfFirstItemMerchandise, indexOfLastItemMerchandise);
+    const totalPagesMerchandise = Math.ceil(filteredMerchandiseClaims.length / itemsPerPage);
+    const paginateMerchandise = (page) => setCurrentPageMerchandise(page);
+    const nextPageMerchandise = () => currentPageMerchandise < totalPagesMerchandise && setCurrentPageMerchandise(currentPageMerchandise + 1);
+    const prevPageMerchandise = () => currentPageMerchandise > 1 && setCurrentPageMerchandise(currentPageMerchandise - 1);
 
     // Render konten utama berdasarkan menu aktif
     const renderContent = () => {
@@ -1090,6 +1178,111 @@ const CSDashboard = () => {
                     </div>
                 );
 
+                case "merchandise":
+                return (
+                    <div className="cs-dashboard-section">
+                        <h3>Klaim Merchandise Pembeli</h3>
+                        <div className="cs-search-filter-container">
+                            <div className="cs-search-container">
+                                <i className="fas fa-search cs-search-icon"></i>
+                                <input
+                                    type="text"
+                                    placeholder="Cari Nama Pembeli atau Merchandise..."
+                                    className="cs-search-input"
+                                    value={searchTermMerchandise}
+                                    onChange={handleSearchMerchandiseChange}
+                                />
+                            </div>
+                            <div className="cs-filter-select-container">
+                                <label htmlFor="filterStatusMerchandise" className="cs-filter-label">Filter Status:</label>
+                                <select
+                                    id="filterStatusMerchandise"
+                                    className="cs-filter-select"
+                                    value={filterStatusMerchandise}
+                                    onChange={handleFilterStatusMerchandiseChange}
+                                >
+                                    <option value="all">Semua</option>
+                                    <option value="belum_diambil">Belum Diambil</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {loading ? (
+                            <div className="cs-loading-container">
+                                <div className="cs-loading-spinner"></div>
+                                <p>Memuat daftar klaim merchandise...</p>
+                            </div>
+                        ) : error ? (
+                            <div className="cs-error-message">
+                                <i className="fas fa-exclamation-circle"></i>
+                                <p>{error}</p>
+                            </div>
+                        ) : currentItemsMerchandise.length > 0 ? (
+                            <div className="cs-merchandise-table-container">
+                                <table className="cs-merchandise-table">
+                                    <thead>
+                                        <tr>
+                                            <th>ID Pengajuan</th>
+                                            <th>Pembeli</th>
+                                            <th>Merchandise</th>
+                                            <th>Poin Dibutuhkan</th>
+                                            <th>Status</th>
+                                            <th>Tanggal Ambil</th>
+                                            <th>Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {currentItemsMerchandise.map((claim) => (
+                                            <tr key={claim.id_klaim_merchandise}>
+                                                <td>{claim.id_klaim_merchandise}</td>
+                                                <td>{claim.pembeli?.nama_pembeli || 'N/A'}</td>
+                                                <td>{claim.merchandise?.nama_merchandise || 'N/A'}</td>
+                                                <td>{claim.merchandise?.poin_merch || 0}</td>
+                                                <td>
+                                                    <span className={`cs-payment-status status-${claim.status_pengajuan}`}>
+                                                        {claim.status_pengajuan.replace('_', ' ').toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {claim.tgl_pengambilan_merchandise ?
+                                                        new Date(claim.tgl_pengambilan_merchandise).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })
+                                                        : 'Belum Diambil'}
+                                                </td>
+                                                <td className="cs-action-buttons">
+                                                    {claim.status_pengajuan === 'belum_diambil' && (
+                                                        <button
+                                                            className="cs-update-btn"
+                                                            onClick={() => handleMerchPickupClick(claim)}
+                                                        >
+                                                            Update Tanggal Ambil
+                                                        </button>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+
+                                <div className="cs-pagination">
+                                    <button onClick={prevPageMerchandise} disabled={currentPageMerchandise === 1}>Previous</button>
+                                    {Array.from({ length: totalPagesMerchandise }, (_, i) => i + 1).map((page) => (
+                                        <button
+                                            key={page}
+                                            onClick={() => paginateMerchandise(page)}
+                                            className={currentPageMerchandise === page ? 'cs-active' : ''}
+                                        >
+                                            {page}
+                                        </button>
+                                    ))}
+                                    <button onClick={nextPageMerchandise} disabled={currentPageMerchandise === totalPagesMerchandise}>Next</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <p className="cs-no-data-message">Tidak ada klaim merchandise saat ini.</p>
+                        )}
+                    </div>
+                );
+
             default:
                 return null;
         }
@@ -1143,6 +1336,12 @@ const CSDashboard = () => {
                         >
                             Riwayat Verifikasi
                         </li>
+                        <li
+                            className={activeMenu === "merchandise" ? "cs-active" : ""}
+                            onClick={() => setActiveMenu("merchandise")}
+                        >
+                            Klaim Merchandise
+                        </li>
                         <li onClick={handleLogout} className="cs-logout-btn">
                             Logout
                         </li>
@@ -1154,18 +1353,15 @@ const CSDashboard = () => {
             {/* Konten utama */}
             <main className="cs-dashboard-container">
                 <h2>
-                    {activeMenu === "dashboard"
-                        ? "Dashboard Customer Service"
-                        : activeMenu === "penitip"
-                        ? "Manajemen Penitip"
-                        : activeMenu === "diskusi"
-                        ? "Diskusi Produk"
-                        : activeMenu === "verifikasi"
-                        ? "Verifikasi Pembayaran"
-                        : "Riwayat Verifikasi Pembayaran" // BARU: Judul untuk riwayat verifikasi
-                    }
-                </h2>
-                {renderContent()}
+                {activeMenu === "dashboard" ? "Dashboard Customer Service"
+                    : activeMenu === "penitip" ? "Manajemen Penitip"
+                    : activeMenu === "diskusi" ? "Diskusi Produk"
+                    : activeMenu === "verifikasi" ? "Verifikasi Pembayaran"
+                    : activeMenu === "riwayat-verifikasi" ? "Riwayat Verifikasi Pembayaran"
+                    : activeMenu === "merchandise" ? "Klaim Merchandise Pembeli"
+                    : ""}
+            </h2>
+            {renderContent()}
 
                 {/* Modal Penitip */}
                 {showModal && (
@@ -1507,6 +1703,51 @@ const CSDashboard = () => {
                         </div>
                     </div>
                 )}
+
+                {showMerchPickupModal && selectedMerchClaim && (
+                <div className="cs-modal">
+                    <div className="cs-modal-content">
+                        <div className="cs-modal-header">
+                            <h3>Update Tanggal Pengambilan Merchandise</h3>
+                            <button className="cs-close-btn" onClick={handleCloseMerchPickupModal}>
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <form onSubmit={handleMerchPickupSubmit}>
+                            <div className="cs-form-grid">
+                                <div className="cs-form-group" style={{ gridColumn: "1 / -1" }}>
+                                    <p><strong>Pembeli:</strong> {selectedMerchClaim.pembeli?.nama_pembeli || 'N/A'}</p>
+                                    <p><strong>Merchandise:</strong> {selectedMerchClaim.merchandise?.nama_merchandise || 'N/A'}</p>
+                                </div>
+                                <div className="cs-form-group" style={{ gridColumn: "1 / -1" }}>
+                                    <label htmlFor="pickupDate">
+                                        <i className="fas fa-calendar-alt"></i> Tanggal Pengambilan
+                                    </label>
+                                    <input
+                                        type="date"
+                                        id="pickupDate"
+                                        value={pickupDate}
+                                        onChange={(e) => setPickupDate(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="cs-modal-actions">
+                                <button
+                                    type="button"
+                                    className="cs-cancel-btn"
+                                    onClick={handleCloseMerchPickupModal}
+                                >
+                                    Batal
+                                </button>
+                                <button type="submit" className="cs-submit-btn">
+                                    Simpan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             </main>
         </div>
