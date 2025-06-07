@@ -643,6 +643,22 @@ const DashboardOwner = () => {
                 };
                 return (
                     <div className="owner-dashboard-section" ref={reportRef}>
+                        <div style={{ 
+                            marginBottom: "20px", 
+                            textAlign: "center", 
+                            display: "block", 
+                            position: "relative", 
+                            padding: "10px", 
+                            border: "1px solid #000",
+                            color: "#000",
+                            fontFamily: "Arial, Helvetica, sans-serif",
+                            fontSize: "14px"
+                        }}>
+                            <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
+                            <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
+                            <h3 style={{ margin: "0", color: "#000" }}>LAPORAN Stok Gudang</h3>
+                            <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
+                        </div>
                         <h3>Laporan Penjualan Bulanan Keseluruhan</h3>
                         <div style={{ marginBottom: "20px" }}>
                             <label htmlFor="yearSelect">Pilih Tahun: </label>
