@@ -124,12 +124,16 @@ const DashboardOwner = () => {
                 );
                 setStockData(Array.isArray(stockResponse.data) ? stockResponse.data : []);
 
-                setIsLoadingCommission(true);
-                const commissionResponse = await axios.get(
-                    `http://127.0.0.1:8000/api/transaksi-pembelian/komisi-bulanan?year=${selectedYear}&month=${selectedMonth}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                );
-                setCommissionData(Array.isArray(commissionResponse.data) ? commissionResponse.data : []);
+                // Only fetch commission data if activeMenu is "laporanKomisi"
+                if (activeMenu === "laporanKomisi") {
+                    setIsLoadingCommission(true);
+                    const commissionResponse = await axios.get(
+                        `http://127.0.0.1:8000/api/transaksi-pembelian/komisi-bulanan?year=${selectedYear}&month=${selectedMonth}`,
+                        { headers: { Authorization: `Bearer ${token}` } }
+                    );
+                    setCommissionData(Array.isArray(commissionResponse.data) ? commissionResponse.data : []);
+                    setIsLoadingCommission(false);
+                }
             } catch (err) {
                 console.error("Error fetching data:", err);
                 toast.error("Gagal memuat data: " + (err.response?.data?.message || err.message));
@@ -148,12 +152,12 @@ const DashboardOwner = () => {
             } finally {
                 setIsLoadingSales(false);
                 setIsLoadingStock(false);
-                setIsLoadingCommission(false);
+                // No need to set isLoadingCommission to false here, handled inside the if block
             }
         };
 
         fetchData();
-    }, [navigate, selectedYear, selectedMonth]);
+    }, [navigate, selectedYear, selectedMonth, activeMenu]);
 
     const handleAllocateDonation = (request) => {
         if (!request || !request.id_request_donasi) {
