@@ -12,8 +12,9 @@ ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend)
 
 const DashboardOwner = () => {
     const [ownerProfile, setOwnerProfile] = useState(null);
-    const [donationRequests, setDonationRequests] = useState([]);
+    const [unfulfilledDonationRequests, setUnfulfilledDonationRequests] = useState([]);
     const [donationHistory, setDonationHistory] = useState([]);
+    const [donatedItemsReport, setDonatedItemsReport] = useState([]); // State baru untuk laporan donasi barang
     const [itemsForDonation, setItemsForDonation] = useState([]);
     const [userRoleState, setUserRoleState] = useState(null);
     const [showAllocationModal, setShowAllocationModal] = useState(false);
@@ -31,9 +32,10 @@ const DashboardOwner = () => {
     const [isLoadingStock, setIsLoadingStock] = useState(false);
     const [commissionData, setCommissionData] = useState([]);
     const [isLoadingCommission, setIsLoadingCommission] = useState(false);
+    const [isLoadingDonatedItemsReport, setIsLoadingDonatedItemsReport] = useState(false); // Loading state baru
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // 1-12
     const itemsPerPage = 7;
-    const reportRef = useRef(null);
+    const reportRef = useRef(null); // Ref untuk laporan PDF
 
     const [allocationData, setAllocationData] = useState({
         barang_id_donasi: "",
@@ -70,17 +72,27 @@ const DashboardOwner = () => {
                 );
                 setOwnerProfile(profileResponse.data || {});
 
-                const donationRequestsResponse = await axios.get(
-                    `http://127.0.0.1:8000/api/request-donasi`,
+                const unfulfilledDonationRequestsResponse = await axios.get(
+                    `http://127.0.0.1:8000/api/request-donasi/unfulfilled`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
-                setDonationRequests(Array.isArray(donationRequestsResponse.data) ? donationRequestsResponse.data : []);
+                setUnfulfilledDonationRequests(Array.isArray(unfulfilledDonationRequestsResponse.data) ? unfulfilledDonationRequestsResponse.data : []);
 
                 const donationHistoryResponse = await axios.get(
                     `http://127.0.0.1:8000/api/donasi/history`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setDonationHistory(Array.isArray(donationHistoryResponse.data) ? donationHistoryResponse.data : []);
+
+                // --- Fetch data untuk laporan donasi barang ---
+                setIsLoadingDonatedItemsReport(true);
+                const donatedItemsReportResponse = await axios.get(
+                    `http://127.0.0.1:8000/api/donasi/report`, // Endpoint baru
+                    { headers: { Authorization: `Bearer ${token}` } }
+                );
+                setDonatedItemsReport(Array.isArray(donatedItemsReportResponse.data) ? donatedItemsReportResponse.data : []);
+                setIsLoadingDonatedItemsReport(false);
+                // --- Akhir fetch data baru ---
 
                 const itemsForDonationResponse = await axios.get(
                     `http://127.0.0.1:8000/api/barang/donated`,
@@ -106,7 +118,7 @@ const DashboardOwner = () => {
                 const salesData = Array.isArray(salesResponse.data) ? salesResponse.data : [];
                 const fullYearData = Array.from({ length: 12 }, (_, index) => {
                     const monthIndex = index + 1;
-                    const monthStr = monthIndex < 10 ? `0${monthIndex}` : `${monthIndex}`;
+                    const monthStr = monthIndex < 10 ? `0${monthIndex}` : String(monthIndex);
                     const monthData = salesData.find((sale) => sale.month === `${selectedYear}-${monthStr}`);
                     return {
                         month: `${selectedYear}-${monthStr}`,
@@ -124,7 +136,6 @@ const DashboardOwner = () => {
                 );
                 setStockData(Array.isArray(stockResponse.data) ? stockResponse.data : []);
 
-                // Only fetch commission data if activeMenu is "laporanKomisi"
                 if (activeMenu === "laporanKomisi") {
                     setIsLoadingCommission(true);
                     const commissionResponse = await axios.get(
@@ -138,11 +149,12 @@ const DashboardOwner = () => {
                 console.error("Error fetching data:", err);
                 toast.error("Gagal memuat data: " + (err.response?.data?.message || err.message));
                 setOwnerProfile({});
-                setDonationRequests([]);
+                setUnfulfilledDonationRequests([]);
                 setDonationHistory([]);
+                setDonatedItemsReport([]); // Reset state baru
                 setItemsForDonation([]);
                 setMonthlySales(Array.from({ length: 12 }, (_, index) => ({
-                    month: `${new Date().getFullYear()}-${index + 1 < 10 ? `0${index + 1}` : index + 1}`,
+                    month: `${new Date().getFullYear()}-${index + 1 < 10 ? `0${index + 1}` : String(index + 1)}`,
                     total_sales: 0,
                     transaction_count: 0,
                 })));
@@ -152,6 +164,7 @@ const DashboardOwner = () => {
             } finally {
                 setIsLoadingSales(false);
                 setIsLoadingStock(false);
+                setIsLoadingDonatedItemsReport(false); // Pastikan loading state direset
                 // No need to set isLoadingCommission to false here, handled inside the if block
             }
         };
@@ -247,11 +260,23 @@ const DashboardOwner = () => {
                     (item) => item.id_barang !== parseInt(allocationData.barang_id_donasi)
                 )
             );
+            setUnfulfilledDonationRequests(
+                unfulfilledDonationRequests.filter(
+                    (req) => req.id_request_donasi !== selectedRequest.id_request_donasi
+                )
+            );
             const updatedDonationHistoryResponse = await axios.get(
                 `http://127.0.0.1:8000/api/donasi/history`,
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setDonationHistory(Array.isArray(updatedDonationHistoryResponse.data) ? updatedDonationHistoryResponse.data : []);
+            // Refresh data laporan donasi barang setelah alokasi berhasil
+            const refreshDonatedItemsReport = await axios.get(
+                `http://127.0.0.1:8000/api/donasi/report`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setDonatedItemsReport(Array.isArray(refreshDonatedItemsReport.data) ? refreshDonatedItemsReport.data : []);
+
             toast.success("Donasi berhasil dialokasikan.");
             setShowAllocationModal(false);
             setSelectedRequest(null);
@@ -311,6 +336,13 @@ const DashboardOwner = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setDonationHistory(Array.isArray(updatedDonationHistoryResponse.data) ? updatedDonationHistoryResponse.data : []);
+            // Refresh data laporan donasi barang setelah edit berhasil
+            const refreshDonatedItemsReport = await axios.get(
+                `http://127.0.0.1:8000/api/donasi/report`,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setDonatedItemsReport(Array.isArray(refreshDonatedItemsReport.data) ? refreshDonatedItemsReport.data : []);
+
             toast.success("Donasi berhasil diperbarui.");
             setShowEditModal(false);
             setSelectedHistory(null);
@@ -362,8 +394,8 @@ const DashboardOwner = () => {
 
     const indexOfLastRequest = currentRequestsPage * itemsPerPage;
     const indexOfFirstRequest = indexOfLastRequest - itemsPerPage;
-    const currentRequests = donationRequests.slice(indexOfFirstRequest, indexOfLastRequest);
-    const totalRequestsPages = Math.ceil(donationRequests.length / itemsPerPage);
+    const currentRequests = unfulfilledDonationRequests.slice(indexOfFirstRequest, indexOfLastRequest);
+    const totalRequestsPages = Math.ceil(unfulfilledDonationRequests.length / itemsPerPage);
 
     const paginateRequests = (pageNumber) => setCurrentRequestsPage(pageNumber);
     const nextRequestsPage = () => {
@@ -388,8 +420,14 @@ const DashboardOwner = () => {
 
     const formatDate = (dateString) => {
         if (!dateString) return "---";
-        return dateString.split('T')[0];
+        // Convert to Date object first to handle potential variations in date string formats
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return "---"; // Invalid date
+        }
+        return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
     };
+
 
     const getFormattedPrintDate = () => {
         const today = new Date();
@@ -432,6 +470,44 @@ const DashboardOwner = () => {
         });
     };
 
+    const handleDownloadUnfulfilledRequestsPDF = () => {
+        window.scrollTo(0, 0);
+        const element = reportRef.current;
+        const today = new Date().toISOString().split('T')[0];
+        const opt = {
+            margin: 10,
+            filename: `laporan-request-donasi-belum-terpenuhi-${today}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 3, useCORS: true, logging: true, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        };
+        html2pdf().set(opt).from(element).save().then(() => {
+            console.log("PDF generated successfully");
+        }).catch((error) => {
+            console.error("Error generating PDF:", error);
+        });
+    };
+
+    // --- FUNGSI BARU UNTUK DOWNLOAD LAPORAN DONASI BARANG ---
+    const handleDownloadDonatedItemsReportPDF = () => {
+        window.scrollTo(0, 0);
+        const element = reportRef.current;
+        const today = new Date().toISOString().split('T')[0];
+        const opt = {
+            margin: 10,
+            filename: `laporan-donasi-barang-${today}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 3, useCORS: true, logging: true, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }, // Bisa portrait/landscape
+        };
+        html2pdf().set(opt).from(element).save().then(() => {
+            console.log("Donated items report PDF generated successfully");
+        }).catch((error) => {
+            console.error("Error generating Donated items report PDF:", error);
+        });
+    };
+    // --- AKHIR FUNGSI BARU ---
+
     const renderContent = () => {
         switch (activeMenu) {
             case "dashboard":
@@ -451,12 +527,126 @@ const DashboardOwner = () => {
                         )}
                     </div>
                 );
-            case "requests":
+            case "laporanRequestDonasi":
+                return (
+                    <div className="owner-dashboard-section" ref={reportRef}>
+                        <div style={{
+                            marginBottom: "20px",
+                            textAlign: "center",
+                            display: "block",
+                            position: "relative",
+                            padding: "10px",
+                            border: "1px solid #000",
+                            color: "#000",
+                            fontFamily: "Arial, Helvetica, sans-serif",
+                            fontSize: "14px"
+                        }}>
+                            <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
+                            <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
+                            <h3 style={{ margin: "0", color: "#000" }}>LAPORAN REQUEST DONASI BELUM TERPENUHI</h3>
+                            <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
+                        </div>
+                        <h3>Daftar Request Donasi yang Belum Terpenuhi</h3>
+                        {unfulfilledDonationRequests.length > 0 ? (
+                            <>
+                                <table className="owner-donation-table" style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}>
+                                    <thead>
+                                        <tr style={{ backgroundColor: "#4CAF50" }}>
+                                            <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>ID Organisasi</th>
+                                            <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Organisasi</th>
+                                            <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Alamat Organisasi</th>
+                                            <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Request Barang Donasi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {unfulfilledDonationRequests.map((request) => (
+                                            <tr key={request.id_request_donasi || Math.random()} style={{ border: "1px solid #bfbfbf" }}>
+                                                <td style={{ padding: "10px" }}>{request.organisasi?.id_organisasi || "---"}</td>
+                                                <td style={{ padding: "10px" }}>{request.organisasi?.nama_organisasi || "Tidak Diketahui"}</td>
+                                                <td style={{ padding: "10px" }}>{request.alamat_req_donasi || "Tidak Diketahui"}</td>
+                                                <td style={{ padding: "10px" }}>{request.request_barang_donasi || "Tidak Diketahui"}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                <button className="owner-download-btn" onClick={handleDownloadUnfulfilledRequestsPDF} disabled={unfulfilledDonationRequests.length === 0}>
+                                    <i className="fas fa-download"></i> Unduh PDF Laporan Request Donasi
+                                </button>
+                            </>
+                        ) : (
+                            <p>Tidak ada request donasi yang belum terpenuhi saat ini.</p>
+                        )}
+                    </div>
+                );
+            // --- KASUS BARU UNTUK LAPORAN DONASI BARANG ---
+            case "laporanDonasiBarang":
+                return (
+                    <div className="owner-dashboard-section" ref={reportRef}>
+                        <div style={{
+                            marginBottom: "20px",
+                            textAlign: "center",
+                            display: "block",
+                            position: "relative",
+                            padding: "10px",
+                            border: "1px solid #000",
+                            color: "#000",
+                            fontFamily: "Arial, Helvetica, sans-serif",
+                            fontSize: "14px"
+                        }}>
+                            <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
+                            <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
+                            <h3 style={{ margin: "0", color: "#000" }}>LAPORAN DONASI BARANG</h3>
+                            <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
+                        </div>
+                        <h3>Daftar Barang yang Telah Didonasikan</h3>
+                        {isLoadingDonatedItemsReport ? (
+                            <p>Memuat data laporan donasi barang...</p>
+                        ) : (
+                            donatedItemsReport.length > 0 ? (
+                                <>
+                                    <table className="owner-donation-table" style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}>
+                                        <thead>
+                                            <tr style={{ backgroundColor: "#4CAF50" }}>
+                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>ID Barang</th>
+                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Produk</th>
+                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>ID Penitip</th>
+                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Penitip</th>
+                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Donasi</th>
+                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Organisasi</th>
+                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Penerima</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {donatedItemsReport.map((item, index) => (
+                                                <tr key={index} style={{ border: "1px solid #bfbfbf" }}>
+                                                    <td style={{ padding: "10px" }}>{item.id_barang}</td>
+                                                    <td style={{ padding: "10px" }}>{item.nama_produk}</td>
+                                                    <td style={{ padding: "10px" }}>{item.id_penitip}</td>
+                                                    <td style={{ padding: "10px" }}>{item.nama_penitip}</td>
+                                                    <td style={{ padding: "10px" }}>{formatDate(item.tanggal_donasi)}</td>
+                                                    <td style={{ padding: "10px" }}>{item.nama_organisasi}</td>
+                                                    <td style={{ padding: "10px" }}>{item.nama_penerima}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                    <button className="owner-download-btn" onClick={handleDownloadDonatedItemsReportPDF} disabled={donatedItemsReport.length === 0}>
+                                        <i className="fas fa-download"></i> Unduh PDF Laporan Donasi Barang
+                                    </button>
+                                </>
+                            ) : (
+                                <p>Tidak ada barang yang telah didonasikan.</p>
+                            )
+                        )}
+                    </div>
+                );
+            // --- AKHIR KASUS BARU ---
+            case "requests": // Ini adalah menu untuk mengelola request donasi (alokasi)
                 return (
                     <div className="owner-dashboard-section">
-                        <h3>Daftar Request Donasi</h3>
-                        <p>Semua permintaan donasi:</p>
-                        {donationRequests.length > 0 ? (
+                        <h3>Daftar Request Donasi (Belum Dialokasikan)</h3>
+                        <p>Permintaan donasi yang belum dialokasikan ke barang:</p>
+                        {unfulfilledDonationRequests.length > 0 ? (
                             <>
                                 <table className="owner-donation-table">
                                     <thead>
@@ -513,7 +703,7 @@ const DashboardOwner = () => {
                                 </div>
                             </>
                         ) : (
-                            <p>Tidak ada request donasi saat ini.</p>
+                            <p>Tidak ada request donasi yang perlu dialokasikan saat ini.</p>
                         )}
                     </div>
                 );
@@ -592,136 +782,138 @@ const DashboardOwner = () => {
                     </div>
                 );
             case "laporanPenjualan":
-                const monthsNames = [
-                    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-                ];
-                const chartData = {
-                    labels: monthlySales.map((_, index) => monthsNames[index]),
-                    datasets: [
-                        {
-                            label: "Total Penjualan (Rp)",
-                            data: monthlySales.map((sale) => sale.total_sales || 0),
-                            backgroundColor: "rgba(75, 192, 192, 0.6)",
-                            borderColor: "rgba(75, 192, 192, 1)",
-                            borderWidth: 1,
-                        },
-                    ],
-                };
-                const chartOptions = {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: "top" },
-                        title: { display: true, text: `Grafik Laporan Penjualan Bulanan Tahun ${selectedYear}` },
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: { display: true, text: "Total Penjualan (Rp)" },
-                        },
-                        x: {
-                            title: { display: true, text: "Bulan" },
-                        },
-                    },
-                };
-                const handleDownloadPDF = () => {
-                    window.scrollTo(0, 0);
-                    const element = reportRef.current;
-                    const opt = {
-                        margin: 10,
-                        filename: `laporan-penjualan-bulanan-${selectedYear}-${new Date().toISOString().split('T')[0]}.pdf`,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 3, useCORS: true, logging: true, letterRendering: true },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                {
+                    const monthsNames = [
+                        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                    ];
+                    const chartData = {
+                        labels: monthlySales.map((_, index) => monthsNames[index]),
+                        datasets: [
+                            {
+                                label: "Total Penjualan (Rp)",
+                                data: monthlySales.map((sale) => sale.total_sales || 0),
+                                backgroundColor: "rgba(75, 192, 192, 0.6)",
+                                borderColor: "rgba(75, 192, 192, 1)",
+                                borderWidth: 1,
+                            },
+                        ],
                     };
-                    html2pdf().set(opt).from(element).save().then(() => {
-                        console.log("PDF generated successfully");
-                    }).catch((error) => {
-                        console.error("Error generating PDF:", error);
-                    });
-                };
-                return (
-                    <div className="owner-dashboard-section" ref={reportRef}>
-                        <div style={{ 
-                            marginBottom: "20px", 
-                            textAlign: "center", 
-                            display: "block", 
-                            position: "relative", 
-                            padding: "10px", 
-                            border: "1px solid #000",
-                            color: "#000",
-                            fontFamily: "Arial, Helvetica, sans-serif",
-                            fontSize: "14px"
-                        }}>
-                            <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
-                            <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
-                            <h3 style={{ margin: "0", color: "#000" }}>LAPORAN Stok Gudang</h3>
-                            <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
-                        </div>
-                        <h3>Laporan Penjualan Bulanan Keseluruhan</h3>
-                        <div style={{ marginBottom: "20px" }}>
-                            <label htmlFor="yearSelect">Pilih Tahun: </label>
-                            <select
-                                id="yearSelect"
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                                style={{ padding: "5px", marginLeft: "10px" }}
-                                disabled={isLoadingSales}
-                            >
-                                {availableYears.map((year) => (
-                                    <option key={year} value={year}>
-                                        {year}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        {isLoadingSales ? (
-                            <p>Memuat data laporan penjualan...</p>
-                        ) : (
-                            <>
-                                <div style={{ minHeight: "200px", marginBottom: "20px" }}>
-                                    <table
-                                        className="owner-donation-table"
-                                        style={{ borderCollapse: "collapse", color: "#000" }}
-                                    >
-                                        <thead>
-                                            <tr style={{ backgroundColor: "#4CAF50" }}>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Bulan</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Total Penjualan (Rp)</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Jumlah Transaksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {monthlySales.map((sale, index) => (
-                                                <tr key={index} style={{ border: "1px solid #bfbfbf" }}>
-                                                    <td style={{ padding: "10px" }}>{monthsNames[index]}</td>
-                                                    <td style={{ padding: "10px" }}>{sale.total_sales?.toLocaleString("id-ID") || "0"}</td>
-                                                    <td style={{ padding: "10px" }}>{sale.transaction_count || "0"}</td>
+                    const chartOptions = {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: "top" },
+                            title: { display: true, text: `Grafik Laporan Penjualan Bulanan Tahun ${selectedYear}` },
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: "Total Penjualan (Rp)" },
+                            },
+                            x: {
+                                title: { display: true, text: "Bulan" },
+                            },
+                        },
+                    };
+                    const handleDownloadPDF = () => {
+                        window.scrollTo(0, 0);
+                        const element = reportRef.current;
+                        const opt = {
+                            margin: 10,
+                            filename: `laporan-penjualan-bulanan-${selectedYear}-${new Date().toISOString().split('T')[0]}.pdf`,
+                            image: { type: 'jpeg', quality: 0.98 },
+                            html2canvas: { scale: 3, useCORS: true, logging: true, letterRendering: true },
+                            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                        };
+                        html2pdf().set(opt).from(element).save().then(() => {
+                            console.log("PDF generated successfully");
+                        }).catch((error) => {
+                            console.error("Error generating PDF:", error);
+                        });
+                    };
+                    return (
+                        <div className="owner-dashboard-section" ref={reportRef}>
+                            <div style={{
+                                marginBottom: "20px",
+                                textAlign: "center",
+                                display: "block",
+                                position: "relative",
+                                padding: "10px",
+                                border: "1px solid #000",
+                                color: "#000",
+                                fontFamily: "Arial, Helvetica, sans-serif",
+                                fontSize: "14px"
+                            }}>
+                                <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
+                                <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
+                                <h3 style={{ margin: "0", color: "#000" }}>LAPORAN Penjualan Bulanan</h3>
+                                <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
+                            </div>
+                            <h3>Laporan Penjualan Bulanan Keseluruhan</h3>
+                            <div style={{ marginBottom: "20px" }}>
+                                <label htmlFor="yearSelect">Pilih Tahun: </label>
+                                <select
+                                    id="yearSelect"
+                                    value={selectedYear}
+                                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                    style={{ padding: "5px", marginLeft: "10px" }}
+                                    disabled={isLoadingSales}
+                                >
+                                    {availableYears.map((year) => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {isLoadingSales ? (
+                                <p>Memuat data laporan penjualan...</p>
+                            ) : (
+                                <>
+                                    <div style={{ minHeight: "200px", marginBottom: "20px" }}>
+                                        <table
+                                            className="owner-donation-table"
+                                            style={{ borderCollapse: "collapse", color: "#000" }}
+                                        >
+                                            <thead>
+                                                <tr style={{ backgroundColor: "#4CAF50" }}>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Bulan</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Total Penjualan (Rp)</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Jumlah Transaksi</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className="owner-chart-container" style={{ height: "500px", width: "100%", marginBottom: "20px" }}>
-                                    <Bar data={chartData} options={chartOptions} />
-                                </div>
-                                <button className="owner-download-btn" onClick={handleDownloadPDF} disabled={isLoadingSales}>
-                                    <i className="fas fa-download"></i> Unduh PDF
-                                </button>
-                            </>
-                        )}
-                    </div>
-                );
+                                            </thead>
+                                            <tbody>
+                                                {monthlySales.map((sale, index) => (
+                                                    <tr key={index} style={{ border: "1px solid #bfbfbf" }}>
+                                                        <td style={{ padding: "10px" }}>{monthsNames[index]}</td>
+                                                        <td style={{ padding: "10px" }}>{sale.total_sales?.toLocaleString("id-ID") || "0"}</td>
+                                                        <td style={{ padding: "10px" }}>{sale.transaction_count || "0"}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div className="owner-chart-container" style={{ height: "500px", width: "100%", marginBottom: "20px" }}>
+                                        <Bar data={chartData} options={chartOptions} />
+                                    </div>
+                                    <button className="owner-download-btn" onClick={handleDownloadPDF} disabled={isLoadingSales}>
+                                        <i className="fas fa-download"></i> Unduh PDF
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    );
+                }
             case "laporanStock":
                 return (
                     <div className="owner-dashboard-section" ref={reportRef}>
-                        <div style={{ 
-                            marginBottom: "20px", 
-                            textAlign: "center", 
-                            display: "block", 
-                            position: "relative", 
-                            padding: "10px", 
+                        <div style={{
+                            marginBottom: "20px",
+                            textAlign: "center",
+                            display: "block",
+                            position: "relative",
+                            padding: "10px",
                             border: "1px solid #000",
                             color: "#000",
                             fontFamily: "Arial, Helvetica, sans-serif",
@@ -779,118 +971,120 @@ const DashboardOwner = () => {
                     </div>
                 );
             case "laporanKomisi":
-                const monthNames = [
-                    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-                ];
-                const totalCommissionReUseMart = commissionData.reduce((sum, item) => sum + (item.komisi_reuse_mart || 0), 0);
-                const totalCommissionHunter = commissionData.reduce((sum, item) => sum + (item.komisi_hunter || 0), 0);
-                const totalBonusPenitip = commissionData.reduce((sum, item) => sum + (item.bonus_penitip || 0), 0);
+                {
+                    const monthNames = [
+                        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                    ];
+                    const totalCommissionReUseMart = commissionData.reduce((sum, item) => sum + (item.komisi_reuse_mart || 0), 0);
+                    const totalCommissionHunter = commissionData.reduce((sum, item) => sum + (item.komisi_hunter || 0), 0);
+                    const totalBonusPenitip = commissionData.reduce((sum, item) => sum + (item.bonus_penitip || 0), 0);
 
-                return (
-                    <div className="owner-dashboard-section" ref={reportRef}>
-                        <div style={{ 
-                            marginBottom: "20px", 
-                            textAlign: "center", 
-                            display: "block", 
-                            position: "relative", 
-                            padding: "10px", 
-                            border: "1px solid #000",
-                            color: "#000",
-                            fontFamily: "Arial, Helvetica, sans-serif",
-                            fontSize: "14px"
-                        }}>
-                            <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
-                            <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
-                            <h3 style={{ margin: "0", color: "#000" }}>LAPORAN KOMISI BULANAN</h3>
-                            <p style={{ margin: "5px 0", color: "#000" }}><strong>Bulan:</strong> {monthNames[selectedMonth - 1]}</p>
-                            <p style={{ margin: "5px 0", color: "#000" }}><strong>Tahun:</strong> {selectedYear}</p>
-                            <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
-                        </div>
-                        <div style={{ marginBottom: "20px" }}>
-                            <label htmlFor="monthSelect">Pilih Bulan: </label>
-                            <select
-                                id="monthSelect"
-                                value={selectedMonth}
-                                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                                style={{ padding: "5px", marginLeft: "10px" }}
-                                disabled={isLoadingCommission}
-                            >
-                                {monthNames.map((month, index) => (
-                                    <option key={index + 1} value={index + 1}>
-                                        {month}
-                                    </option>
-                                ))}
-                            </select>
-                            <label htmlFor="yearSelect" style={{ marginLeft: "20px" }}>Pilih Tahun: </label>
-                            <select
-                                id="yearSelect"
-                                value={selectedYear}
-                                onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                                style={{ padding: "5px", marginLeft: "10px" }}
-                                disabled={isLoadingCommission}
-                            >
-                                {availableYears.map((year) => (
-                                    <option key={year} value={year}>
-                                        {year}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        {isLoadingCommission ? (
-                            <p>Memuat data komisi...</p>
-                        ) : (
-                            <>
-                                <div style={{ minHeight: "200px", marginBottom: "20px" }}>
-                                    <table
-                                        className="owner-donation-table"
-                                        style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}
-                                    >
-                                        <thead>
-                                            <tr style={{ backgroundColor: "#4CAF50" }}>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Kode Produk</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Produk</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Harga Jual</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Masuk</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Laku</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Komisi Hunter</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Komisi ReUse Mart</th>
-                                                <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Bonus Penitip</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {commissionData.map((item, index) => (
-                                                <tr key={index} style={{ border: "1px solid #bfbfbf" }}>
-                                                    <td style={{ padding: "10px" }}>{item.kode_produk || "---"}</td>
-                                                    <td style={{ padding: "10px" }}>{item.nama_produk || "---"}</td>
-                                                    <td style={{ padding: "10px" }}>{item.harga_jual?.toLocaleString("id-ID") || "0"}</td>
-                                                    <td style={{ padding: "10px" }}>{formatDate(item.tanggal_masuk) || "---"}</td>
-                                                    <td style={{ padding: "10px" }}>{formatDate(item.tanggal_laku) || "---"}</td>
-                                                    <td style={{ padding: "10px" }}>{item.komisi_hunter?.toLocaleString("id-ID") || "0"}</td>
-                                                    <td style={{ padding: "10px" }}>{item.komisi_reuse_mart?.toLocaleString("id-ID") || "0"}</td>
-                                                    <td style={{ padding: "10px" }}>{item.bonus_penitip?.toLocaleString("id-ID") || "0"}</td>
+                    return (
+                        <div className="owner-dashboard-section" ref={reportRef}>
+                            <div style={{
+                                marginBottom: "20px",
+                                textAlign: "center",
+                                display: "block",
+                                position: "relative",
+                                padding: "10px",
+                                border: "1px solid #000",
+                                color: "#000",
+                                fontFamily: "Arial, Helvetica, sans-serif",
+                                fontSize: "14px"
+                            }}>
+                                <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
+                                <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
+                                <h3 style={{ margin: "0", color: "#000" }}>LAPORAN KOMISI BULANAN</h3>
+                                <p style={{ margin: "5px 0", color: "#000" }}><strong>Bulan:</strong> {monthNames[selectedMonth - 1]}</p>
+                                <p style={{ margin: "5px 0", color: "#000" }}><strong>Tahun:</strong> {selectedYear}</p>
+                                <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
+                            </div>
+                            <div style={{ marginBottom: "20px" }}>
+                                <label htmlFor="monthSelect">Pilih Bulan: </label>
+                                <select
+                                    id="monthSelect"
+                                    value={selectedMonth}
+                                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                                    style={{ padding: "5px", marginLeft: "10px" }}
+                                    disabled={isLoadingCommission}
+                                >
+                                    {monthNames.map((month, index) => (
+                                        <option key={index + 1} value={index + 1}>
+                                            {month}
+                                        </option>
+                                    ))}
+                                </select>
+                                <label htmlFor="yearSelect" style={{ marginLeft: "20px" }}>Pilih Tahun: </label>
+                                <select
+                                    id="yearSelect"
+                                    value={selectedYear}
+                                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                                    style={{ padding: "5px", marginLeft: "10px" }}
+                                    disabled={isLoadingCommission}
+                                >
+                                    {availableYears.map((year) => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            {isLoadingCommission ? (
+                                <p>Memuat data komisi...</p>
+                            ) : (
+                                <>
+                                    <div style={{ minHeight: "200px", marginBottom: "20px" }}>
+                                        <table
+                                            className="owner-donation-table"
+                                            style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}
+                                        >
+                                            <thead>
+                                                <tr style={{ backgroundColor: "#4CAF50" }}>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Kode Produk</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Produk</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Harga Jual</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Masuk</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Laku</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Komisi Hunter</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Komisi ReUse Mart</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Bonus Penitip</th>
                                                 </tr>
-                                            ))}
-                                            <tr style={{ border: "1px solid #bfbfbf", fontWeight: "bold" }}>
-                                                <td style={{ padding: "10px" }}>Total</td>
-                                                <td style={{ padding: "10px" }}></td>
-                                                <td style={{ padding: "10px" }}></td>
-                                                <td style={{ padding: "10px" }}></td>
-                                                <td style={{ padding: "10px" }}></td>
-                                                <td style={{ padding: "10px" }}>{totalCommissionHunter.toLocaleString("id-ID") || "0"}</td>
-                                                <td style={{ padding: "10px" }}>{totalCommissionReUseMart.toLocaleString("id-ID") || "0"}</td>
-                                                <td style={{ padding: "10px" }}>{totalBonusPenitip.toLocaleString("id-ID") || "0"}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <button className="owner-download-btn" onClick={handleDownloadCommissionPDF} disabled={isLoadingCommission || commissionData.length === 0}>
-                                    <i className="fas fa-download"></i> Unduh PDF
-                                </button>
-                            </>
-                        )}
-                    </div>
-                );
+                                            </thead>
+                                            <tbody>
+                                                {commissionData.map((item, index) => (
+                                                    <tr key={index} style={{ border: "1px solid #bfbfbf" }}>
+                                                        <td style={{ padding: "10px" }}>{item.kode_produk || "---"}</td>
+                                                        <td style={{ padding: "10px" }}>{item.nama_produk || "---"}</td>
+                                                        <td style={{ padding: "10px" }}>{item.harga_jual?.toLocaleString("id-ID") || "0"}</td>
+                                                        <td style={{ padding: "10px" }}>{formatDate(item.tanggal_masuk) || "---"}</td>
+                                                        <td style={{ padding: "10px" }}>{formatDate(item.tanggal_laku) || "---"}</td>
+                                                        <td style={{ padding: "10px" }}>{item.komisi_hunter?.toLocaleString("id-ID") || "0"}</td>
+                                                        <td style={{ padding: "10px" }}>{item.komisi_reuse_mart?.toLocaleString("id-ID") || "0"}</td>
+                                                        <td style={{ padding: "10px" }}>{item.bonus_penitip?.toLocaleString("id-ID") || "0"}</td>
+                                                    </tr>
+                                                ))}
+                                                <tr style={{ border: "1px solid #bfbfbf", fontWeight: "bold" }}>
+                                                    <td style={{ padding: "10px" }}>Total</td>
+                                                    <td style={{ padding: "10px" }}></td>
+                                                    <td style={{ padding: "10px" }}></td>
+                                                    <td style={{ padding: "10px" }}></td>
+                                                    <td style={{ padding: "10px" }}></td>
+                                                    <td style={{ padding: "10px" }}>{totalCommissionHunter.toLocaleString("id-ID") || "0"}</td>
+                                                    <td style={{ padding: "10px" }}>{totalCommissionReUseMart.toLocaleString("id-ID") || "0"}</td>
+                                                    <td style={{ padding: "10px" }}>{totalBonusPenitip.toLocaleString("id-ID") || "0"}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <button className="owner-download-btn" onClick={handleDownloadCommissionPDF} disabled={isLoadingCommission || commissionData.length === 0}>
+                                        <i className="fas fa-download"></i> Unduh PDF
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    );
+                }
             default:
                 return null;
         }
@@ -909,10 +1103,24 @@ const DashboardOwner = () => {
                             Dashboard
                         </li>
                         <li
+                            className={activeMenu === "laporanRequestDonasi" ? "owner-active" : ""}
+                            onClick={() => setActiveMenu("laporanRequestDonasi")}
+                        >
+                            Laporan Request Donasi
+                        </li>
+                        {/* --- Tambah menu baru untuk laporan donasi barang --- */}
+                        <li
+                            className={activeMenu === "laporanDonasiBarang" ? "owner-active" : ""}
+                            onClick={() => setActiveMenu("laporanDonasiBarang")}
+                        >
+                            Laporan Donasi Barang
+                        </li>
+                        {/* --- Akhir penambahan menu --- */}
+                        <li
                             className={activeMenu === "requests" ? "owner-active" : ""}
                             onClick={() => setActiveMenu("requests")}
                         >
-                            Daftar Request Donasi
+                            Alokasi Request Donasi
                         </li>
                         <li
                             className={activeMenu === "history" ? "owner-active" : ""}
@@ -950,7 +1158,11 @@ const DashboardOwner = () => {
                     {activeMenu === "dashboard"
                         ? "Dashboard Owner"
                         : activeMenu === "requests"
-                        ? "Daftar Request Donasi"
+                        ? "Daftar Request Donasi (Belum Dialokasikan)"
+                        : activeMenu === "laporanRequestDonasi"
+                        ? "Laporan Request Donasi Belum Terpenuhi"
+                        : activeMenu === "laporanDonasiBarang" // Judul untuk laporan donasi barang
+                        ? "Laporan Donasi Barang"
                         : activeMenu === "history"
                         ? "History Donasi"
                         : activeMenu === "laporanPenjualan"
