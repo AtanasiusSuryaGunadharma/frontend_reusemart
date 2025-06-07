@@ -12,7 +12,7 @@ import PembeliDashboard from './JSX/Login/pembeli/dashboardPembeli.jsx'; // Dash
 import CSDashboard from './JSX/Login/CS/dashboardCS.jsx';
 import GeneralLogin from "./JSX/Login/generalLogin.jsx"; // Halaman pilihan Login
 import LoginOrganisasi from './JSX/Login/Organisasi/loginOrganisasi.jsx';
-import LoginPembeli from './JSX/Login/pembeli/loginPembeli.jsx'; // Login Pembeli
+import LoginPembeli from './JSX/Login/Pembeli/loginPembeli.jsx'; // Login Pembeli
 import LoginPenitip from './JSX/Login/Penitip/loginPenitip.jsx';
 
 
