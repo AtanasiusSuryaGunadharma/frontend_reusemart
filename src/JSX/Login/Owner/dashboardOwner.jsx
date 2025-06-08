@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react"; // Tambahkan useCallback
 import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import "./dashboardOwner.css";
@@ -14,7 +14,7 @@ const DashboardOwner = () => {
     const [ownerProfile, setOwnerProfile] = useState(null);
     const [unfulfilledDonationRequests, setUnfulfilledDonationRequests] = useState([]);
     const [donationHistory, setDonationHistory] = useState([]);
-    const [donatedItemsReport, setDonatedItemsReport] = useState([]); // State baru untuk laporan donasi barang
+    const [donatedItemsReport, setDonatedItemsReport] = useState([]);
     const [itemsForDonation, setItemsForDonation] = useState([]);
     const [userRoleState, setUserRoleState] = useState(null);
     const [showAllocationModal, setShowAllocationModal] = useState(false);
@@ -32,10 +32,21 @@ const DashboardOwner = () => {
     const [isLoadingStock, setIsLoadingStock] = useState(false);
     const [commissionData, setCommissionData] = useState([]);
     const [isLoadingCommission, setIsLoadingCommission] = useState(false);
-    const [isLoadingDonatedItemsReport, setIsLoadingDonatedItemsReport] = useState(false); // Loading state baru
-    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1); // 1-12
+    const [isLoadingDonatedItemsReport, setIsLoadingDonatedItemsReport] = useState(false);
+    const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+
+    // --- State baru untuk laporan penitip ---
+    const [penitips, setPenitips] = useState([]);
+    const [selectedPenitipId, setSelectedPenitipId] = useState('');
+    const [penitipReportData, setPenitipReportData] = useState(null);
+    const [isLoadingPenitipReport, setIsLoadingPenitipReport] = useState(false);
+    const [penitipReportYear, setPenitipReportYear] = useState(new Date().getFullYear());
+    const [penitipReportMonth, setPenitipReportMonth] = useState(new Date().getMonth() + 1);
+    const [availablePenitipReportYears, setAvailablePenitipReportYears] = useState([]);
+    // --- Akhir state baru ---
+
     const itemsPerPage = 7;
-    const reportRef = useRef(null); // Ref untuk laporan PDF
+    const reportRef = useRef(null);
 
     const [allocationData, setAllocationData] = useState({
         barang_id_donasi: "",
@@ -50,7 +61,72 @@ const DashboardOwner = () => {
 
     const navigate = useNavigate();
 
-    // Fetch all data at the top level
+    // Fetch penitip list for dropdown
+    useEffect(() => {
+        const fetchPenitips = async () => {
+            const token = localStorage.getItem("authToken");
+            if (!token) return;
+            try {
+                const response = await axios.get(`http://127.0.0.1:8000/api/penitip`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setPenitips(Array.isArray(response.data) ? response.data : []);
+                // Set default selected penitip if available
+                if (response.data.length > 0) {
+                    setSelectedPenitipId(response.data[0].id_penitip);
+                }
+            } catch (error) {
+                console.error("Error fetching penitips:", error);
+                toast.error("Gagal memuat daftar penitip.");
+            }
+        };
+
+        if (activeMenu === "laporanPenitip") {
+            fetchPenitips();
+        }
+    }, [activeMenu]);
+
+    // Fetch report data for selected penitip, year, month
+    const fetchPenitipReport = useCallback(async () => {
+        if (!selectedPenitipId || !penitipReportYear || !penitipReportMonth) {
+            setPenitipReportData(null);
+            return;
+        }
+
+        setIsLoadingPenitipReport(true);
+        const token = localStorage.getItem("authToken");
+        try {
+            const response = await axios.get(`http://127.0.0.1:8000/api/penitip/report`, {
+                headers: { Authorization: `Bearer ${token}` },
+                params: {
+                    penitip_id: selectedPenitipId,
+                    year: penitipReportYear,
+                    month: penitipReportMonth
+                }
+            });
+            setPenitipReportData(response.data);
+            // Optionally, refresh available years for penitip reports based on selected penitip's actual data
+            // (This would require a new backend endpoint to get years for a specific penitip's transactions)
+            // For now, we'll use the general availableYears for consistency.
+            // setAvailablePenitipReportYears(response.data.available_years || availableYears);
+
+        } catch (error) {
+            console.error("Error fetching penitip report:", error.response?.data || error.message);
+            toast.error("Gagal memuat laporan penitip: " + (error.response?.data?.message || error.message));
+            setPenitipReportData(null);
+        } finally {
+            setIsLoadingPenitipReport(false);
+        }
+    }, [selectedPenitipId, penitipReportYear, penitipReportMonth]); // Tambahkan dependensi `penitipReportMonth`
+
+    useEffect(() => {
+        if (activeMenu === "laporanPenitip") {
+            fetchPenitipReport();
+        }
+    }, [activeMenu, fetchPenitipReport]);
+
+
+    // Fetch all other data at the top level
     useEffect(() => {
         const token = localStorage.getItem("authToken");
         const id_pegawai = localStorage.getItem("id_pegawai");
@@ -84,15 +160,13 @@ const DashboardOwner = () => {
                 );
                 setDonationHistory(Array.isArray(donationHistoryResponse.data) ? donationHistoryResponse.data : []);
 
-                // --- Fetch data untuk laporan donasi barang ---
                 setIsLoadingDonatedItemsReport(true);
                 const donatedItemsReportResponse = await axios.get(
-                    `http://127.0.0.1:8000/api/donasi/report`, // Endpoint baru
+                    `http://127.0.0.1:8000/api/donasi/report`,
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setDonatedItemsReport(Array.isArray(donatedItemsReportResponse.data) ? donatedItemsReportResponse.data : []);
                 setIsLoadingDonatedItemsReport(false);
-                // --- Akhir fetch data baru ---
 
                 const itemsForDonationResponse = await axios.get(
                     `http://127.0.0.1:8000/api/barang/donated`,
@@ -106,9 +180,12 @@ const DashboardOwner = () => {
                 );
                 const years = yearsResponse.data || [];
                 setAvailableYears(years.length > 0 ? years : [new Date().getFullYear()]);
-                if (!years.includes(selectedYear)) {
-                    setSelectedYear(years.length > 0 ? years[0] : new Date().getFullYear());
+                // Set initial year for penitip report if not set
+                if (availablePenitipReportYears.length === 0) {
+                    setAvailablePenitipReportYears(years.length > 0 ? years : [new Date().getFullYear()]);
+                    setPenitipReportYear(years.length > 0 ? years[0] : new Date().getFullYear());
                 }
+
 
                 setIsLoadingSales(true);
                 const salesResponse = await axios.get(
@@ -151,7 +228,7 @@ const DashboardOwner = () => {
                 setOwnerProfile({});
                 setUnfulfilledDonationRequests([]);
                 setDonationHistory([]);
-                setDonatedItemsReport([]); // Reset state baru
+                setDonatedItemsReport([]);
                 setItemsForDonation([]);
                 setMonthlySales(Array.from({ length: 12 }, (_, index) => ({
                     month: `${new Date().getFullYear()}-${index + 1 < 10 ? `0${index + 1}` : String(index + 1)}`,
@@ -161,18 +238,20 @@ const DashboardOwner = () => {
                 setAvailableYears([new Date().getFullYear()]);
                 setStockData([]);
                 setCommissionData([]);
+                setPenitips([]);
+                setPenitipReportData(null);
             } finally {
                 setIsLoadingSales(false);
                 setIsLoadingStock(false);
-                setIsLoadingDonatedItemsReport(false); // Pastikan loading state direset
-                // No need to set isLoadingCommission to false here, handled inside the if block
+                setIsLoadingDonatedItemsReport(false);
+                setIsLoadingPenitipReport(false); // Pastikan loading state penitip direset
             }
         };
 
         fetchData();
     }, [navigate, selectedYear, selectedMonth, activeMenu]);
 
-    const handleAllocateDonation = (request) => {
+    const handleAllocateDonation = async (request) => {
         if (!request || !request.id_request_donasi) {
             toast.error("Request tidak valid.");
             return;
@@ -270,7 +349,6 @@ const DashboardOwner = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setDonationHistory(Array.isArray(updatedDonationHistoryResponse.data) ? updatedDonationHistoryResponse.data : []);
-            // Refresh data laporan donasi barang setelah alokasi berhasil
             const refreshDonatedItemsReport = await axios.get(
                 `http://127.0.0.1:8000/api/donasi/report`,
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -336,7 +414,6 @@ const DashboardOwner = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             setDonationHistory(Array.isArray(updatedDonationHistoryResponse.data) ? updatedDonationHistoryResponse.data : []);
-            // Refresh data laporan donasi barang setelah edit berhasil
             const refreshDonatedItemsReport = await axios.get(
                 `http://127.0.0.1:8000/api/donasi/report`,
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -420,19 +497,17 @@ const DashboardOwner = () => {
 
     const formatDate = (dateString) => {
         if (!dateString) return "---";
-        // Convert to Date object first to handle potential variations in date string formats
         const date = new Date(dateString);
         if (isNaN(date.getTime())) {
-            return "---"; // Invalid date
+            return "---";
         }
-        return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        return date.toISOString().split('T')[0];
     };
-
 
     const getFormattedPrintDate = () => {
         const today = new Date();
         const options = { day: '2-digit', month: 'long', year: 'numeric' };
-        return today.toLocaleDateString('id-ID', options); // Outputs "07 Juni 2025"
+        return today.toLocaleDateString('id-ID', options);
     };
 
     const handleDownloadStockPDF = () => {
@@ -488,7 +563,6 @@ const DashboardOwner = () => {
         });
     };
 
-    // --- FUNGSI BARU UNTUK DOWNLOAD LAPORAN DONASI BARANG ---
     const handleDownloadDonatedItemsReportPDF = () => {
         window.scrollTo(0, 0);
         const element = reportRef.current;
@@ -498,7 +572,7 @@ const DashboardOwner = () => {
             filename: `laporan-donasi-barang-${today}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: { scale: 3, useCORS: true, logging: true, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }, // Bisa portrait/landscape
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
         };
         html2pdf().set(opt).from(element).save().then(() => {
             console.log("Donated items report PDF generated successfully");
@@ -506,9 +580,40 @@ const DashboardOwner = () => {
             console.error("Error generating Donated items report PDF:", error);
         });
     };
+
+    // --- FUNGSI BARU UNTUK DOWNLOAD LAPORAN PENITIP ---
+    const handleDownloadPenitipReportPDF = () => {
+        window.scrollTo(0, 0);
+        const element = reportRef.current;
+        const today = new Date().toISOString().split('T')[0];
+        const monthNames = [
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ];
+        const selectedMonthName = monthNames[penitipReportMonth - 1];
+
+        const opt = {
+            margin: 10,
+            filename: `laporan-penitip-${penitipReportData?.nama_penitip || 'unknown'}-${selectedMonthName}-${penitipReportYear}-${today}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 3, useCORS: true, logging: true, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+        };
+        html2pdf().set(opt).from(element).save().then(() => {
+            console.log("Penitip report PDF generated successfully");
+        }).catch((error) => {
+            console.error("Error generating Penitip report PDF:", error);
+        });
+    };
     // --- AKHIR FUNGSI BARU ---
 
+
     const renderContent = () => {
+        const monthNames = [
+            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+            "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ];
+
         switch (activeMenu) {
             case "dashboard":
                 return (
@@ -578,7 +683,6 @@ const DashboardOwner = () => {
                         )}
                     </div>
                 );
-            // --- KASUS BARU UNTUK LAPORAN DONASI BARANG ---
             case "laporanDonasiBarang":
                 return (
                     <div className="owner-dashboard-section" ref={reportRef}>
@@ -640,8 +744,140 @@ const DashboardOwner = () => {
                         )}
                     </div>
                 );
-            // --- AKHIR KASUS BARU ---
-            case "requests": // Ini adalah menu untuk mengelola request donasi (alokasi)
+            case "laporanPenitip":
+                return (
+                    <div className="owner-dashboard-section" ref={reportRef}>
+                        <div style={{
+                            marginBottom: "20px",
+                            textAlign: "center",
+                            display: "block",
+                            position: "relative",
+                            padding: "10px",
+                            border: "1px solid #000",
+                            color: "#000",
+                            fontFamily: "Arial, Helvetica, sans-serif",
+                            fontSize: "14px"
+                        }}>
+                            <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
+                            <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
+                            <h3 style={{ margin: "0", color: "#000" }}>LAPORAN TRANSAKSI PENITIP</h3>
+                            {penitipReportData && (
+                                <>
+                                    <p style={{ margin: "5px 0", color: "#000" }}>
+                                        <strong>ID Penitip:</strong> {penitipReportData.penitip_id}
+                                    </p>
+                                    <p style={{ margin: "5px 0", color: "#000" }}>
+                                        <strong>Nama Penitip:</strong> {penitipReportData.nama_penitip}
+                                    </p>
+                                    <p style={{ margin: "5px 0", color: "#000" }}>
+                                        <strong>Bulan:</strong> {monthNames[penitipReportMonth - 1]}
+                                    </p>
+                                    <p style={{ margin: "5px 0", color: "#000" }}>
+                                        <strong>Tahun:</strong> {penitipReportYear}
+                                    </p>
+                                </>
+                            )}
+                            <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
+                        </div>
+                        <div style={{ marginBottom: "20px" }}>
+                            <label htmlFor="penitipSelect">Pilih Penitip: </label>
+                            <select
+                                id="penitipSelect"
+                                value={selectedPenitipId}
+                                onChange={(e) => setSelectedPenitipId(e.target.value)}
+                                style={{ padding: "5px", marginLeft: "10px", marginRight: "20px" }}
+                                disabled={isLoadingPenitipReport}
+                            >
+                                <option value="">Pilih Penitip</option>
+                                {penitips.map(penitip => (
+                                    <option key={penitip.id_penitip} value={penitip.id_penitip}>
+                                        {penitip.nama_penitip} (ID: {penitip.id_penitip})
+                                    </option>
+                                ))}
+                            </select>
+
+                            <label htmlFor="penitipReportMonthSelect">Pilih Bulan: </label>
+                            <select
+                                id="penitipReportMonthSelect"
+                                value={penitipReportMonth}
+                                onChange={(e) => setPenitipReportMonth(parseInt(e.target.value))}
+                                style={{ padding: "5px", marginLeft: "10px", marginRight: "20px" }}
+                                disabled={isLoadingPenitipReport}
+                            >
+                                {monthNames.map((month, index) => (
+                                    <option key={index + 1} value={index + 1}>
+                                        {month}
+                                    </option>
+                                ))}
+                            </select>
+
+                            <label htmlFor="penitipReportYearSelect">Pilih Tahun: </label>
+                            <select
+                                id="penitipReportYearSelect"
+                                value={penitipReportYear}
+                                onChange={(e) => setPenitipReportYear(parseInt(e.target.value))}
+                                style={{ padding: "5px", marginLeft: "10px" }}
+                                disabled={isLoadingPenitipReport}
+                            >
+                                {availableYears.map((year) => ( // Menggunakan availableYears umum
+                                    <option key={year} value={year}>
+                                        {year}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {isLoadingPenitipReport ? (
+                            <p>Memuat laporan transaksi penitip...</p>
+                        ) : (
+                            penitipReportData && penitipReportData.detail_transaksi.length > 0 ? (
+                                <>
+                                    <div style={{ minHeight: "200px", marginBottom: "20px" }}>
+                                        <table className="owner-donation-table" style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}>
+                                            <thead>
+                                                <tr style={{ backgroundColor: "#4CAF50" }}>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Kode Produk</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Produk</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Masuk</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Laku</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Harga Jual Bersih</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Bonus Terjual Cepat</th>
+                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Pendapatan</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {penitipReportData.detail_transaksi.map((item, index) => (
+                                                    <tr key={index} style={{ border: "1px solid #bfbfbf" }}>
+                                                        <td style={{ padding: "10px" }}>{item.id_barang}</td>
+                                                        <td style={{ padding: "10px" }}>{item.nama_produk}</td>
+                                                        <td style={{ padding: "10px" }}>{item.tanggal_masuk}</td>
+                                                        <td style={{ padding: "10px" }}>{item.tanggal_laku}</td>
+                                                        <td style={{ padding: "10px" }}>Rp. {item.harga_jual_bersih?.toLocaleString("id-ID") || "0"}</td>
+                                                        <td style={{ padding: "10px" }}>Rp. {item.bonus_terjual_cepat?.toLocaleString("id-ID") || "0"}</td>
+                                                        <td style={{ padding: "10px" }}>Rp. {item.pendapatan?.toLocaleString("id-ID") || "0"}</td>
+                                                    </tr>
+                                                ))}
+                                                <tr style={{ border: "1px solid #bfbfbf", fontWeight: "bold" }}>
+                                                    <td style={{ padding: "10px" }} colSpan="4">Total</td>
+                                                    <td style={{ padding: "10px" }}>Rp. {penitipReportData.total_harga_jual_bersih?.toLocaleString("id-ID") || "0"}</td>
+                                                    <td style={{ padding: "10px" }}>Rp. {penitipReportData.total_bonus_terjual_cepat?.toLocaleString("id-ID") || "0"}</td>
+                                                    <td style={{ padding: "10px" }}>Rp. {penitipReportData.total_pendapatan?.toLocaleString("id-ID") || "0"}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <button className="owner-download-btn" onClick={handleDownloadPenitipReportPDF} disabled={penitipReportData.detail_transaksi.length === 0}>
+                                        <i className="fas fa-download"></i> Unduh PDF Laporan Penitip
+                                    </button>
+                                </>
+                            ) : (
+                                <p>Tidak ada transaksi terjual untuk penitip ini pada bulan dan tahun yang dipilih.</p>
+                            )
+                        )}
+                    </div>
+                );
+
+            case "requests":
                 return (
                     <div className="owner-dashboard-section">
                         <h3>Daftar Request Donasi (Belum Dialokasikan)</h3>
@@ -972,10 +1208,6 @@ const DashboardOwner = () => {
                 );
             case "laporanKomisi":
                 {
-                    const monthNames = [
-                        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-                    ];
                     const totalCommissionReUseMart = commissionData.reduce((sum, item) => sum + (item.komisi_reuse_mart || 0), 0);
                     const totalCommissionHunter = commissionData.reduce((sum, item) => sum + (item.komisi_hunter || 0), 0);
                     const totalBonusPenitip = commissionData.reduce((sum, item) => sum + (item.bonus_penitip || 0), 0);
@@ -1108,12 +1340,18 @@ const DashboardOwner = () => {
                         >
                             Laporan Request Donasi
                         </li>
-                        {/* --- Tambah menu baru untuk laporan donasi barang --- */}
                         <li
                             className={activeMenu === "laporanDonasiBarang" ? "owner-active" : ""}
                             onClick={() => setActiveMenu("laporanDonasiBarang")}
                         >
                             Laporan Donasi Barang
+                        </li>
+                        {/* --- Tambah menu baru untuk laporan penitip --- */}
+                        <li
+                            className={activeMenu === "laporanPenitip" ? "owner-active" : ""}
+                            onClick={() => setActiveMenu("laporanPenitip")}
+                        >
+                            Laporan Transaksi Penitip
                         </li>
                         {/* --- Akhir penambahan menu --- */}
                         <li
@@ -1161,8 +1399,10 @@ const DashboardOwner = () => {
                         ? "Daftar Request Donasi (Belum Dialokasikan)"
                         : activeMenu === "laporanRequestDonasi"
                         ? "Laporan Request Donasi Belum Terpenuhi"
-                        : activeMenu === "laporanDonasiBarang" // Judul untuk laporan donasi barang
+                        : activeMenu === "laporanDonasiBarang"
                         ? "Laporan Donasi Barang"
+                        : activeMenu === "laporanPenitip" // Judul untuk laporan penitip
+                        ? "Laporan Transaksi Penitip"
                         : activeMenu === "history"
                         ? "History Donasi"
                         : activeMenu === "laporanPenjualan"
