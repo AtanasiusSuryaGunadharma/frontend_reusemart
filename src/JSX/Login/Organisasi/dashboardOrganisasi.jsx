@@ -1,11 +1,10 @@
-/* eslint-disable no-useless-escape */
-/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import "./dashboardOrganisasi.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 
 const DashboardOrganisasi = () => {
   const [requests, setRequests] = useState([]);
@@ -39,11 +38,13 @@ const DashboardOrganisasi = () => {
       const profileRes = await axios.get(`http://127.0.0.1:8000/api/organisasi/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setOrgProfile(profileRes.data);
 
       const res = await axios.get("http://127.0.0.1:8000/api/request-donasi", {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const allRequests = Array.isArray(res.data) ? res.data : res.data.data || [];
       const filteredRequests = allRequests.filter(
         (request) => request.organisasi_id === parseInt(id)

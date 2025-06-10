@@ -1,10 +1,8 @@
-/* Reset & Base */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
 
 /* Organisasi Dashboard */
 .org-dashboard {
@@ -272,6 +270,7 @@
 
 /* Modal */
 .org-modal {
+
   position: fixed;
   top: 0;
   left: 0;

@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const GeneralLogin = () => {
-  // State untuk menyimpan input email, password, error, dan rememberMe
+ // State untuk menyimpan input email, password, error, dan rememberMe
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);

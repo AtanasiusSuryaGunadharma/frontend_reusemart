@@ -14,6 +14,9 @@ import GeneralLogin from "./JSX/Login/generalLogin.jsx"; // Halaman pilihan Logi
 import LoginOrganisasi from './JSX/Login/Organisasi/loginOrganisasi.jsx';
 import LoginPembeli from './JSX/Login/Pembeli/loginPembeli.jsx'; // Login Pembeli
 import LoginPenitip from './JSX/Login/Penitip/loginPenitip.jsx';
+import CSDashboard from './JSX/Login/CS/cs.jsx';
+import OrganisasiDashboard from './JSX/Login/Organisasi/dashboardOrganisasi.jsx';
+
 
 
 import GeneralRegistrasi from "./JSX/Registrasi/generalRegistrasi.jsx";
@@ -57,7 +60,7 @@ function App() {
           <Route path="organisasi/login" element={<LoginOrganisasi />} />
           <Route path="pembeli/login" element={<LoginPembeli />} />
           <Route path="penitip/login" element={<LoginPenitip />} />
-
+            
           {/* Rute Dashboard/Profil */}
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/penitip/dashboard" element={<PenitipDashboard />} />
@@ -87,6 +90,7 @@ function App() {
           <Route path="/payment" element={<PaymentPage />} />
 
           <Route path="/pembeli/history" element={<TransactionHistory />} />
+
         </Routes>
       </Router>
       <ToastContainer /> {/* ToastContainer di sini */}
