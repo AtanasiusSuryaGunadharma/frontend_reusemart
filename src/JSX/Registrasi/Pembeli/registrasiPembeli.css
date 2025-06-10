@@ -1,0 +1,151 @@
+/* src\JSX\Registrasi\Pembeli\registrasiPembeli.css */
+/* Salin gaya dasar dari login.css atau generalLogin.css */
+
+/* Contoh: */
+/* Ganti .login-page jika Anda ingin nama yang lebih spesifik */
+.registration-page {
+  display: flex;
+  flex-direction: column;
+  background: #f9f9f9; /* Sesuaikan background */
+  min-height: 100vh;
+  width: 100vw;
+}
+
+/* Re-use gaya navbar jika ada */
+.navbar {
+  /* ... gaya navbar dari generalLogin.css ... */
+}
+.navbar .logo span { /* ... */ }
+.nav-links { /* ... */ }
+.nav-links li a { /* ... */ }
+.nav-icons i { /* ... */ }
+
+/* Ganti .login-container jika Anda ingin nama yang lebih spesifik */
+.registration-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  flex-grow: 1;
+  padding: 2rem;
+  background-color: #fff;
+  margin: 2rem auto; /* Pusatkan kontainer */
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 500px; /* Batasi lebar form */
+  width: 90%; /* Buat responsif */
+  text-align: center;
+}
+
+/* Ganti .login-logo jika Anda ingin nama yang lebih spesifik */
+.registration-logo {
+ display: flex;
+ flex-direction: column;
+ align-items: center;
+ margin-bottom: 1rem;
+}
+
+.registration-logo img {
+ /* Atur lebar maksimum gambar menjadi lebih kecil */
+ max-width: 150px; /* Ubah nilai ini sesuai keinginan Anda */
+ height: auto; /* Agar aspek rasio gambar tetap terjaga */
+ margin-bottom: 0.5rem; /* Beri sedikit jarak antara gambar dan teks */
+}
+
+.registration-logo span {
+ font-size: 1.2rem; /* Atur ukuran font teks menjadi lebih kecil */
+ font-weight: bold;
+ color: #0056a3; /* Sesuaikan warna jika perlu */
+}
+
+.registration-container h2 {
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.registration-container p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+/* Gaya form */
+.registration-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 1rem; /* Jarak antar input */
+}
+
+.registration-form input {
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+  width: 100%;
+  box-sizing: border-box; /* Penting agar padding tidak menambah lebar */
+}
+
+/* Gaya tombol submit */
+.registration-btn {
+  padding: 0.75rem;
+  background-color: #0056a3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.registration-btn:hover:not(:disabled) {
+  background-color: #004087;
+}
+
+.registration-btn:disabled {
+  background-color: #a0c8e6;
+  cursor: not-allowed;
+}
+
+/* Gaya pesan error dan sukses */
+.error-message {
+  color: #d32f2f; /* Warna merah untuk error */
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.success-message {
+  color: #388e3c; /* Warna hijau untuk sukses */
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Gaya link switch */
+.switch-link {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #555;
+  margin-top: 1rem;
+}
+
+.switch-link a {
+  color: #0056a3;
+  text-decoration: underline;
+  transition: color 0.3s ease;
+}
+
+.switch-link a:hover {
+  color: #004087;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .registration-container {
+    padding: 1rem;
+    width: 95%;
+  }
+  /* ... gaya responsif lainnya jika perlu ... */
+}

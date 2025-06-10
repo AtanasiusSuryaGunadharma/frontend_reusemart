@@ -1,11 +1,14 @@
+/* Reset & Base */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Organisasi Dashboard */
-.org-dashboard {
+
+
+/* Owner Dashboard */
+.owner-dashboard {
   display: flex;
   min-height: 100vh; /* Tinggi penuh layar */
   width: 100vw; /* Lebar penuh layar */
@@ -13,9 +16,9 @@
 }
 
 /* Sidebar kiri */
-.org-sidebar {
+.owner-sidebar {
   width: 250px; /* Lebar sidebar tetap */
-  background-color: #1976d2; /* Warna hijau untuk organisasi */
+  background-color: #1976d2; /* Warna biru utama */
   color: white;
   display: flex;
   flex-direction: column;
@@ -29,20 +32,20 @@
   z-index: 100; /* Pastikan sidebar di atas konten */
 }
 
-.org-sidebar-logo {
+.owner-sidebar-logo {
   font-size: 1.5rem;
   font-weight: bold;
   margin-bottom: 2rem;
   text-align: center;
 }
 
-.org-sidebar-nav ul {
+.owner-sidebar-nav ul {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.org-sidebar-nav ul li {
+.owner-sidebar-nav ul li {
   padding: 1rem;
   cursor: pointer;
   border-radius: 5px;
@@ -50,28 +53,28 @@
   font-weight: 600;
 }
 
-.org-sidebar-nav ul li:hover {
-  background-color: #004d91; /* Variasi hijau saat hover */
+.owner-sidebar-nav ul li:hover {
+  background-color: #1565c0; /* Variasi biru saat hover */
 }
 
-.org-sidebar-nav ul li.org-active {
+.owner-sidebar-nav ul li.owner-active {
   background-color: #1565c0;
   font-weight: 700;
 }
 
-.org-sidebar-nav ul li.org-logout-btn {
+.owner-sidebar-nav ul li.owner-logout-btn {
   margin-top: auto;
   background-color: #d32f2f;
   font-weight: 700;
   text-align: center;
 }
 
-.org-sidebar-nav ul li.org-logout-btn:hover {
+.owner-sidebar-nav ul li.owner-logout-btn:hover {
   background-color: #b71c1c;
 }
 
 /* Konten utama di sebelah kanan */
-.org-dashboard-container {
+.owner-dashboard-container {
   margin-left: 250px; /* Memberikan ruang untuk sidebar */
   flex-grow: 1; /* Mengisi sisa lebar layar */
   padding: 2rem;
@@ -86,14 +89,14 @@
   background: #f5f5f5; /* Background konten */
 }
 
-.org-welcome-text {
+.owner-welcome-text {
   font-size: 1.1rem;
   color: #555;
   margin-bottom: 1.5rem;
 }
 
 /* Section styling */
-.org-dashboard-section {
+.owner-dashboard-section {
   background: #fff;
   padding: 1.5rem;
   border-radius: 8px;
@@ -103,140 +106,58 @@
   max-width: 1200px; /* Membatasi lebar maksimum */
 }
 
-/* Section header */
-.org-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.org-add-btn, .org-add-btn-empty {
-  padding: 0.5rem 1rem;
-  background-color: #1976d2; /* Warna hijau */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.org-add-btn:hover, .org-add-btn-empty:hover {
-  background-color: #004d91;
-}
-
-.org-profile-details {
+/* Profil details */
+.owner-profile-details {
   margin-top: 1rem;
 }
 
-.org-profile-details p {
+.owner-profile-details p {
   margin: 0.5rem 0;
 }
 
-/* Search Container */
-.org-search-container {
-  position: relative;
-  margin-bottom: 1rem;
-}
-
-.org-search-icon {
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
-  color: #666;
-}
-
-.org-search-input {
-  width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 0.95rem;
-  transition: border-color 0.3s ease;
-}
-
-.org-search-input:focus {
-  outline: none;
-  border-color: #1976d2;
-}
-
-.org-clear-search {
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #666;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.org-clear-search:hover {
-  color: #d32f2f;
-}
-
-.org-search-results-info {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 1rem;
-}
-
 /* Table Containers */
-.org-request-table-container {
-  overflow-x: auto;
-  margin-top: 1rem;
-}
-
-.org-request-table {
+.owner-donation-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
+  margin-top: 1rem;
 }
 
-.org-request-table th {
+.owner-donation-table th {
   background-color: #f4f4f4;
   padding: 0.75rem;
   border-bottom: 2px solid #ddd;
   font-weight: 600;
 }
 
-.org-request-table td {
+.owner-donation-table td {
   padding: 0.75rem;
   border-bottom: 1px solid #ddd;
   font-size: 0.95rem;
 }
 
-.org-action-buttons button {
+.owner-allocate-btn,
+.owner-edit-btn {
   padding: 0.5rem 1rem;
-  margin-right: 0.5rem;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.org-edit-btn {
+.owner-allocate-btn,
+.owner-edit-btn {
   background-color: #1976d2;
   color: white;
 }
 
-.org-edit-btn:hover {
-  background-color: #004d91;
-}
-
-.org-delete-btn {
-  background-color: #d32f2f;
-  color: white;
-}
-
-.org-delete-btn:hover {
-  background-color: #b71c1c;
+.owner-allocate-btn:hover,
+.owner-edit-btn:hover {
+  background-color: #1565c0;
 }
 
 /* Paginasi */
-.org-pagination {
+.owner-pagination {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -244,7 +165,7 @@
   gap: 0.5rem;
 }
 
-.org-paginate-btn {
+.owner-paginate-btn {
   padding: 0.5rem 1rem;
   background-color: #1976d2;
   color: white;
@@ -254,23 +175,22 @@
   transition: background-color 0.3s ease;
 }
 
-.org-paginate-btn:hover:not(:disabled) {
-  background-color: #004d91;
+.owner-paginate-btn:hover:not(:disabled) {
+  background-color: #1565c0;
 }
 
-.org-paginate-btn:disabled {
+.owner-paginate-btn:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
 }
 
-.org-paginate-btn.org-active {
+.owner-paginate-btn.owner-active {
   background-color: #1565c0;
   font-weight: 700;
 }
 
 /* Modal */
-.org-modal {
-
+.owner-modal {
   position: fixed;
   top: 0;
   left: 0;
@@ -283,7 +203,7 @@
   z-index: 1000;
 }
 
-.org-modal-content {
+.owner-modal-content {
   background: white;
   padding: 1.5rem;
   border-radius: 8px;
@@ -293,19 +213,19 @@
   position: relative;
 }
 
-.org-modal-header {
+.owner-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
 }
 
-.org-modal-header h3 {
+.owner-modal-header h3 {
   margin: 0;
   font-size: 1.25rem;
 }
 
-.org-close-btn {
+.owner-close-btn {
   background: none;
   border: none;
   font-size: 1.2rem;
@@ -313,23 +233,17 @@
   color: #666;
 }
 
-.org-close-btn:hover {
+.owner-close-btn:hover {
   color: #d32f2f;
 }
 
-.org-form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
+.owner-form-group {
+  display: flex;
+  flex-direction: column;
   margin-bottom: 1rem;
 }
 
-.org-form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.org-form-group label {
+.owner-form-group label {
   font-weight: 600;
   margin-bottom: 0.5rem;
   display: flex;
@@ -338,7 +252,8 @@
   color: #333;
 }
 
-.org-form-group input {
+.owner-form-group input,
+.owner-form-group select {
   padding: 0.75rem;
   border: 1px solid #ddd;
   border-radius: 5px;
@@ -346,25 +261,21 @@
   transition: border-color 0.3s ease;
 }
 
-.org-form-group input:focus {
+.owner-form-group input:focus,
+.owner-form-group select:focus {
   outline: none;
   border-color: #1976d2;
 }
 
-.org-form-group input:disabled {
-  background-color: #f0f0f0;
-  cursor: not-allowed;
-}
-
-.org-modal-actions {
+.owner-modal-actions {
   display: flex;
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 1rem;
 }
 
-.org-cancel-btn,
-.org-submit-btn {
+.owner-cancel-btn,
+.owner-submit-btn {
   padding: 0.75rem 1.5rem;
   border: none;
   border-radius: 5px;
@@ -372,105 +283,48 @@
   transition: background-color 0.3s ease;
 }
 
-.org-cancel-btn {
+.owner-cancel-btn {
   background-color: #6c757d;
   color: white;
 }
 
-.org-cancel-btn:hover {
+.owner-cancel-btn:hover {
   background-color: #5a6268;
 }
 
-.org-submit-btn {
+.owner-submit-btn {
   background-color: #1976d2;
   color: white;
 }
 
-.org-submit-btn:hover {
-  background-color: #004d91;
-}
-
-/* Loading and Error States */
-.org-loading-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #666;
-}
-
-.org-loading-spinner {
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #1976d2;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 1rem;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.org-error-state,
-.org-error-message {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #d32f2f;
-  text-align: center;
-}
-
-.org-error-message i {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
-}
-
-.org-no-data-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #666;
-  text-align: center;
-}
-
-.org-no-data-icon i {
-  font-size: 3rem;
-  color: #999;
-  margin-bottom: 1rem;
+.owner-submit-btn:hover {
+  background-color: #1565c0;
 }
 
 /* Responsivitas */
 @media (max-width: 768px) {
-  .org-sidebar {
+  .owner-sidebar {
     width: 200px;
   }
 
-  .org-dashboard-container {
+  .owner-dashboard-container {
     margin-left: 200px; /* Menyesuaikan margin */
     padding: 1rem;
   }
 
-  .org-modal-content {
+  .owner-modal-content {
     width: 95%;
     max-width: 400px;
   }
 
-  .org-paginate-btn {
+  .owner-paginate-btn {
     padding: 0.4rem 0.8rem;
     font-size: 0.9rem;
   }
 }
 
 @media (max-width: 480px) {
-  .org-sidebar {
+  .owner-sidebar {
     width: 100%;
     height: 60px;
     position: fixed;
@@ -483,37 +337,73 @@
     align-items: center;
   }
 
-  .org-sidebar-logo {
+  .owner-sidebar-logo {
     margin-bottom: 0;
     font-size: 1.2rem;
   }
 
-  .org-sidebar-nav ul {
+  .owner-sidebar-nav ul {
     display: flex;
     flex-direction: row;
     gap: 1rem;
   }
 
-  .org-sidebar-nav ul li {
+  .owner-sidebar-nav ul li {
     padding: 0.5rem;
     font-size: 0.9rem;
   }
 
-  .org-dashboard-container {
+  .owner-dashboard-container {
     margin-left: 0;
     margin-top: 60px; /* Memberi ruang untuk navbar */
     padding: 0.5rem;
     width: 100vw;
   }
 
-  .org-modal-content {
+  .owner-modal-content {
     width: 100%;
     max-width: 100%;
     padding: 1rem;
   }
 
-  .org-paginate-btn {
+  .owner-paginate-btn {
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
   }
+}
+
+.owner-sales-table-container {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    min-height: 200px; /* Tetapkan tinggi minimum */
+    overflow: auto; /* Jika ada overflow, tambahkan scroll */
+}
+
+.owner-chart-container {
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    height: 400px; /* Tetapkan tinggi tetap */
+    width: 100%; /* Lebar penuh */
+    position: relative; /* Pastikan posisi relatif untuk grafik */
+}
+
+.owner-download-btn {
+    padding: 10px 20px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 20px;
+}
+
+.owner-download-btn:hover {
+    background-color: #1976D2;
 }

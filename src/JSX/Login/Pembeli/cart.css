@@ -1,0 +1,349 @@
+/* src\JSX\Login\Pembeli\cart.css */
+/* Reset & Base */
+body, html {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+/* Page Container */
+.cart-page {
+  display: flex;
+  flex-direction: column;
+  background: #f9f9f9;
+  min-height: 100vh;
+  width: 100vw; /* Pastikan mengambil seluruh lebar viewport */
+  overflow-x: hidden; /* Mencegah scroll horizontal yang tidak diinginkan */
+  font-family: sans-serif;
+  color: #333;
+}
+
+/* Navbar (dari shopPembeli.css) */
+.navbar {
+  background-color: #0056a3; /* Warna navbar berbeda dari guest */
+  color: white;
+  padding: 1rem 2rem; /* Padding navbar */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Shadow navbar */
+  /* Untuk responsivitas navbar */
+  flex-wrap: wrap; /* Izinkan item wrap ke baris baru jika ruang tidak cukup */
+  gap: 1rem; /* Jarak antar item navbar saat wrap */
+}
+
+.navbar .logo {
+  display: flex; /* Agar gambar dan teks logo sejajar */
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.navbar .logo img {
+  height: 40px; /* Ukuran gambar logo */
+}
+
+.navbar .logo span {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.nav-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  /* Untuk responsivitas nav-links */
+  flex-grow: 1; /* Biarkan nav-links mengambil sisa ruang */
+  justify-content: flex-end; /* Dorong link ke kanan */
+  flex-wrap: wrap;
+}
+
+.nav-links li a,
+.nav-links button { /* Terapkan gaya ke Link dan Button Logout */
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.5rem 1rem; /* Padding untuk area klik */
+  border-radius: 5px; /* Border radius untuk button */
+  background: transparent; /* Background transparan untuk button */
+  border: none; /* Hilangkan border default button */
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-links li a:hover,
+.nav-links button:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Efek hover pada link dan button */
+}
+
+.logout-btn {
+  background-color: #dc3545; /* Warna tombol logout */
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+}
+
+.nav-icons { /* Jika Anda punya icon di navbar */
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  color: white;
+}
+.nav-icons i {
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+
+/* Cart Container */
+.cart-container {
+  padding: 2rem;
+  max-width: 900px; /* Lebar maksimum container keranjang */
+  width: 95%; /* Fleksibel, ambil 95% lebar layar */
+  margin: 20px auto; /* Tengahkan container */
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  box-sizing: border-box; /* Pastikan padding termasuk dalam lebar */
+}
+
+.cart-container h2 {
+  text-align: center;
+  color: #0056a3;
+  margin-bottom: 2rem;
+}
+
+.empty-cart-message {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  margin-top: 3rem;
+  font-size: 1.1rem;
+}
+.empty-cart-message a {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+/* Cart Items List */
+.cart-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Jarak antar item di keranjang */
+}
+
+.cart-item-card {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  background-color: #fefefe;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  flex-wrap: wrap; /* Izinkan item wrap ke baris baru jika ruang tidak cukup */
+  gap: 1rem; /* Jarak antar flex item di dalam card */
+}
+
+.cart-item-card .item-info {
+  display: flex;
+  align-items: center;
+  flex-grow: 1; /* Ambil ruang sebanyak mungkin */
+  gap: 1rem;
+}
+
+.cart-item-card .item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0; /* Jangan biarkan gambar mengecil */
+}
+
+.cart-item-card .item-details {
+  flex-grow: 1; /* Biarkan detail mengambil ruang yang tersedia */
+}
+
+.cart-item-card .item-details h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.cart-item-card .item-price {
+  margin: 0.5rem 0 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #0056a3;
+}
+
+.item-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap; /* Izinkan tombol kontrol wrap */
+}
+
+.quantity-control {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: hidden; /* Pastikan button di dalam tidak keluar dari border */
+}
+
+.quantity-control button {
+  background-color: #f0f0f0;
+  border: none;
+  padding: 0.5rem 0.8rem;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #555;
+  transition: background-color 0.2s;
+}
+
+.quantity-control button:hover:not(:disabled) {
+  background-color: #e0e0e0;
+}
+.quantity-control button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.quantity-control span {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  color: #333;
+  min-width: 30px; /* Pastikan lebar cukup untuk angka */
+  text-align: center;
+  background-color: white; /* Pastikan background putih */
+  border-left: 1px solid #ccc; /* Border antar tombol dan span */
+  border-right: 1px solid #ccc;
+}
+
+.remove-item-btn {
+  background-color: #dc3545; /* Merah */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s ease;
+}
+
+.remove-item-btn:hover {
+  background-color: #c82333;
+}
+
+/* Cart Summary */
+.cart-summary {
+  border-top: 2px solid #eee;
+  padding-top: 1.5rem;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.cart-summary .summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.checkout-btn {
+  width: 100%;
+  padding: 1rem;
+  background-color: #28a745; /* Hijau */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+  margin-top: 1rem;
+}
+
+.checkout-btn:hover {
+  background-color: #218838;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .navbar .logo {
+    width: 100%;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+  }
+  .nav-links {
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+  }
+  .nav-links li {
+    width: 100%;
+    text-align: center;
+  }
+  .nav-links li a, .nav-links button {
+    display: block;
+    width: 100%;
+  }
+
+  .cart-container {
+    padding: 1rem;
+    margin: 10px auto;
+    width: 98%; /* Lebih kecil di mobile */
+  }
+  .cart-item-card {
+    flex-direction: column; /* Stack item info dan controls */
+    align-items: flex-start;
+    text-align: left;
+  }
+  .cart-item-card .item-info {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  .item-controls {
+    width: 100%;
+    justify-content: space-between; /* Dorong tombol ke ujung */
+  }
+  .quantity-control {
+    flex-grow: 1; /* Biarkan kontrol kuantitas mengisi ruang */
+    justify-content: center;
+  }
+  .remove-item-btn {
+    flex-grow: 1; /* Biarkan tombol hapus mengisi ruang */
+  }
+}
+
+@media (max-width: 480px) {
+  .cart-container h2 {
+    font-size: 1.5rem;
+  }
+  .cart-item-card .item-details h3 {
+    font-size: 1rem;
+  }
+  .cart-item-card .item-price {
+    font-size: 1rem;
+  }
+  .quantity-control button,
+  .quantity-control span,
+  .remove-item-btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.7rem;
+  }
+}

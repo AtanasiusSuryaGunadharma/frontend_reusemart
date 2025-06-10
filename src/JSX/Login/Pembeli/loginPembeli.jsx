@@ -44,15 +44,11 @@ const LoginPembeli = () => { // <-- Ganti nama komponen menjadi LoginPembeli
         localStorage.setItem("username_pembeli", user.username_pembeli); // Simpan username atau nama
         localStorage.setItem("email_pembeli", user.email_pembeli); // Simpan email
         localStorage.setItem("password_pembeli", user.password_pembeli); // Simpan password
-        // localStorage.setItem("alamat_pembeli", user.alamat_pembeli); // Simpan alamat
         localStorage.setItem("no_telepon_pembeli", user.no_telepon_pembeli); // Simpan no telepon
         localStorage.setItem("poin_loyalitas", user.poin_loyalitas); // Simpan poin
         localStorage.setItem("tgl_lahir_pembeli", user.tgl_lahir_pembeli); // Simpan tanggal lahir
 
-        // ... simpan data pembeli lainnya jika dibutuhkan (poin, no telepon, dll)
-
-        // Redirect ke halaman tujuan setelah sukses login (misal: halaman Shop atau Home)
-        navigate("/"); // <-- Ganti dengan rute halaman tujuan pembeli Anda (misal: /shop, /home, atau /pembeli/dashboard)
+        navigate("/shop-pembeli"); // <-- Ganti dengan rute halaman tujuan pembeli Anda (misal: /shop, /home, atau /pembeli/dashboard)
 
       } else {
         // Tangani kasus sukses tapi format response tidak sesuai harapan (kurang token/user)
@@ -123,7 +119,7 @@ const LoginPembeli = () => { // <-- Ganti nama komponen menjadi LoginPembeli
           </button>
           {/* Link register mungkin perlu mengarah ke halaman registrasi Pembeli jika berbeda */}
           <p className="register-link">
-            Tidak Punya Akun Pembeli? <Link to="/register/pembeli">Create one</Link> {/* <-- Contoh link register spesifik */}
+            Tidak Punya Akun Pembeli? <Link to="/generalRegister">Create one</Link> {/* <-- Contoh link register spesifik */}
           </p>
         </div>
         {/* Opsional: Link kembali ke halaman pilihan role */}
