@@ -1239,8 +1239,8 @@ const CSDashboard = () => {
                                                 <td>{claim.merchandise?.nama_merchandise || 'N/A'}</td>
                                                 <td>{claim.merchandise?.poin_merch || 0}</td>
                                                 <td>
-                                                    <span className={`cs-payment-status status-${claim.status_pengajuan}`}>
-                                                        {claim.status_pengajuan.replace('_', ' ').toUpperCase()}
+                                                    <span className={`cs-payment-status status-${claim.status_pengajuan || 'unknown'}`}>
+                                                        {claim.status_pengajuan ? claim.status_pengajuan.replace('_', ' ').toUpperCase() : 'TIDAK DIKETAHUI'}
                                                     </span>
                                                 </td>
                                                 <td>

@@ -13,9 +13,10 @@ const formatDate = (dateString) => {
 const DashboardPegawaiGudang = () => {
   const [employeeProfile, setEmployeeProfile] = useState(null);
   const [consignmentTransactions, setConsignmentTransactions] = useState([]);
-  const [barangList, setBarangList] = useState([]); // State untuk daftar barang
-  const [selectedBarang, setSelectedBarang] = useState(null); // State untuk barang yang dipilih
-  const [showDetailModal, setShowDetailModal] = useState(false); // State untuk modal detail barang
+  const [barangList, setBarangList] = useState([]);
+  const [consignedItems, setConsignedItems] = useState([]);
+  const [selectedBarang, setSelectedBarang] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false); 
   const [dropdownData, setDropdownData] = useState({
     kategoriBarangs: [],
     penitips: [],
@@ -25,7 +26,8 @@ const DashboardPegawaiGudang = () => {
   const [error, setError] = useState(null);
   const [activeMenu, setActiveMenu] = useState("dashboard");
   const [currentItemsPage, setCurrentItemsPage] = useState(1);
-  const [currentBarangPage, setCurrentBarangPage] = useState(1); // Pagination untuk daftar barang
+  const [currentBarangPage, setCurrentBarangPage] = useState(1); 
+  const [currentConsignedPage, setCurrentConsignedPage] = useState(1); 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
@@ -37,7 +39,7 @@ const DashboardPegawaiGudang = () => {
     deskripsi_barang: "",
     harga_barang: "",
     berat_barang: "",
-    status_barang: "tersedia",
+    status_barang: "aktif",
     tanggal_garansi: "",
     id_kategoribarang: "",
     jumlah_barang: "1",
@@ -134,6 +136,23 @@ const DashboardPegawaiGudang = () => {
     }
   };
 
+  const fetchConsignedItems = async (token) => {
+    try {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+      const startDate = oneMonthAgo.toISOString().split("T")[0];
+      const endDate = new Date().toISOString().split("T")[0];
+
+      const response = await axios.get(`http://127.0.0.1:8000/api/barang/byMonths`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setConsignedItems(response.data.data || []);
+    } catch (err) {
+      if (err.response?.status === 401) handleLogout();
+      setConsignedItems([]);
+    }
+  };
+
   const fetchBarangDetail = async (token, id) => {
     try {
       const response = await axios.get(`http://127.0.0.1:8000/api/barang/${id}`, {
@@ -227,7 +246,7 @@ const DashboardPegawaiGudang = () => {
         deskripsi_barang: "",
         harga_barang: "",
         berat_barang: "",
-        status_barang: "tersedia",
+        status_barang: "aktif",
         tanggal_garansi: "",
         id_kategoribarang: "",
         jumlah_barang: "1",
@@ -321,7 +340,7 @@ const DashboardPegawaiGudang = () => {
       deskripsi_barang: "",
       harga_barang: "",
       berat_barang: "",
-      status_barang: "tersedia",
+      status_barang: "aktif",
       tanggal_garansi: "",
       id_kategoribarang: "",
       jumlah_barang: "1",
@@ -356,6 +375,24 @@ const DashboardPegawaiGudang = () => {
     setSelectedBarang(null);
   };
 
+  const handleUpdateToDonasi = async (idBarang) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      const response = await axios.put(
+        `http://127.0.0.1:8000/api/barang/${idBarang}/status`,
+        { status_barang: "untuk_donasi" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (response.status === 200) {
+        toast.success("Status barang berhasil diubah menjadi untuk donasi.");
+        await fetchBarangList(token); // Refresh daftar barang
+      }
+    } catch (err) {
+      console.error("Error updating to donasi:", err.response?.data || err.message);
+      toast.error(err.response?.data?.message || "Gagal mengubah status barang.");
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("authToken");
     const employeeId = localStorage.getItem("id_pegawai");
@@ -367,23 +404,20 @@ const DashboardPegawaiGudang = () => {
       return;
     }
 
-    const today = new Date();
-    const tanggalMulai = today.toISOString().split("T")[0];
-
-    const tanggalAkhirDate = new Date(today);
-    tanggalAkhirDate.setDate(today.getDate() + 30);
+    const today = new Date().toISOString().split("T")[0];
+    const tanggalAkhirDate = new Date();
+    tanggalAkhirDate.setDate(new Date().getDate() + 30);
     const tanggalAkhir = tanggalAkhirDate.toISOString().split("T")[0];
-
     const tanggalBatasDate = new Date(tanggalAkhirDate);
     tanggalBatasDate.setDate(tanggalAkhirDate.getDate() + 7);
     const tanggalBatas = tanggalBatasDate.toISOString().split("T")[0];
 
     setAddData((prev) => ({
       ...prev,
-      status_barang: "tersedia",
+      status_barang: "aktif",
       jumlah_barang: "1",
       pegawai_id: employeeId,
-      tanggal_mulai: tanggalMulai,
+      tanggal_mulai: today,
       tanggal_akhir: tanggalAkhir,
       tanggal_batas: tanggalBatas,
     }));
@@ -393,8 +427,9 @@ const DashboardPegawaiGudang = () => {
       setError(null);
       await fetchEmployeeProfile(token, employeeId);
       await fetchConsignmentTransactions(token);
-      await fetchBarangList(token); // Fetch daftar barang saat inisialisasi
+      await fetchBarangList(token);
       await fetchDropdownData(token);
+      await fetchConsignedItems(token); // Fetch data barang dititipkan
       setLoading(false);
     };
 
@@ -406,15 +441,12 @@ const DashboardPegawaiGudang = () => {
 
   const indexOfLastItem = currentItemsPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
   const filteredTransactions = consignmentTransactions.filter((transaction) => {
     if (!transaction) return false;
-
     const searchLower = searchQuery.toLowerCase();
     const detail = transaction.detail_transaksi_penitipans?.[0];
-    const namaBarang = detail?.barang?.nama_barang?.toLowerCase() || '';
-    const jumlahBarang = detail?.jumlah_barang_penitip?.toString() || '';
-
+    const namaBarang = detail?.barang?.nama_barang?.toLowerCase() || "";
+    const jumlahBarang = detail?.jumlah_barang_penitip?.toString() || "";
     return (
       transaction.id_penitipan_transaksi?.toString().includes(searchQuery) ||
       namaBarang.includes(searchLower) ||
@@ -426,7 +458,6 @@ const DashboardPegawaiGudang = () => {
       transaction.pegawai?.nama_pegawai?.toLowerCase().includes(searchLower)
     );
   });
-
   const currentTransactions = filteredTransactions.slice(indexOfFirstItem, indexOfLastItem);
   const totalItemsPages = Math.ceil(filteredTransactions.length / itemsPerPage);
 
@@ -434,6 +465,11 @@ const DashboardPegawaiGudang = () => {
   const indexOfFirstBarang = indexOfLastBarang - itemsPerPage;
   const currentBarang = barangList.slice(indexOfFirstBarang, indexOfLastBarang);
   const totalBarangPages = Math.ceil(barangList.length / itemsPerPage);
+
+  const indexOfLastConsigned = currentConsignedPage * itemsPerPage;
+  const indexOfFirstConsigned = indexOfLastConsigned - itemsPerPage;
+  const currentConsignedItems = consignedItems.slice(indexOfFirstConsigned, indexOfLastConsigned);
+  const totalConsignedPages = Math.ceil(consignedItems.length / itemsPerPage);
 
   const paginateItems = (pageNumber) => setCurrentItemsPage(pageNumber);
   const nextItemsPage = () => {
@@ -449,6 +485,14 @@ const DashboardPegawaiGudang = () => {
   };
   const prevBarangPage = () => {
     if (currentBarangPage > 1) setCurrentBarangPage(currentBarangPage - 1);
+  };
+
+  const paginateConsigned = (pageNumber) => setCurrentConsignedPage(pageNumber);
+  const nextConsignedPage = () => {
+    if (currentConsignedPage < totalConsignedPages) setCurrentConsignedPage(currentConsignedPage + 1);
+  };
+  const prevConsignedPage = () => {
+    if (currentConsignedPage > 1) setCurrentConsignedPage(currentConsignedPage - 1);
   };
 
   const handleSearch = (e) => {
@@ -613,29 +657,53 @@ const DashboardPegawaiGudang = () => {
                       <th>Kategori</th>
                       <th>Harga (Rp)</th>
                       <th>Berat (kg)</th>
-                      <th>Status</th>
+                      <th>Tanggal Akhir</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {currentBarang.map((barang) => (
-                      <tr key={barang.id_barang || Math.random()}>
-                        <td>{barang.id_barang || "N/A"}</td>
-                        <td>{barang.nama_barang || "Tidak Diketahui"}</td>
-                        <td>{barang.kategori_barang?.nama_kategori || "Tidak Diketahui"}</td>
-                        <td>{barang.harga_barang || 0}</td>
-                        <td>{barang.berat_barang || 0}</td>
-                        <td>{barang.status_barang || "Tidak Diketahui"}</td>
-                        <td>
-                          <button
-                            onClick={() => handleViewBarangDetail(barang.id_barang)}
-                            className="warehouse-detail-btn"
-                          >
-                            Detail
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {currentBarang.map((barang) => {
+                      const today = new Date();
+                      const hasExpired = barang.detail_transaksi_penitipans?.some((detail) => {
+                        if (!detail?.transaksi_penitipan?.tanggal_batas_penitipan) return false;
+                        const tanggalBatas = new Date(detail.transaksi_penitipan.tanggal_batas_penitipan);
+                        return tanggalBatas < today;
+                      });
+
+                      const hasDonated = () => barang.status_barang === "untuk_donasi";
+
+                      return (
+                        <tr key={barang.id_barang || Math.random()}>
+                          <td>{barang.id_barang || "N/A"}</td>
+                          <td>{barang.nama_barang || "Tidak Diketahui"}</td>
+                          <td>{barang.kategori_barang?.nama_kategori || "Tidak Diketahui"}</td>
+                          <td>{barang.harga_barang || 0}</td>
+                          <td>{barang.berat_barang || 0}</td>
+                          <td>
+                            {barang.detail_transaksi_penitipans?.[0]?.transaksi_penitipan?.tanggal_batas_penitipan
+                              ? formatDate(barang.detail_transaksi_penitipans[0].transaksi_penitipan.tanggal_batas_penitipan)
+                              : "Tidak Diketahui"}
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => handleViewBarangDetail(barang.id_barang)}
+                              className="warehouse-detail-btn"
+                            >
+                              Detail
+                            </button>
+                            {hasExpired && !hasDonated() && (
+                              <button
+                                onClick={() => handleUpdateToDonasi(barang.id_barang)}
+                                className="warehouse-donasi-btn"
+                                style={{ marginLeft: "10px" }}
+                              >
+                                Ubah ke untuk Donasi
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
                 <div className="warehouse-pagination">
@@ -669,6 +737,65 @@ const DashboardPegawaiGudang = () => {
             )}
           </div>
         );
+      case "consignedItems":
+        return (
+          <div className="warehouse-dashboard-section">
+            <h3>Daftar Barang Dititipkan oleh Penitip</h3> 
+            {consignedItems.length > 0 ? (
+              <>
+                <table className="warehouse-transaction-table">
+                  <thead>
+                    <tr>
+                      <th>Nama Barang</th>
+                      <th>Tanggal Titip</th>
+                      <th>Nama Penitip</th>
+                      <th>Status Barang</th>
+                      <th>Harga Barang (Rp)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentConsignedItems.map((item) => (
+                      <tr key={item.id_barang || Math.random()}>
+                        <td>{item.nama_barang || "Tidak Diketahui"}</td>
+                        <td>{formatDate(item.detail_transaksi_penitipans?.[0]?.transaksi_penitipan?.tanggal_mulai_penitipan) || "Tidak Diketahui"}</td>
+                        <td>{item.detail_transaksi_penitipans?.[0]?.transaksi_penitipan?.penitip?.nama_penitip || "Tidak Diketahui"}</td>
+                        <td>{item.status_barang || "Tidak Diketahui"}</td>
+                        <td>{item.harga_barang || 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div className="warehouse-pagination">
+                  <button
+                    className="warehouse-paginate-btn"
+                    onClick={prevConsignedPage}
+                    disabled={currentConsignedPage === 1}
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalConsignedPages }, (_, i) => i + 1).map((number) => (
+                    <button
+                      key={number}
+                      className={`warehouse-paginate-btn ${currentConsignedPage === number ? "warehouse-active" : ""}`}
+                      onClick={() => paginateConsigned(number)}
+                    >
+                      {number}
+                    </button>
+                  ))}
+                  <button
+                    className="warehouse-paginate-btn"
+                    onClick={nextConsignedPage}
+                    disabled={currentConsignedPage === totalConsignedPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p>Tidak ada barang yang dititipkan dalam 1 bulan terakhir.</p>
+            )}
+          </div>
+        );
       default:
         return null;
     }
@@ -698,6 +825,12 @@ const DashboardPegawaiGudang = () => {
             >
               Daftar Barang Titipan
             </li>
+            <li
+              className={activeMenu === "consignedItems" ? "warehouse-active" : ""}
+              onClick={() => setActiveMenu("consignedItems")}
+            >
+              Daftar Barang Dititipkan oleh Penitip
+            </li>
             <li onClick={handleLogout} className="warehouse-logout-btn">
               Logout
             </li>
@@ -711,7 +844,9 @@ const DashboardPegawaiGudang = () => {
             ? "Dashboard Pegawai Gudang"
             : activeMenu === "items"
             ? "Daftar Transaksi Barang Titipan"
-            : "Daftar Barang Titipan"}
+            : activeMenu === "barang"
+            ? "Daftar Barang Titipan"
+            : "Daftar Barang Dititipkan oleh Penitip"}
         </h2>
         <p className="warehouse-welcome-text">
           Selamat datang, {employeeProfile?.nama_pegawai || "Pegawai Gudang"}

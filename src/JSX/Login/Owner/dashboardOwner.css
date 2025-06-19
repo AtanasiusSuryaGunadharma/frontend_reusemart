@@ -407,3 +407,10 @@
 .owner-download-btn:hover {
     background-color: #1976D2;
 }
+
+@media print {
+    .owner-download-btn,
+    .no-print {
+        display: none !important;
+    }
+}

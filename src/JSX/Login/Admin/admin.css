@@ -330,3 +330,43 @@
     padding: 1rem;
   }
 }
+
+.adminpage-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.adminpage-modal-content-centered {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  width: 300px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.adminpage-modal-actions button {
+  margin: 0 10px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.adminpage-modal-actions button:first-child {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.adminpage-modal-actions button:last-child {
+  background-color: #f44336;
+  color: white;
+}

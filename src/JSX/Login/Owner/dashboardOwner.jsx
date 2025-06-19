@@ -513,6 +513,11 @@ const DashboardOwner = () => {
     const handleDownloadStockPDF = () => {
         window.scrollTo(0, 0);
         const element = reportRef.current;
+        // Sembunyikan tombol sebelum rendering
+        const downloadButtons = element.getElementsByClassName("owner-download-btn");
+        for (let button of downloadButtons) {
+            button.style.display = "none";
+        }
         const today = new Date().toISOString().split('T')[0];
         const opt = {
             margin: 10,
@@ -523,14 +528,27 @@ const DashboardOwner = () => {
         };
         html2pdf().set(opt).from(element).save().then(() => {
             console.log("PDF generated successfully");
+            // Kembalikan tombol setelah rendering selesai
+            for (let button of downloadButtons) {
+                button.style.display = "";
+            }
         }).catch((error) => {
             console.error("Error generating PDF:", error);
+            // Kembalikan tombol jika ada error
+            for (let button of downloadButtons) {
+                button.style.display = "";
+            }
         });
     };
 
     const handleDownloadCommissionPDF = () => {
         window.scrollTo(0, 0);
         const element = reportRef.current;
+        // Sembunyikan tombol sebelum rendering
+        const downloadButtons = element.getElementsByClassName("owner-download-btn");
+        for (let button of downloadButtons) {
+            button.style.display = "none";
+        }
         const opt = {
             margin: 10,
             filename: `laporan-komisi-bulanan-${selectedMonth}-${selectedYear}.pdf`,
@@ -540,8 +558,16 @@ const DashboardOwner = () => {
         };
         html2pdf().set(opt).from(element).save().then(() => {
             console.log("PDF generated successfully");
+            // Kembalikan tombol setelah rendering selesai
+            for (let button of downloadButtons) {
+                button.style.display = "";
+            }
         }).catch((error) => {
             console.error("Error generating PDF:", error);
+            // Kembalikan tombol jika ada error
+            for (let button of downloadButtons) {
+                button.style.display = "";
+            }
         });
     };
 
@@ -1055,6 +1081,11 @@ const DashboardOwner = () => {
                     const handleDownloadPDF = () => {
                         window.scrollTo(0, 0);
                         const element = reportRef.current;
+                        // Sembunyikan tombol sebelum rendering
+                        const downloadButtons = element.getElementsByClassName("owner-download-btn");
+                        for (let button of downloadButtons) {
+                            button.style.display = "none";
+                        }
                         const opt = {
                             margin: 10,
                             filename: `laporan-penjualan-bulanan-${selectedYear}-${new Date().toISOString().split('T')[0]}.pdf`,
@@ -1064,10 +1095,21 @@ const DashboardOwner = () => {
                         };
                         html2pdf().set(opt).from(element).save().then(() => {
                             console.log("PDF generated successfully");
+                            // Kembalikan tombol setelah rendering selesai
+                            for (let button of downloadButtons) {
+                                button.style.display = "";
+                            }
                         }).catch((error) => {
                             console.error("Error generating PDF:", error);
+                            // Kembalikan tombol jika ada error
+                            for (let button of downloadButtons) {
+                                button.style.display = "";
+                            }
                         });
                     };
+                    const totalSales = monthlySales.reduce((sum, sale) => sum + (sale.total_sales || 0), 0);
+                    const totalTransactions = monthlySales.reduce((sum, sale) => sum + (sale.transaction_count || 0), 0);
+
                     return (
                         <div className="owner-dashboard-section" ref={reportRef}>
                             <div style={{
@@ -1105,13 +1147,12 @@ const DashboardOwner = () => {
                             </div>
                             {isLoadingSales ? (
                                 <p>Memuat data laporan penjualan...</p>
+                            ) : monthlySales.length === 0 || monthlySales.every(sale => sale.total_sales === 0 && sale.transaction_count === 0) ? (
+                                <p style={{ textAlign: "center", color: "#000" }}>Data tidak ditemukan untuk tahun {selectedYear}.</p>
                             ) : (
                                 <>
                                     <div style={{ minHeight: "200px", marginBottom: "20px" }}>
-                                        <table
-                                            className="owner-donation-table"
-                                            style={{ borderCollapse: "collapse", color: "#000" }}
-                                        >
+                                        <table className="owner-donation-table" style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}>
                                             <thead>
                                                 <tr style={{ backgroundColor: "#4CAF50" }}>
                                                     <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Bulan</th>
@@ -1127,6 +1168,11 @@ const DashboardOwner = () => {
                                                         <td style={{ padding: "10px" }}>{sale.transaction_count || "0"}</td>
                                                     </tr>
                                                 ))}
+                                                <tr style={{ border: "1px solid #bfbfbf", fontWeight: "bold" }}>
+                                                    <td style={{ padding: "10px" }}>Total</td>
+                                                    <td style={{ padding: "10px" }}>{totalSales.toLocaleString("id-ID") || "0"}</td>
+                                                    <td style={{ padding: "10px" }}>{totalTransactions.toLocaleString("id-ID") || "0"}</td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -1207,116 +1253,124 @@ const DashboardOwner = () => {
                     </div>
                 );
             case "laporanKomisi":
-                {
-                    const totalCommissionReUseMart = commissionData.reduce((sum, item) => sum + (item.komisi_reuse_mart || 0), 0);
-                    const totalCommissionHunter = commissionData.reduce((sum, item) => sum + (item.komisi_hunter || 0), 0);
-                    const totalBonusPenitip = commissionData.reduce((sum, item) => sum + (item.bonus_penitip || 0), 0);
+    {
+        const totalCommissionReUseMart = commissionData.reduce((sum, item) => sum + (item.komisi_reuse_mart || 0), 0);
+        const totalCommissionHunter = commissionData.reduce((sum, item) => sum + (item.komisi_hunter || 0), 0);
+        const totalBonusPenitip = commissionData.reduce((sum, item) => sum + (item.bonus_penitip || 0), 0);
+        
+        const getLast10Years = () => {
+    const currentYear = new Date().getFullYear();
+    return Array.from({ length: 10 }, (_, index) => currentYear - index);
+};
 
-                    return (
-                        <div className="owner-dashboard-section" ref={reportRef}>
-                            <div style={{
-                                marginBottom: "20px",
-                                textAlign: "center",
-                                display: "block",
-                                position: "relative",
-                                padding: "10px",
-                                border: "1px solid #000",
-                                color: "#000",
-                                fontFamily: "Arial, Helvetica, sans-serif",
-                                fontSize: "14px"
-                            }}>
-                                <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
-                                <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
-                                <h3 style={{ margin: "0", color: "#000" }}>LAPORAN KOMISI BULANAN</h3>
-                                <p style={{ margin: "5px 0", color: "#000" }}><strong>Bulan:</strong> {monthNames[selectedMonth - 1]}</p>
-                                <p style={{ margin: "5px 0", color: "#000" }}><strong>Tahun:</strong> {selectedYear}</p>
-                                <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
-                            </div>
-                            <div style={{ marginBottom: "20px" }}>
-                                <label htmlFor="monthSelect">Pilih Bulan: </label>
-                                <select
-                                    id="monthSelect"
-                                    value={selectedMonth}
-                                    onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                                    style={{ padding: "5px", marginLeft: "10px" }}
-                                    disabled={isLoadingCommission}
-                                >
-                                    {monthNames.map((month, index) => (
-                                        <option key={index + 1} value={index + 1}>
-                                            {month}
-                                        </option>
+        return (
+            <div className="owner-dashboard-section" ref={reportRef}>
+                <div style={{
+                    marginBottom: "20px",
+                    textAlign: "center",
+                    display: "block",
+                    position: "relative",
+                    padding: "10px",
+                    border: "1px solid #000",
+                    color: "#000",
+                    fontFamily: "Arial, Helvetica, sans-serif",
+                    fontSize: "14px"
+                }}>
+                    <h2 style={{ margin: "0", color: "#000" }}>ReUse Mart</h2>
+                    <p style={{ margin: "5px 0", color: "#000" }}>Jl. Green Eco Park No. 456 Yogyakarta</p>
+                    <h3 style={{ margin: "0", color: "#000" }}>LAPORAN KOMISI BULANAN</h3>
+                    <p style={{ margin: "5px 0", color: "#000" }}><strong>Bulan:</strong> {monthNames[selectedMonth - 1]}</p>
+                    <p style={{ margin: "5px 0", color: "#000" }}><strong>Tahun:</strong> {selectedYear}</p>
+                    <p style={{ margin: "5px 0", color: "#000" }}><strong>Tanggal cetak:</strong> {getFormattedPrintDate()}</p>
+                </div>
+                <div style={{ marginBottom: "20px" }}>
+                    <label htmlFor="monthSelect">Pilih Bulan: </label>
+                    <select
+                        id="monthSelect"
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
+                        style={{ padding: "5px", marginLeft: "10px" }}
+                        disabled={isLoadingCommission}
+                    >
+                        {monthNames.map((month, index) => (
+                            <option key={index + 1} value={index + 1}>
+                                {month}
+                            </option>
+                        ))}
+                    </select>
+                    <label htmlFor="yearSelect" style={{ marginLeft: "20px" }}>Pilih Tahun: </label>
+                    <select
+                        id="yearSelect"
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                        style={{ padding: "5px", marginLeft: "10px" }}
+                        disabled={isLoadingCommission}
+                    >
+                        {availableYears.map((year) => (
+                            <option key={year} value={year}>
+                                {year}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                {isLoadingCommission ? (
+                    <p>Memuat data komisi...</p>
+                ) : commissionData.length === 0 ? (
+                    <p style={{ textAlign: "center", color: "#000" }}>Tidak ada data</p>
+                ) : (
+                    <>
+                        <div style={{ minHeight: "200px", marginBottom: "20px" }}>
+                            <table
+                                className="owner-donation-table"
+                                style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}
+                            >
+                                <thead>
+                                    <tr style={{ backgroundColor: "#4CAF50" }}>
+                                        <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Kode Produk</th>
+                                        <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Produk</th>
+                                        <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Harga Jual</th>
+                                        <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Masuk</th>
+                                        <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Laku</th>
+                                        <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Komisi Hunter</th>
+                                        <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Komisi ReUse Mart</th>
+                                        <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Bonus Penitip</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {commissionData.map((item, index) => (
+                                        <tr key={index} style={{ border: "1px solid #bfbfbf" }}>
+                                            <td style={{ padding: "10px" }}>{item.kode_produk || "---"}</td>
+                                            <td style={{ padding: "10px" }}>{item.nama_produk || "---"}</td>
+                                            <td style={{ padding: "10px" }}>{item.harga_jual?.toLocaleString("id-ID") || "0"}</td>
+                                            <td style={{ padding: "10px" }}>{formatDate(item.tanggal_masuk) || "---"}</td>
+                                            <td style={{ padding: "10px" }}>{formatDate(item.tanggal_laku) || "---"}</td>
+                                            <td style={{ padding: "10px" }}>{item.komisi_hunter?.toLocaleString("id-ID") || "0"}</td>
+                                            <td style={{ padding: "10px" }}>{item.komisi_reuse_mart?.toLocaleString("id-ID") || "0"}</td>
+                                            <td style={{ padding: "10px" }}>{item.bonus_penitip?.toLocaleString("id-ID") || "0"}</td>
+                                        </tr>
                                     ))}
-                                </select>
-                                <label htmlFor="yearSelect" style={{ marginLeft: "20px" }}>Pilih Tahun: </label>
-                                <select
-                                    id="yearSelect"
-                                    value={selectedYear}
-                                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                                    style={{ padding: "5px", marginLeft: "10px" }}
-                                    disabled={isLoadingCommission}
-                                >
-                                    {availableYears.map((year) => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            {isLoadingCommission ? (
-                                <p>Memuat data komisi...</p>
-                            ) : (
-                                <>
-                                    <div style={{ minHeight: "200px", marginBottom: "20px" }}>
-                                        <table
-                                            className="owner-donation-table"
-                                            style={{ width: "100%", borderCollapse: "collapse", color: "#000" }}
-                                        >
-                                            <thead>
-                                                <tr style={{ backgroundColor: "#4CAF50" }}>
-                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Kode Produk</th>
-                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Nama Produk</th>
-                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Harga Jual</th>
-                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Masuk</th>
-                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Tanggal Laku</th>
-                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Komisi Hunter</th>
-                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Komisi ReUse Mart</th>
-                                                    <th style={{ border: "1px solid #bfbfbf", padding: "10px" }}>Bonus Penitip</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {commissionData.map((item, index) => (
-                                                    <tr key={index} style={{ border: "1px solid #bfbfbf" }}>
-                                                        <td style={{ padding: "10px" }}>{item.kode_produk || "---"}</td>
-                                                        <td style={{ padding: "10px" }}>{item.nama_produk || "---"}</td>
-                                                        <td style={{ padding: "10px" }}>{item.harga_jual?.toLocaleString("id-ID") || "0"}</td>
-                                                        <td style={{ padding: "10px" }}>{formatDate(item.tanggal_masuk) || "---"}</td>
-                                                        <td style={{ padding: "10px" }}>{formatDate(item.tanggal_laku) || "---"}</td>
-                                                        <td style={{ padding: "10px" }}>{item.komisi_hunter?.toLocaleString("id-ID") || "0"}</td>
-                                                        <td style={{ padding: "10px" }}>{item.komisi_reuse_mart?.toLocaleString("id-ID") || "0"}</td>
-                                                        <td style={{ padding: "10px" }}>{item.bonus_penitip?.toLocaleString("id-ID") || "0"}</td>
-                                                    </tr>
-                                                ))}
-                                                <tr style={{ border: "1px solid #bfbfbf", fontWeight: "bold" }}>
-                                                    <td style={{ padding: "10px" }}>Total</td>
-                                                    <td style={{ padding: "10px" }}></td>
-                                                    <td style={{ padding: "10px" }}></td>
-                                                    <td style={{ padding: "10px" }}></td>
-                                                    <td style={{ padding: "10px" }}></td>
-                                                    <td style={{ padding: "10px" }}>{totalCommissionHunter.toLocaleString("id-ID") || "0"}</td>
-                                                    <td style={{ padding: "10px" }}>{totalCommissionReUseMart.toLocaleString("id-ID") || "0"}</td>
-                                                    <td style={{ padding: "10px" }}>{totalBonusPenitip.toLocaleString("id-ID") || "0"}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <button className="owner-download-btn" onClick={handleDownloadCommissionPDF} disabled={isLoadingCommission || commissionData.length === 0}>
-                                        <i className="fas fa-download"></i> Unduh PDF
-                                    </button>
-                                </>
-                            )}
+                                    <tr style={{ border: "1px solid #bfbfbf", fontWeight: "bold" }}>
+                                        <td style={{ padding: "10px" }}>Total</td>
+                                        <td style={{ padding: "10px" }}></td>
+                                        <td style={{ padding: "10px" }}></td>
+                                        <td style={{ padding: "10px" }}></td>
+                                        <td style={{ padding: "10px" }}></td>
+                                        <td style={{ padding: "10px" }}>{totalCommissionHunter.toLocaleString("id-ID") || "0"}</td>
+                                        <td style={{ padding: "10px" }}>{totalCommissionReUseMart.toLocaleString("id-ID") || "0"}</td>
+                                        <td style={{ padding: "10px" }}>{totalBonusPenitip.toLocaleString("id-ID") || "0"}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                    );
-                }
+                        <button className="owner-download-btn" onClick={handleDownloadCommissionPDF} disabled={isLoadingCommission}>
+                            <i className="fas fa-download"></i> Unduh PDF
+                        </button>
+                    </>
+                )}
+            </div>
+            
+        );
+    }
             default:
                 return null;
         }

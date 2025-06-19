@@ -26,6 +26,8 @@ const AdminDashboard = () => {
   const [showOrganizationModal, setShowOrganizationModal] = useState(false);
 
   const [jabatans, setJabatans] = useState([]); // State daftar jabatan
+  const [penitips, setPenitips] = useState([]); // State daftar penitip
+  const [searchTermPenitip, setSearchTermPenitip] = useState("");
 
   const [userRoleState, setUserRoleState] = useState(null);
 
@@ -65,9 +67,10 @@ const AdminDashboard = () => {
         });
         setJabatans(jabatanResponse.data);
 
-        // Fetch employees dan organizations
+        // Fetch employees, organizations, dan penitips
         await fetchEmployees(token);
         await fetchOrganizations(token);
+        await fetchPenitips(token);
       } catch (err) {
         console.error("Error fetching initial data:", err);
         toast.error("Gagal memuat data awal.");
@@ -109,6 +112,21 @@ const AdminDashboard = () => {
     }
   };
 
+  // Fetch penitips
+  const fetchPenitips = async (token, search = "") => {
+    try {
+      const res = await axios.get("http://127.0.0.1:8000/api/top-seller/current", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { search },
+      });
+      setPenitips(res.data.data);
+    } catch (err) {
+      console.error("Error fetching penitips:", err.response ? err.response.data : err.message);
+      toast.error("Gagal memuat data penitip: " + (err.response?.data?.message || err.message));
+      if (err.response && err.response.status === 401) handleLogout();
+    }
+  };
+
   // Logout handler
   const handleLogout = () => {
     localStorage.clear();
@@ -116,19 +134,23 @@ const AdminDashboard = () => {
     toast.info("Anda telah logout.");
   };
 
-  // Search pegawai
+  // Search handlers
   const handleSearchEmployeeChange = (e) => {
     setSearchTermEmployee(e.target.value);
     fetchEmployees(localStorage.getItem("authToken"), e.target.value);
   };
 
-  // Search organisasi
   const handleSearchOrgChange = (e) => {
     setSearchTermOrg(e.target.value);
     fetchOrganizations(localStorage.getItem("authToken"), e.target.value);
   };
 
-  // Add/update pegawai
+  const handleSearchPenitipChange = (e) => {
+    setSearchTermPenitip(e.target.value);
+    fetchPenitips(localStorage.getItem("authToken"), e.target.value);
+  };
+
+  // Add/update employee
   const handleAddOrUpdateEmployee = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("authToken");
@@ -164,7 +186,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Delete pegawai
+  // Delete employee
   const handleDeleteEmployee = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus pegawai ini?")) return;
     const token = localStorage.getItem("authToken");
@@ -179,7 +201,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Edit pegawai (prepare form)
+  // Edit employee
   const handleEditEmployee = (index) => {
     const emp = employees[index];
     setEditEmployeeIndex(index);
@@ -196,7 +218,7 @@ const AdminDashboard = () => {
     setShowEmployeeModal(true);
   };
 
-  // Edit organisasi
+  // Edit organization
   const handleEditOrganization = (org) => {
     setEditingOrganization({
       ...org,
@@ -205,7 +227,7 @@ const AdminDashboard = () => {
     setShowOrganizationModal(true);
   };
 
-  // Delete organisasi
+  // Delete organization
   const handleDeleteOrganization = async (id) => {
     if (!window.confirm("Apakah Anda yakin ingin menghapus organisasi ini?"))
       return;
@@ -221,7 +243,7 @@ const AdminDashboard = () => {
     }
   };
 
-  // Update organisasi
+  // Update organization
   const handleUpdateOrganization = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem("authToken");
@@ -254,6 +276,22 @@ const AdminDashboard = () => {
       setEditingOrganization(null);
     } catch (err) {
       toast.error(err.response?.data?.message || "Gagal memperbarui data organisasi.");
+    }
+  };
+
+  // Set Top Seller
+  const handleSetTopSeller = async (idPenitip) => {
+    const token = localStorage.getItem("authToken");
+    try {
+      await axios.post(
+        `http://127.0.0.1:8000/api/top-seller/set-top-seller`,
+        { penitip_id_top_seller: idPenitip },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchPenitips(token, searchTermPenitip); // Refresh data setelah set
+      toast.success("Top Seller berhasil diatur.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Gagal mengatur Top Seller.");
     }
   };
 
@@ -461,6 +499,64 @@ const AdminDashboard = () => {
             </div>
           </div>
         );
+      case "penitip":
+        return (
+          <div className="adminpage-dashboard-section">
+            <div className="adminpage-section-header">
+              <h3>Manajemen Penitip</h3>
+            </div>
+            <div className="adminpage-search-bar">
+              <input
+                type="text"
+                placeholder="Cari Nama Penitip..."
+                value={searchTermPenitip}
+                onChange={handleSearchPenitipChange}
+              />
+            </div>
+            <div
+              className="adminpage-table-container"
+              style={{ overflowX: "auto", marginTop: "1rem" }}
+            >
+              {penitips.length > 0 ? (
+                <table className="adminpage-employee-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Nama Penitip</th>
+                      <th>Jumlah Transaksi Terjual</th>
+                      <th>Badge Peringkat</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {penitips.map((penitip) => (
+                      <tr key={penitip.id_penitip}>
+                        <td>{penitip.id_penitip}</td>
+                        <td>{penitip.nama_penitip}</td>
+                        <td>{penitip.jumlah_transaksi_terjual}</td>
+                        <td>{penitip.status || "Tidak layak"}</td>
+                        <td className="adminpage-table-actions">
+                          <button
+                            onClick={() => handleSetTopSeller(penitip.id_penitip)}
+                            // Tombol tetap aktif meskipun status sudah "Top Seller"
+                          >
+                            Set as Top Seller
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <p>
+                  {searchTermPenitip
+                    ? `Tidak ditemukan penitip dengan nama "${searchTermPenitip}".`
+                    : "Tidak ada data penitip."}
+                </p>
+              )}
+            </div>
+          </div>
+        );
       default:
         return null;
     }
@@ -491,6 +587,12 @@ const AdminDashboard = () => {
             >
               Manajemen Organisasi
             </li>
+            <li
+              className={activeMenu === "penitip" ? "adminpage-active" : ""}
+              onClick={() => setActiveMenu("penitip")}
+            >
+              Manajemen Penitip
+            </li>
             <li onClick={handleLogout} className="adminpage-logout-btn">
               Logout
             </li>
@@ -505,7 +607,9 @@ const AdminDashboard = () => {
             ? "Dashboard Admin"
             : activeMenu === "pegawai"
             ? "Manajemen Pegawai"
-            : "Manajemen Organisasi"}
+            : activeMenu === "organisasi"
+            ? "Manajemen Organisasi"
+            : "Manajemen Penitip"}
         </h2>
         {renderContent()}
 
