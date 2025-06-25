@@ -419,3 +419,15 @@
 .warehouse-print-btn:hover {
   background-color: #45a049;
 }
+
+.warehouse-donasi-btn {
+  display: inline-block;
+  visibility: visible;
+  opacity: 1;
+  background-color: #ff6347; /* Contoh warna untuk memastikan terlihat */
+  padding: 5px 10px;
+  margin-left: 10px;
+  color: white;
+  border: none;
+  cursor: pointer;
+}

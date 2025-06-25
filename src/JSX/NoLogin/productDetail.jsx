@@ -20,10 +20,12 @@ const ProductDetail = () => {
         axios
             .get(`http://127.0.0.1:8000/api/barang/${id}`)
             .then((response) => {
+                console.log("API Response:", response.data); // Debugging
                 setProduct(response.data);
                 setLoading(false);
             })
             .catch((error) => {
+                console.error("Error fetching product:", error);
                 setError("Gagal mengambil detail produk. Silakan coba lagi.");
                 setLoading(false);
             });
@@ -63,10 +65,9 @@ const ProductDetail = () => {
         customPaging: (i) => <button>{i + 1}</button>,
     };
 
-    // Fungsi untuk memformat tanggal tanpa waktu
     const formatDate = (dateString) => {
         if (!dateString) return "Tidak ada garansi";
-        return dateString.split("T")[0]; // Ambil bagian sebelum 'T'
+        return dateString.split("T")[0];
     };
 
     if (loading) {
@@ -85,7 +86,6 @@ const ProductDetail = () => {
 
     return (
         <div className="product-detail-page">
-            {/* Navbar */}
             <nav className="navbar">
                 <div className="logo">
                     <span>REUSEMART</span>
@@ -108,7 +108,6 @@ const ProductDetail = () => {
                 </div>
             </nav>
 
-            {/* Product Details */}
             <div className="product-detail-container">
                 <div className="product-detail">
                     <div className="product-images">
@@ -150,7 +149,12 @@ const ProductDetail = () => {
                             <span>{product.berat_barang || 0} kg</span>
                         </div>
                         <div className="penitip-info">
-                            <p><strong>Penitip:</strong> {product.penitip?.nama_penitip || "N/A"}</p>
+                            <p>
+                                <strong>Penitip:</strong> {product.penitip?.nama_penitip || "N/A"}
+                                {product.penitip?.badge_peringkat === "TOP SELLER" && (
+                                    <span className="top-seller-badge">Top Seller</span>
+                                )}
+                            </p>
                             <p>
                                 <strong>Rating Penitip:</strong>{" "}
                                 {product.average_penitip_rating ? (

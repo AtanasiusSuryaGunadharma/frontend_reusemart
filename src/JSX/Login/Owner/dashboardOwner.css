@@ -5,8 +5,6 @@
   box-sizing: border-box;
 }
 
-
-
 /* Owner Dashboard */
 .owner-dashboard {
   display: flex;
@@ -406,4 +404,12 @@
 
 .owner-download-btn:hover {
     background-color: #1976D2;
+}
+
+/* Bagian ini hanya ada di Code 2 dan ditambahkan di sini */
+@media print {
+    .owner-download-btn,
+    .no-print {
+        display: none !important;
+    }
 }
