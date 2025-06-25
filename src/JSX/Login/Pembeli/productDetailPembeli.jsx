@@ -1,25 +1,23 @@
-// src\JSX\Login\Pembeli\productDetailPembeli.jsx
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { useParams, Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
-import { toast } from 'react-toastify'; // Import toast
-import "./productDetailPembeli.css"; // <-- Import CSS yang sesuai
+import { toast } from 'react-toastify';
+import "./productDetailPembeli.css";
 
-const ProductDetailPembeli = () => { // <-- Ganti nama komponen
+const ProductDetailPembeli = () => {
     const { id } = useParams();
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const sliderRef = useRef(null);
-    const navigate = useNavigate(); // <-- Tambahkan useNavigate
+    const navigate = useNavigate();
 
-    const [cartItems, setCartItems] = useState([]); // <-- State BARU: untuk menyimpan item di keranjang
+    const [cartItems, setCartItems] = useState([]);
 
-    // Handler Logout (sama seperti di shopPembeli.jsx)
     const handleLogout = () => {
         localStorage.removeItem("userRole");
         localStorage.removeItem("authToken");
@@ -30,16 +28,21 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
         localStorage.removeItem("no_telepon_pembeli");
         localStorage.removeItem("poin_loyalitas");
         localStorage.removeItem("tgl_lahir_pembeli");
-        localStorage.removeItem("id_pegawai"); localStorage.removeItem("name"); localStorage.removeItem("jabatan");
-        localStorage.removeItem("id_organisasi"); localStorage.removeItem("nama_organisasi"); localStorage.removeItem("email_organisasi");
-        localStorage.removeItem("id_penitip"); localStorage.removeItem("email_penitip"); localStorage.removeItem("no_telepon_penitip");
+        localStorage.removeItem("id_pegawai");
+        localStorage.removeItem("name");
+        localStorage.removeItem("jabatan");
+        localStorage.removeItem("id_organisasi");
+        localStorage.removeItem("nama_organisasi");
+        localStorage.removeItem("email_organisasi");
+        localStorage.removeItem("id_penitip");
+        localStorage.removeItem("email_penitip");
+        localStorage.removeItem("no_telepon_penitip");
         localStorage.removeItem("nama_penitip");
 
         navigate("/generalLogin");
         toast.info("Anda telah logout.");
     };
 
-    // Fungsi fetch current cart items (sama seperti di shopPembeli.jsx)
     const fetchCurrentCartItems = async (token) => {
         try {
             const response = await axios.get("http://127.0.0.1:8000/api/cart", {
@@ -57,13 +60,10 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
         }
     };
 
-
-    // useEffect untuk memuat data produk dan item keranjang saat komponen dimuat
     useEffect(() => {
         const token = localStorage.getItem("authToken");
         const userRole = localStorage.getItem("userRole");
 
-        // Redirect jika tidak login atau bukan pembeli
         if (!token || userRole !== 'pembeli') {
             navigate("/generalLogin");
             toast.error("Anda harus login sebagai pembeli untuk melihat detail produk.");
@@ -75,12 +75,11 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
             setError(null);
             try {
                 const productResponse = await axios.get(`http://127.0.0.1:8000/api/barang/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }, // Sertakan token
+                    headers: { Authorization: `Bearer ${token}` },
                 });
                 setProduct(productResponse.data);
 
-                await fetchCurrentCartItems(token); // Fetch item keranjang
-
+                await fetchCurrentCartItems(token);
             } catch (err) {
                 console.error("Error fetching product details or cart items:", err);
                 setError("Gagal mengambil detail produk atau informasi keranjang.");
@@ -90,23 +89,20 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
             }
         };
         fetchData();
-    }, [id, navigate]); // id sebagai dependency untuk fetch ulang jika ID produk berubah
+    }, [id, navigate]);
 
-
-    // Handler untuk Add to Cart (sama seperti di shopPembeli.jsx)
-    const handleAddToCart = async () => { // Tidak perlu parameter product karena sudah ada di state
+    const handleAddToCart = async () => {
         const token = localStorage.getItem("authToken");
         if (!token) {
             toast.error("Anda harus login untuk menambahkan barang ke keranjang.");
             navigate("/login/pembeli");
             return;
         }
-        if (!product) { // Pastikan produk sudah dimuat
+        if (!product) {
             toast.error("Detail produk belum dimuat.");
             return;
         }
 
-        // Cek apakah barang sudah ada di keranjang
         if (cartItems.includes(product.id_barang)) {
             toast.warn(`${product.nama_barang} sudah ada di keranjang Anda.`);
             return;
@@ -115,22 +111,18 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
         try {
             const response = await axios.post("http://127.0.0.1:8000/api/cart/add", {
                 barang_id: product.id_barang,
-                quantity: 1, // Kuantitas selalu 1
+                quantity: 1,
             }, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             toast.success(response.data.message || `${product.nama_barang} berhasil ditambahkan ke keranjang!`);
-            
-            // Perbarui daftar item keranjang di state setelah berhasil menambahkan
             setCartItems(prevItems => [...prevItems, product.id_barang]);
-
         } catch (err) {
             console.error("Error adding to cart:", err.response?.data || err.message);
             toast.error(err.response?.data?.message || `Gagal menambahkan ${product.nama_barang} ke keranjang.`);
         }
     };
 
-    // Handler BARU untuk Beli Sekarang
     const handleBuyNow = async () => {
         const token = localStorage.getItem("authToken");
         if (!token) {
@@ -144,7 +136,6 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
         }
 
         try {
-            // Coba tambahkan produk ke keranjang terlebih dahulu
             const response = await axios.post("http://127.0.0.1:8000/api/cart/add", {
                 barang_id: product.id_barang,
                 quantity: 1,
@@ -153,17 +144,11 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
             });
             
             toast.success(response.data.message || `${product.nama_barang} berhasil ditambahkan ke keranjang dan akan diarahkan ke checkout!`);
-            
-            // Perbarui daftar item keranjang di state
             setCartItems(prevItems => [...prevItems, product.id_barang]);
-
-            // Langsung arahkan ke halaman checkout
             navigate("/checkout");
-
         } catch (err) {
             console.error("Error during 'Buy Now':", err.response?.data || err.message);
-            // Jika produk sudah di keranjang, mungkin tidak perlu toast error, langsung redirect
-            if (err.response?.status === 409) { // Konflik, kemungkinan barang sudah ada di keranjang
+            if (err.response?.status === 409) {
                 toast.info(`${product.nama_barang} sudah ada di keranjang. Mengarahkan Anda ke checkout.`);
                 navigate("/checkout");
             } else {
@@ -190,9 +175,19 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
     };
 
     const settings = {
-        dots: true, infinite: true, speed: 500, slidesToShow: 1, slidesToScroll: 1,
-        autoplay: true, autoplaySpeed: 3000, arrows: true,
-        appendDots: (dots) => ( <div> <ul style={{ margin: "0px" }}> {dots} </ul> </div> ),
+        dots: true,
+        infinite: true,
+        speed: 500,
+        slidesToShow: 1,
+        slidesToScroll: 1,
+        autoplay: true,
+        autoplaySpeed: 3000,
+        arrows: true,
+        appendDots: (dots) => (
+            <div>
+                <ul style={{ margin: "0px" }}> {dots} </ul>
+            </div>
+        ),
         customPaging: (i) => <button>{i + 1}</button>,
     };
 
@@ -214,11 +209,10 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
     }
 
     const imageList = getImageList();
-    const isProductInCart = cartItems.includes(product.id_barang); // <-- Cek status barang di keranjang
+    const isProductInCart = cartItems.includes(product.id_barang);
 
     return (
         <div className="product-detail-page">
-            {/* Navbar (sesuaikan dengan ShopPembeli.jsx) */}
             <nav className="navbar">
                 <div className="logo">
                     <img src="/Logo.png" alt="Reusemart Logo" />
@@ -226,7 +220,7 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
                 </div>
                 <ul className="nav-links">
                     <li><Link to="/shop-pembeli">Shop</Link></li>
-                    <li><Link to="/pembeli/dashboard">Profil</Link></li> {/* Link ke dashboard (sekarang profil) */}
+                    <li><Link to="/pembeli/dashboard">Profil</Link></li>
                     <li><Link to="/cart">Keranjang</Link></li>
                     <li><Link to="/pembeli/history">History</Link></li>
                     <li><button onClick={handleLogout} className="logout-btn">Logout</button></li>
@@ -236,7 +230,6 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
                 </div>
             </nav>
 
-            {/* Product Details */}
             <div className="product-detail-container">
                 <div className="product-detail">
                     <div className="product-images">
@@ -268,7 +261,12 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
                             <span>{product.berat_barang || 0} kg</span>
                         </div>
                         <div className="penitip-info">
-                            <p><strong>Penitip:</strong> {product.penitip?.nama_penitip || "N/A"}</p>
+                            <p>
+                                <strong>Penitip:</strong> {product.penitip?.nama_penitip || "N/A"}
+                                {product.penitip?.badge_peringkat === "TOP SELLER" && (
+                                    <span className="top-seller-badge">Top Seller</span>
+                                )}
+                            </p>
                             <p>
                                 <strong>Rating Penitip:</strong>{" "}
                                 {product.average_penitip_rating ? (
@@ -286,18 +284,16 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
                                 {product.kategori_barang?.nama_kategori || "N/A"}
                             </p>
                         </div>
-                        <div className="product-actions"> {/* Container untuk tombol */}
-                            {/* Tombol Add to Cart: di-disable jika barang sudah ada di keranjang */}
+                        <div className="product-actions">
                             <button
                                 className="add-to-cart-btn"
-                                onClick={handleAddToCart} // Panggil tanpa parameter, gunakan product dari state
-                                disabled={isProductInCart} // <-- Logika disable BARU
+                                onClick={handleAddToCart}
+                                disabled={isProductInCart}
                             >
-                                {isProductInCart ? 'Sudah di Keranjang' : 'Add to Cart'} {/* <-- Teks tombol BARU */}
+                                {isProductInCart ? 'Sudah di Keranjang' : 'Add to Cart'}
                             </button>
-                            {/* Tombol Beli Sekarang */}
                             <button
-                                className="buy-now-btn" // Gunakan class baru untuk styling
+                                className="buy-now-btn"
                                 onClick={handleBuyNow}
                             >
                                 Beli Sekarang
@@ -310,4 +306,4 @@ const ProductDetailPembeli = () => { // <-- Ganti nama komponen
     );
 };
 
-export default ProductDetailPembeli; // <-- Export komponen dengan nama baru
+export default ProductDetailPembeli;
